@@ -1565,10 +1565,10 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
 
                     // 'deviceid', 'subscriberid', 'simserial', 'phonenumber'
                     if ( o.curVal.length === 0 ) {
-                        noSupportMsg = 'no ' + o.param + ' property in enketo';
+                        noSupportMsg = 'no ' + o.param + ' property in webforms';
                         switch ( o.param ) {
                             case 'deviceid':
-                                response = readCookie( '__enketo_meta_deviceid' ) || 'Error: could not determine deviceID';
+                                response = readCookie( '__enketo_meta_deviceid' ) || 'webform';
                                 break;
                             case 'username':
                                 response = readCookie( '__enketo_meta_uid' );

@@ -32,8 +32,12 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             searchSource = "https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}",
             googleApiKey = config.googleApiKey || config.google_api_key,
             iconSingle = L.divIcon( {
+            	/*
                 iconSize: 24,
                 className: 'enketo-geopoint-marker'
+                */
+            	 iconSize: 16,
+                 className: 'enketo-geopoint-circle-marker'
             } ),
             iconMulti = L.divIcon( {
                 iconSize: 16,
