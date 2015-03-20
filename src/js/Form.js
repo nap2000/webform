@@ -53,8 +53,8 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
 
                 //profiler.report();
 
-                if ( data.instanceStr ) {
-                    dataToEdit = new FormModel( data.instanceStr );
+                if ( data.instanceStrToEdit ) {
+                    dataToEdit = new FormModel( data.instanceStrToEdit );
                     loadErrors = loadErrors.concat( dataToEdit.init() );
                     this.load( dataToEdit );
                 }

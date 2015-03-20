@@ -60,7 +60,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'file-manager' ], function( $, Widget, f
             this._showFileName( existingFileName, this.mediaType );
         }
 
-        if ( !fileManager || !fileManager.isSupported() ) {
+        if ( !fileManager || !fileManager.isFileReaderSupported() ) {
             var advice = ( fileManager.notSupportedAdvisoryMsg ) ? fileManager.notSupportedAdvisoryMsg : '';
             this._showFeedback( 'Media questions are not supported in this browser. ' + advice, 'warning' );
             return;
