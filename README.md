@@ -10,7 +10,4 @@ The remaining text in this readme file is from the forked repository and hence a
 For details on using this fork refer to [Web Forms](https://github.com/nap2000/webformsClient) - Implementation of enketo-core in Smap Server
 
 
-### Change log
-
-See [CHANGELOG](./CHANGELOG.md)
 
