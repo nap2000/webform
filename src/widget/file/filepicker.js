@@ -140,7 +140,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'file-manager' ], function( $, Widget, f
     };
 
     Filepicker.prototype._getFileName = function( file ) {
-        return ( typeof file === 'object' && file.name ) ? file.name : '';
+    	 return ( typeof file === 'object' && file.name ) ? file.name : '';
     };
 
     Filepicker.prototype._showFileName = function( fileName ) {
