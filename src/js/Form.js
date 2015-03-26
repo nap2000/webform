@@ -193,9 +193,12 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
                     // file cannot be found in the local filesystem.
                     // To avoid showing this error message in that particular case, 
                     // we cheat and pretend the XML data type is the plain old 'string'
-                    if ( !data.unsubmitted ) {
-                        xmlDataType = ( xmlDataType === 'binary' ) ? 'string' : xmlDataType;
-                    }
+                    // Smap - not using this approach
+                    //  We need to know the node is binary when loadign from the store so we can
+                    // submit the file
+                    //if ( !data.unsubmitted ) {
+                    //    xmlDataType = ( xmlDataType === 'binary' ) ? 'string' : xmlDataType;
+                    //}
 
                     target = model.node( path, index );
 
