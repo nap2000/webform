@@ -76,13 +76,31 @@ define( [ 'jquery', 'enketo-js/Widget', 'file-manager' ], function( $, Widget, f
                 that._changeListener();
                 $input.removeAttr( 'disabled' );
                 if ( existingFileName ) {
-                    fileManager.getFileUrl( existingFileName )
-                        .then( function( url ) {
-                            that._showPreview( url, that.mediaType );
-                        } )
-                        .catch( function() {
-                            that._showFeedback( 'File "' + existingFileName + '" could not be found (leave unchanged if already submitted and you want to preserve it).', 'error' );
-                        } );
+                	// Check to see if this file is in storage
+                	
+                	if(fileManager.isFileStorageSupported() && gLoadedInstanceID) {
+                		 fileO = {
+                                 newName: existingFileName,
+                                 fileName: existingFileName
+                             };
+                		fileManager.retrieveFile( gLoadedInstanceID, fileO, {
+                            success: function( fileObj ) {
+                            	
+                            	fileManager.getFileUrl( fileObj.file ).then( function( url ) {
+                                    that._showPreview( url, that.mediaType );
+                                } );
+                            	
+                            },
+                            error: function( e ) {
+                            	fileManager.getFileUrl( existingFileName ).then( function( url ) {
+                                    that._showPreview( url, that.mediaType );
+                                } ).catch( function() {
+                                    that._showFeedback( 'File "' + existingFileName + '" could not be found (leave unchanged if already submitted and you want to preserve it).', 'error' );
+                                } );
+                            }
+                		});
+                	}
+                    
                 }
             } )
             .catch( function( error ) {

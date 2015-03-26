@@ -1633,12 +1633,15 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
                 },
                 //Not according to spec yet, this will be added to spec but name may change
                 'instance': function( o ) {
-                    var id = ( o.curVal.length > 0 ) ? o.curVal : model.evaluate( "concat('uuid:', uuid())", 'string' );
-                    //store the current instanceID as data on the form element so it can be easily accessed by e.g. widgets
+                	// Store instanceID in a global, this may be preset if form is laoded from the store
+                	if(!gLoadedInstanceID) {
+                		gLoadedInstanceID = ( o.curVal.length > 0 ) ? o.curVal : model.evaluate( "concat('uuid:', uuid())", 'string' );
+                	}
+                	//store the current instanceID as data on the form element so it can be easily accessed by e.g. widgets
                     $form.data( {
-                        instanceID: id
+                        instanceID: gLoadedInstanceID
                     } );
-                    return id;
+                    return gLoadedInstanceID;
                 }
             };
 
