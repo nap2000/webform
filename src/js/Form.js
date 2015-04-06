@@ -131,6 +131,7 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
                 //form language selector was moved outside of <form> so has to be separately removed
                 $( '#form-languages' ).remove();
                 $form.replaceWith( $formClone );
+                gLoadedInstanceID = undefined;		// Clear the global instance ID
             };
             /**
              * @deprecated
@@ -1392,7 +1393,7 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
 
             FormView.prototype.bootstrapify = function() {
                 //if no constraintmessage use a default
-                //TODO: move to XSLT
+
                 $form.addClass( 'clearfix' )
                     .find( 'label, legend' ).each( function() {
                         var $label = $( this );
@@ -1636,7 +1637,7 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
                 },
                 //Not according to spec yet, this will be added to spec but name may change
                 'instance': function( o ) {
-                	// Store instanceID in a global, this may be preset if form is laoded from the store
+                	// Store instanceID in a global, this may be preset if form is laoded from the store (smap)
                 	if(!gLoadedInstanceID) {
                 		gLoadedInstanceID = ( o.curVal.length > 0 ) ? o.curVal : model.evaluate( "concat('uuid:', uuid())", 'string' );
                 	}
