@@ -237,6 +237,7 @@ define( [ 'jquery', 'enketo-js/Widget' ], function( $, Widget ) {
         } );
     };
 
+    /*
     + function( $ ) {
         //'use strict';
 
@@ -381,5 +382,5 @@ define( [ 'jquery', 'enketo-js/Widget' ], function( $, Widget ) {
             .on( 'keydown.bs.dropdown.data-api', toggle + ', [role=menu], [role=listbox]', Dropdown.prototype.keydown );
 
     }( jQuery );
-
+*/
 } );
