@@ -86,9 +86,17 @@ define( [ 'jquery', 'enketo-js/Widget', 'file-manager' ], function( $, Widget, f
                 		fileManager.retrieveFile( gLoadedInstanceID, fileO, {
                             success: function( fileObj ) {
                             	
-                            	fileManager.getFileUrl( fileObj.file ).then( function( url ) {
-                                    that._showPreview( url, that.mediaType );
-                                } );
+                            	if(fileObj) {
+	                            	fileManager.getFileUrl( fileObj.file ).then( function( url ) {
+	                                    that._showPreview( url, that.mediaType );
+	                                } );
+                            	} else {	// Smap show the file URL, it was presumably downloaded from the server as an existing file
+                            		var url = existingFileName;
+                            		if(url.charAt(0) !== '/') {
+                            			url = "/" + url;
+                            		}
+                            		that._showPreview( url, that.mediaType );
+                            	}
                             	
                             },
                             error: function( e ) {
