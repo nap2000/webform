@@ -192,10 +192,12 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             } );
 
             // handle fullscreen map button click
-            this.$map.find( '.show-map-btn' ).on( 'click', function() {
+            //this.$map.find( '.show-map-btn' ).on( 'click', function() {
+            $( '.show-map-btn' ).click( function() {				// smap
                 that.$widget.find( '.search-bar' ).removeClass( 'hide-search' );
                 that.$widget.addClass( 'full-screen' );
                 that._updateMap();
+                that.map.invalidateSize();		// smap
                 return false;
             } );
 
@@ -284,7 +286,8 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
          */
         Geopicker.prototype._getProps = function() {
             var appearances = [],
-                map = this.options.touch !== true || ( this.options.touch === true && $( this.element ).closest( '.or-appearance-maps' ).length > 0 );
+                map = this.options.touch !== true || ( this.options.touch === true && $( this.element ).closest( '.or-appearance-maps' ).length > 0) || 
+                		( this.options.touch === true && $( this.element ).closest( '.or-appearance-placement-map' ).length > 0);   // smap add placement-map as appearance
 
             if ( map ) {
                 appearances = $( this.element ).closest( '.question' ).attr( 'class' ).split( ' ' )
@@ -328,7 +331,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 '<span class="disabled-msg">remove all points to enable</span>' +
                 '</label>',
                 close = '<button type="button" class="close-chain-btn btn btn-default btn-xs">close polygon</button>',
-                mapBtn = '<button type="button" class="show-map-btn btn btn-default">Map</button>';
+                mapBtn = '<button type="button" class="show-map-btn btn btn-default">Enlarge Map</button>';
 
             this.$widget = $(
                 '<div class="geopicker widget">' +
@@ -366,18 +369,21 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 this.$map = this.$widget.find( '.map-canvas' );
                 // add the hide/show inputs button
                 this.$map.parent().append( '<button type="button" class="toggle-input-visibility-btn"> </button>' );
+                
             } else {
                 this.$map = $();
             }
 
             // touchscreen maps
             if ( this.props.touch && this.props.map ) {
-                this.$map.append( mapBtn );
+                //this.$map.append( mapBtn );
+            	this.$widget.find( '.map-canvas-wrapper' ).after( mapBtn );
             }
 
             // unhide search bar 
             // TODO: can be done in CSS?
-            if ( !this.props.touch ) {
+            //if ( !this.props.touch ) {
+            if ( this.props.map ) {		// smap
                 this.$widget.find( '.search-bar' ).removeClass( 'hide-search' );
             }
 
@@ -404,8 +410,13 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             this.$alt = this.$widget.find( '[name="alt"]' );
             this.$acc = this.$widget.find( '[name="acc"]' );
 
-
             $( this.element ).hide().after( this.$widget ).parent().addClass( 'clearfix' );
+            
+            // smap add cordova support - Allow leaflet to capture taps without angular absorbing them
+            if(window.cordova) {
+            	$( this.element ).parent().find('.map-canvas').wrap('<div data-tap-disabled="true"></div>');
+            }
+            console.log("Enketo: Added geopicker widget");
         };
 
         /**
@@ -530,7 +541,8 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             this.$points.find( '.point' ).removeClass( 'active' ).eq( index ).addClass( 'active' );
             this._updateInputs( this.points[ index ], '' );
             // make sure that the current marker is marked as active
-            if ( this.map && ( !this.props.touch || this._inFullScreenMode() ) ) {
+            //if ( this.map && ( !this.props.touch || this._inFullScreenMode() ) ) {
+            if ( this.map && this.props.map ) {		// smap
                 this._updateMarkers();
             }
             // console.debug( 'set current index to ', this.currentIndex );
@@ -662,7 +674,8 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             }
 
             // update the map if it is visible
-            if ( !this.props.touch || this._inFullScreenMode() ) {
+            //if ( !this.props.touch || this._inFullScreenMode() ) {
+            if ( this.props.map ) {	// smap
                 if ( !this.map ) {
                     this._addDynamicMap()
                         .then( function() {
