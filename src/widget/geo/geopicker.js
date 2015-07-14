@@ -322,7 +322,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
          * Adds the DOM elements
          */
         Geopicker.prototype._addDomElements = function() {
-            var map = '<div class="map-canvas-wrapper"><div class=map-canvas id="map' + this.mapId + '"></div></div>',
+            var map = '<div class="map-canvas-wrapper" data-tap-disabled="true"><div class=map-canvas id="map' + this.mapId + '"></div></div>',
                 points = '<div class="points"><button type="button" class="addpoint">+</button></div>',
                 kml = '<a href="#" class="toggle-input-type-btn"><span class="kml-input">KML</span><span class="points-input">points</span></a>' +
                 '<label class="geo kml">KML coordinates' +
@@ -330,18 +330,19 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 '<textarea class="ignore" name="kml" placeholder="paste KML coordinates here"></textarea>' +
                 '<span class="disabled-msg">remove all points to enable</span>' +
                 '</label>',
-                close = '<button type="button" class="close-chain-btn btn btn-default btn-xs">close polygon</button>',
-                mapBtn = '<button type="button" class="show-map-btn btn btn-default">Enlarge Map</button>';
+                close = '<label><button type="button" class="close-chain-btn btn btn-default btn-xs">close polygon</button></label>';
 
             this.$widget = $(
                 '<div class="geopicker widget">' +
                 '<div class="search-bar hide-search no-map no-detect">' +
-                '<button type="button" class="hide-map-btn btn btn-default"><span class="icon icon-arrow-left"> </span></button>' +
-                '<button name="geodetect" type="button" class="btn btn-default" title="detect current location" data-placement="top">' +
+                //'<button type="button" class="show-map-btn btn btn-default"><span class="icon icon-arrow-right"></span>Enlarge Map</button>' +	// smap
+                //'<button type="button" class="hide-map-btn btn btn-default"><span class="icon icon-arrow-left"> </span></button>' +	
+                '<label><button name="geodetect" type="button" class="btn btn-default" title="detect current location" data-placement="top">' +
                 '<span class="icon icon-crosshairs"> </span></button>' +
+                '</label>' +
                 '<div class="input-group">' +
                 '<input class="geo ignore" name="search" type="text" placeholder="search for place or address" disabled="disabled"/>' +
-                '<button type="button" class="btn btn-default search-btn"><i class="icon icon-search"> </i></button>' +
+                '<label><button type="button" class="btn btn-default search-btn"><i class="icon icon-search"> </i></button></label>' +
                 '</div>' +
                 '</div>' +
                 '<div class="geo-inputs">' +
@@ -349,7 +350,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 '<label class="geo long">longitude (x.y &deg;)<input class="ignore" name="long" type="number" step="0.000001" min="-180" max="180"/></label>' +
                 '<label class="geo alt">altitude (m)<input class="ignore" name="alt" type="number" step="0.1" /></label>' +
                 '<label class="geo acc">accuracy (m)<input class="ignore" name="acc" type="number" step="0.1" /></label>' +
-                '<button type="button" class="btn-icon-only btn-remove"><span class="icon icon-trash"> </span></button>' +
+                '<label><button type="button" class="btn-icon-only btn-remove"><span class="icon icon-trash"> </span></button></label>' +
                 '</div>' +
                 '</div>'
             );
@@ -368,7 +369,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 this.$widget.find( '.search-bar' ).removeClass( 'no-map' ).after( map );
                 this.$map = this.$widget.find( '.map-canvas' );
                 // add the hide/show inputs button
-                this.$map.parent().append( '<button type="button" class="toggle-input-visibility-btn"> </button>' );
+                this.$map.parent().append( '<label><button type="button" class="toggle-input-visibility-btn"> </button></label>' );
                 
             } else {
                 this.$map = $();
@@ -377,7 +378,9 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             // touchscreen maps
             if ( this.props.touch && this.props.map ) {
                 //this.$map.append( mapBtn );
-            	this.$widget.find( '.map-canvas-wrapper' ).after( mapBtn );
+            	this.$widget.find( '.show-map-btn' ).show( );
+            } else {
+            	this.$widget.find( '.show-map-btn' ).hide( );
             }
 
             // unhide search bar 
@@ -413,9 +416,9 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             $( this.element ).hide().after( this.$widget ).parent().addClass( 'clearfix' );
             
             // smap add cordova support - Allow leaflet to capture taps without angular absorbing them
-            if(window.cordova) {
-            	$( this.element ).parent().find('.map-canvas').wrap('<div data-tap-disabled="true"></div>');
-            }
+            //if(window.cordova) {
+           // 	$( this.element ).parent().find('.map-canvas').wrap('<div data-tap-disabled="true"></div>');
+           // }
             console.log("Enketo: Added geopicker widget");
         };
 
