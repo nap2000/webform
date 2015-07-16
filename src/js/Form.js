@@ -1572,7 +1572,11 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
                         noSupportMsg = 'no ' + o.param + ' property in webforms';
                         switch ( o.param ) {
                             case 'deviceid':
-                                response = readCookie( '__enketo_meta_deviceid' ) || 'webform';
+                            	if(typeof device !== "undefined") {		// Smap get device from cordova if available
+                                    response = device.uuid;
+                                } else {
+                                	response = readCookie( '__enketo_meta_deviceid' ) || 'webform';
+                                }
                                 break;
                             case 'username':
                                 response = readCookie( '__enketo_meta_uid' );
