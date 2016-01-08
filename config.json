@@ -16,9 +16,9 @@
         "enketo-widget/trigger/triggerwidget"
     ],
     "maps": [ {
-        "tiles": [ "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" ],
+        "tiles": [ "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" ],
         "name": "streets",
-        "attribution": "Map data © <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors"
+        "attribution": "Map data © <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors"
     }, {
         "tiles": "GOOGLE_SATELLITE",
         "name": "satellite"

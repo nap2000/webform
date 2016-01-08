@@ -26,8 +26,8 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
             maps = ( config && config.maps && config.maps.length > 0 ) ? config.maps : [ {
                 "name": "streets",
                 "maxzoom": 24,
-                "tiles": [ "http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png" ],
-                "attribution": "Tiles courtesy of <a href=\"http://hot.openstreetmap.se/\" target=\"_blank\">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>"
+                "tiles": [ "https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png" ],
+                "attribution": "Tiles courtesy of <a href=\"https://hot.openstreetmap.se/\" target=\"_blank\">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>"
             } ],
             searchSource = "https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}",
             googleApiKey = config.googleApiKey || config.google_api_key,

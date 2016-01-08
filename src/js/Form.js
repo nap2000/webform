@@ -839,6 +839,9 @@ define( [ 'enketo-js/FormModel', 'enketo-js/widgets', 'jquery', 'enketo-js/plugi
                         lang = $( this ).val();
                         event.preventDefault();
                         that.setAll( lang );
+                        
+                        $('.or-form-image,.or-form-audio,.or-form-video ').remove();	// Smap hack to prevent display of media URLs
+                        
                     } );
                 },
                 setAll: function( lang ) {
