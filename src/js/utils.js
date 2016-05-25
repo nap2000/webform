@@ -1,9 +1,4 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
-}
-define( function( require, exports, module ) {
+define( [ 'jquery' ], function( $ ) {
     'use strict';
 
     /**
@@ -65,7 +60,7 @@ define( function( require, exports, module ) {
         return item.trim();
     }
 
-    module.exports = {
+    return {
         parseFunctionFromExpression: parseFunctionFromExpression,
         stripQuotes: stripQuotes,
     };
