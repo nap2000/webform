@@ -669,8 +669,6 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
         return expr;
     };
 
-<<<<<<< HEAD
-=======
     FormModel.prototype.nsResolver = {
 
         lookupNamespaceURI: function( prefix ) {
