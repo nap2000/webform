@@ -669,6 +669,148 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
         return expr;
     };
 
+<<<<<<< HEAD
+=======
+    FormModel.prototype.nsResolver = {
+
+        lookupNamespaceURI: function( prefix ) {
+            var namespaces = {
+                'jr': 'http://openrosa.org/javarosa',
+                'xsd': 'http://www.w3.org/2001/XMLSchema',
+                'orx': 'http://openrosa.org/xforms/', // CommCare uses 'http://openrosa.org/jr/xforms'
+                'cc': 'http://commcarehq.org/xforms'
+            };
+
+            return namespaces[ prefix ] || null;
+        }
+    };
+
+    /**
+     * Shift root to first instance for all absolute paths not starting with /model
+     *
+     * @param  {string} expr original expression
+     * @return {string}      new expression
+     */
+    FormModel.prototype.shiftRoot = function( expr ) {
+        if ( this.hasInstance ) {
+            expr = expr.replace( /^(\/(?!model\/)[^\/][^\/\s]*\/)/g, '/model/instance[1]$1' );
+            expr = expr.replace( /([^a-zA-Z0-9\.\]\)\/\*_-])(\/(?!model\/)[^\/][^\/\s]*\/)/g, '$1/model/instance[1]$2' );
+        }
+        return expr;
+    };
+
+    /** 
+     * Replace instance('id') with an absolute path
+     * Doing this here instead of adding an instance() function to the XPath evaluator, means we can keep using
+     * the much faster native evaluator in most cases!
+     *
+     * @param  {string} expr original expression
+     * @return {string}      new expression
+     */
+    FormModel.prototype.replaceInstanceFn = function( expr ) {
+        // TODO: would be more consistent to use utls.parseFunctionFromExpression() and utils.stripQuotes
+        return expr.replace( this.INSTANCE, function( match, id ) {
+            return '/model/instance[@id="' + id + '"]';
+        } );
+    };
+
+    /** 
+     * Replaces current()/ with '' or '/' because Enketo does not (yet) change the context in an itemset.
+     * Doing this here instead of adding a current() function to the XPath evaluator, means we can keep using
+     * the much faster native evaluator in most cases!
+     *
+     * @param  {string} expr original expression
+     * @return {string}      new expression
+     */
+    FormModel.prototype.replaceCurrentFn = function( expr ) {
+        expr = expr.replace( /current\(\)\/\./g, '.' );
+        expr = expr.replace( /current\(\)/g, '' );
+        return expr;
+    };
+
+    /**
+     * Replaces indexed-repeat(node, path, position, path, position, etc) substrings by converting them
+     * to their native XPath equivalents using [position() = x] predicates
+     *
+     * @param  {string} expr the XPath expression
+     * @return {string}      converted XPath expression
+     */
+    FormModel.prototype.replaceIndexedRepeatFn = function( expr, selector, index ) {
+        var that = this;
+        var indexedRepeats = utils.parseFunctionFromExpression( expr, 'indexed-repeat' );
+
+        if ( !indexedRepeats.length ) {
+            return expr;
+        }
+
+        indexedRepeats.forEach( function( indexedRepeat ) {
+            var i, positionedPath;
+            var position;
+            var params = indexedRepeat[ 1 ];
+
+            if ( params.length % 2 === 1 ) {
+
+                positionedPath = params[ 0 ];
+
+                for ( i = params.length - 1; i > 1; i -= 2 ) {
+                    // The position will become an XPath predicate. The context for an XPath predicate, is not the same
+                    // as the context for the complete expression, so we have to evaluate the position separately. Otherwise 
+                    // relative paths would break.
+                    position = !isNaN( params[ i ] ) ? params[ i ] : that.evaluate( params[ i ], 'number', selector, index, true );
+                    positionedPath = positionedPath.replace( params[ i - 1 ], params[ i - 1 ] + '[position() = ' + position + ']' );
+                }
+
+                expr = expr.replace( indexedRepeat[ 0 ], positionedPath );
+
+            } else {
+                console.error( 'indexed repeat with incorrect number of parameters found', indexedRepeat[ 0 ] );
+                return '"Error with indexed-repeat parameters"';
+            }
+        } );
+
+        return expr;
+    };
+
+    FormModel.prototype.replacePullDataFn = function( expr, selector, index ) {
+        var that = this;
+        var pullDatas = utils.parseFunctionFromExpression( expr, 'pulldata' );
+
+        if ( !pullDatas.length ) {
+            return expr;
+        }
+
+        pullDatas.forEach( function( pullData ) {
+            var searchValue;
+            var searchXPath;
+            var params = pullData[ 1 ];
+
+            if ( params.length === 4 ) {
+
+                // strip quotes
+                params[ 1 ] = utils.stripQuotes( params[ 1 ] );
+                params[ 2 ] = utils.stripQuotes( params[ 2 ] );
+
+                // TODO: the 2nd and 3rd parameter could probably also be expressions.
+
+                // The 4th argument will become an XPath predicate. The context for an XPath predicate, is not the same
+                // as the context for the complete expression, so we have to evaluate the position separately. Otherwise
+                // relative paths would break.
+                searchValue = that.evaluate( params[ 3 ], 'string', selector, index, true );
+                searchValue = searchValue === '' || isNaN( searchValue ) ? '\'' + searchValue + '\'' : searchValue;
+                searchXPath = 'instance(' + params[ 0 ] + ')/root/item[' + params[ 2 ] + ' = ' + searchValue + ']/' + params[ 1 ];
+
+                expr = expr.replace( pullData[ 0 ], searchXPath );
+
+            } else {
+                console.error( 'pulldata with incorrect number of parameters found', pullData[ 0 ] );
+                return '"Error with pulldata parameters"';
+            }
+        } );
+
+        return expr;
+    };
+
+>>>>>>> b2c4229... added: support for pulldata function if XForm contains instance, #306
     /**
      * Evaluates an XPath Expression using XPathJS_javarosa (not native XPath 1.0 evaluator)
      *
@@ -726,14 +868,26 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
             }
         }
 
-        if ( typeof selector !== 'undefined' && selector !== null ) {
-            context = $instanceDoc.xfind( selector ).eq( index )[ 0 ];
-            /*
-             * If the context for the expression is a node that is inside a repeat.... see makeBugCompliant()
-             */
-            $collection = this.node( selector ).get();
-            if ( $collection.length > 1 ) {
-                //console.log('going to inject position into: '+expr+' for context: '+selector+' and index: '+index);
+        // cache key includes the number of repeated context nodes, 
+        // to force a new cache item if the number of repeated changes to > 0
+        // TODO: these cache keys can get quite large. Would it be beneficial to get the md5 of the key?
+        cacheKey = [ expr, selector, index, repeats ].join( '|' );
+
+        // These functions need to come before makeBugCompliant.
+        // An expression transformation with indexed-repeat or pulldata cannot be cached because in 
+        // "indexed-repeat(node, repeat nodeset, index)" the index parameter could be an expression.
+        expr = this.replaceIndexedRepeatFn( expr, selector, index );
+        expr = this.replacePullDataFn( expr, selector, index );
+        cacheable = ( original === expr );
+
+        // if no cached conversion exists
+        if ( !this.convertedExpressions[ cacheKey ] ) {
+            expr = expr;
+            expr = expr.trim();
+            expr = this.shiftRoot( expr );
+            expr = this.replaceInstanceFn( expr );
+            expr = this.replaceCurrentFn( expr );
+            if ( repeats && repeats > 1 ) {
                 expr = this.makeBugCompliant( expr, selector, index );
             }
         } else {
