@@ -808,7 +808,6 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
         return expr;
     };
 
->>>>>>> b2c4229... added: support for pulldata function if XForm contains instance, #306
     /**
      * Evaluates an XPath Expression using XPathJS_javarosa (not native XPath 1.0 evaluator)
      *
