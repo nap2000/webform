@@ -20,6 +20,8 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
 
         externalData = externalData || [];
 
+        this.convertedExpressions = {};
+        this.templates = {};
         this.loadErrors = [];
         this.INSTANCE = /instance\([\'|\"]([^\/:\s]+)[\'|\"]\)/g;
         this.OPENROSA = /(decimal-date-time\(|pow\(|indexed-repeat\(|format-date\(|coalesce\(|join\(|max\(|min\(|random\(|substr\(|int\(|uuid\(|regex\(|now\(|today\(|date\(|if\(|boolean-from-string\(|checklist\(|selected\(|selected-at\(|round\(|area\()/;
@@ -50,6 +52,8 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
             that.loadErrors.push( 'External instance "' + $( instance ).attr( 'id' ) + '" is empty.' );
         } );
 
+        //this.instancesArray = Array.prototype.slice.call( this.xml.firstChild.children );
+        this.rootElement = this.xml.querySelector( 'instance > *' ) || this.xml.documentElement;
         this.$ = $model;
 
         /**
@@ -627,14 +631,16 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
     };
 
     /**
-     * There is a bug in JavaRosa that has resulted in the usage of incorrect formulae on nodes inside repeat nodes.
+     * There is a huge bug in JavaRosa that has resulted in the usage of incorrect formulae on nodes inside repeat nodes.
      * Those formulae use absolute paths when relative paths should have been used. See more here:
-     * https://bitbucket.org/javarosa/javarosa/wiki/XFormDeviations (point 3).
+     * http://opendatakit.github.io/odk-xform-spec/#a-big-deviation-with-xforms
+     *
      * Tools such as pyxform also build forms in this incorrect manner. See https://github.com/modilabs/pyxform/issues/91
      * It will take time to correct this so makeBugCompliant() aims to mimic the incorrect
      * behaviour by injecting the 1-based [position] of repeats into the XPath expressions. The resulting expression
      * will then be evaluated in a way users expect (as if the paths were relative) without having to mess up
      * the XPath Evaluator.
+     *
      * E.g. '/data/rep_a/node_a' could become '/data/rep_a[2]/node_a' if the context is inside
      * the second rep_a repeat.
      *
@@ -824,8 +830,7 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
      * @return { ?(number|string|boolean|Array<element>) } the result
      */
     FormModel.prototype.evaluate = function( expr, resTypeStr, selector, index, tryNative ) {
-        var i, j, error, context, $instanceDoc, instanceDoc, instances, id, resTypeNum, resultTypes, result, $result, attr,
-            $collection, $contextWrapNodes, $repParents, response, openrosa;
+        var j, error, context, doc, resTypeNum, resultTypes, result, $collection, response, repeats, cacheKey;
 
         //console.time( 'eval in Model' );
         //console.debug( 'evaluating expr: ' + expr + ' with context selector: ' + selector + ', 0-based index: ' +
@@ -833,49 +838,23 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
         tryNative = tryNative || false;
         resTypeStr = resTypeStr || 'any';
         index = index || 0;
+        doc = this.xml;
+        repeats = null;
 
-        expr = expr.trim();
-
-        /* 
-            creating a new instanceDoc is necessary for 3 reasons:
-            - the primary instance needs to be the root (and it isn't as the root is <model> and there can be multiple <instance>s)
-            - the templates need to be removed (though this could be worked around by adding the templates as data)
-            - the hack described below with multiple instances.
-        */
-        $instanceDoc = new FormModel( this.getStr( false, false ) ).$;
-        instanceDoc = $instanceDoc[ 0 ];
-
-        /* 
-            If the expression contains the instance('id') syntax, a different context instance is required.
-            However, the same expression may also contain absolute reference to the main data instance, 
-            which means 2 different contexts would have to be supplied to the XPath Evaluator which is not
-            possible. Alternatively, the XPath Evaluator becomes able to use a default instance and direct 
-            the instance(id) references to a sibling instance context. The latter proved to be too hard for 
-            this developer, so as a workaround, the following is used instead:
-            The instance referred to in instance(id) is detached and appended to the main instance. The 
-            instance(id) syntax is subsequently converted to /node()/instance[@id=id] XPath syntax.
-        */
-
-        if ( this.INSTANCE.test( expr ) ) {
-            instances = expr.match( this.INSTANCE );
-            for ( i = 0; i < instances.length; i++ ) {
-                id = instances[ i ].match( /[\'|\"]([^\'']+)[\'|\"]/ )[ 1 ];
-                expr = expr.replace( instances[ i ], '/node()/instance[@id="' + id + '"]' );
-                this.$.find( ':first>instance#' + id ).clone().appendTo( $instanceDoc.find( ':first' ) );
-            }
+        // path corrections for repeated nodes: http://opendatakit.github.io/odk-xform-spec/#a-big-deviation-with-xforms
+        if ( selector ) {
+            $collection = this.node( selector ).get();
+            repeats = $collection.length;
+            context = $collection.eq( index )[ 0 ];
+        } else {
+            // either the first data child of the first instance or the first child (for loaded instances without a model)
+            context = this.rootElement;
         }
 
         // cache key includes the number of repeated context nodes, 
         // to force a new cache item if the number of repeated changes to > 0
         // TODO: these cache keys can get quite large. Would it be beneficial to get the md5 of the key?
         cacheKey = [ expr, selector, index, repeats ].join( '|' );
-
-        // These functions need to come before makeBugCompliant.
-        // An expression transformation with indexed-repeat or pulldata cannot be cached because in 
-        // "indexed-repeat(node, repeat nodeset, index)" the index parameter could be an expression.
-        expr = this.replaceIndexedRepeatFn( expr, selector, index );
-        expr = this.replacePullDataFn( expr, selector, index );
-        cacheable = ( original === expr );
 
         // if no cached conversion exists
         if ( !this.convertedExpressions[ cacheKey ] ) {
@@ -884,11 +863,17 @@ define( [ 'xpath', 'jquery', 'enketo-js/plugins', 'enketo-js/extend', 'jquery.xp
             expr = this.shiftRoot( expr );
             expr = this.replaceInstanceFn( expr );
             expr = this.replaceCurrentFn( expr );
+            expr = this.replaceIndexedRepeatFn( expr );
             if ( repeats && repeats > 1 ) {
                 expr = this.makeBugCompliant( expr, selector, index );
             }
+            // decode
+            expr = expr.replace( /&lt;/g, '<' );
+            expr = expr.replace( /&gt;/g, '>' );
+            expr = expr.replace( /&quot;/g, '"' );
+            this.convertedExpressions[ cacheKey ] = expr;
         } else {
-            context = instanceDoc;
+            expr = this.convertedExpressions[ cacheKey ];
         }
 
         resultTypes = {
