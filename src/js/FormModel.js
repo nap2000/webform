@@ -47,6 +47,8 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
 
         $model = $( this.xml );
 
+        this.hasInstance = $model.find( 'model > instance' ).length > 0;
+
         // check if all secondary instances with an external source have been populated
         $model.find( 'model > instance[src]:empty' ).each( function( index, instance ) {
             that.loadErrors.push( 'External instance "' + $( instance ).attr( 'id' ) + '" is empty.' );
@@ -60,15 +62,12 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
          * Initializes FormModel
          */
         FormModel.prototype.init = function() {
-            var /** @type {string} */ val;
-
             // trimming values
             this.node( null, null, {
                 noEmpty: true,
                 noTemplate: false
             } ).get().each( function() {
-                val = $( this ).text();
-                $( this ).text( $.trim( val ) );
+                this.textContent = this.textContent.trim();
             } );
 
             this.cloneAllTemplates();
@@ -102,7 +101,7 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
          */
 
         function Nodeset( selector, index, filter ) {
-            var defaultSelector = '*';
+            var defaultSelector = that.hasInstance ? '/model/instance[1]//*' : '//*';
             this.originalSelector = selector;
             this.selector = ( typeof selector === 'string' && selector.length > 0 ) ? selector : defaultSelector;
             filter = ( typeof filter !== 'undefined' && filter !== null ) ? filter : {};
@@ -112,16 +111,6 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
             this.filter.onlyTemplate = ( typeof filter.onlyTemplate !== 'undefined' ) ? filter.onlyTemplate : false;
             this.filter.noEmpty = ( typeof filter.noEmpty !== 'undefined' ) ? filter.noEmpty : false;
             this.index = index;
-
-            if ( $model.find( 'model>instance' ).length > 0 ) {
-                //to refer to non-first instance, the instance('id_literal')/path/to/node syntax can be used
-                if ( this.selector !== defaultSelector && this.selector.indexOf( '/' ) !== 0 && that.INSTANCE.test( this.selector ) ) {
-                    this.selector = this.selector.replace( that.INSTANCE, "model > instance#$1" );
-                    return;
-                }
-                //default context is the first instance in the model            
-                this.selector = "model > instance:eq(0) " + this.selector;
-            }
         }
 
         /**
@@ -139,11 +128,17 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
                 $nodes = $model.xfind( this.selector ).filter( '[template]' );
             }
             // default
+<<<<<<< HEAD
             else if ( this.filter.noTemplate === true ) {
                 $nodes = $model.xfind( this.selector ).not( '[template], [template] *' );
             } else {
                 $nodes = $model.xfind( this.selector );
             }
+=======
+            //$nodes = $model.xfind( this.selector);
+            $nodes = $( that.evaluate( this.selector, 'nodes', null, null, true ) );
+
+>>>>>>> 7154824... changed: replace $.xfind with native XPath evaluator
             //noEmpty automatically excludes non-leaf nodes
             if ( this.filter.noEmpty === true ) {
                 $nodes = $nodes.filter( function() {
@@ -532,7 +527,7 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
      * @return {string} instanceID
      */
     FormModel.prototype.getInstanceID = function() {
-        return this.node( ':first>meta>instanceID' ).getVal()[ 0 ];
+        return this.node( '/*/meta/instanceID' ).getVal()[ 0 ];
     };
 
     /**
@@ -541,7 +536,7 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
      * @return {string} instanceID
      */
     FormModel.prototype.getInstanceName = function() {
-        return this.node( ':first>meta>instanceName' ).getVal()[ 0 ];
+        return this.node( '/*/meta/instanceName' ).getVal()[ 0 ];
     };
 
     //index is the index of the node (defined in Nodeset), that the clone should be added immediately after
@@ -573,6 +568,43 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
         }
     };
 
+<<<<<<< HEAD
+=======
+
+    /**
+     * Extracts all templates from the model and stores them in a Javascript object poperties as Jquery collections
+     * @return {[type]} [description]
+     */
+    FormModel.prototype.extractTemplates = function() {
+        var that = this;
+        // in reverse document order to properly deal with nested repeat templates
+        // for now we support both the official namespaced template and the hacked non-namespaced template attributes
+        this.evaluate( '/model/instance[1]/*//*[@template] | /model/instance[1]/*//*[@jr:template]', 'nodes', null, null, true ).reverse().forEach( function( templateEl ) {
+            var $template = $( templateEl );
+            that.templates[ $template.getXPath( 'instance' ) ] = $template.removeAttr( 'template' ).removeAttr( 'jr:template' ).remove();
+        } );
+    };
+
+
+    /**
+     * Finds a template that would contain the provided node path.
+     *
+     * @param  {string} nodePath the /path/to/node
+     * @return {*}               the template (jquery object)
+     */
+    FormModel.prototype.getTemplate = function( nodePath ) {
+        var template = null,
+            that = this;
+
+        nodePath.split( '/' ).some( function( value, index, array ) {
+            template = that.templates[ array.slice( 0, array.length - index ).join( '/' ) ];
+            return template;
+        } );
+
+        return template;
+    };
+
+>>>>>>> 7154824... changed: replace $.xfind with native XPath evaluator
     /**
      * Initialization function that creates <repeat>able data nodes with the defaults from the template if no repeats have been created yet.
      * Strictly speaking this is not "according to the spec" as the user should be asked first whether it has any data for this question
@@ -583,9 +615,19 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
      */
     FormModel.prototype.cloneAllTemplates = function() {
         // in reverse document order to properly deal with nested repeat templates
+<<<<<<< HEAD
         this.$.find( 'model > instance:eq(0) [template]' ).reverse().each( function() {
             if ( $( this ).parent().closest( '[template]' ).length === 0 && $( this ).siblings( $( this ).prop( 'nodeName' ) ).not( '[template]' ).length === 0 ) {
                 $( this ).clone().insertAfter( $( this ) ).find( '*' ).addBack().removeAttr( 'template' );
+=======
+        // for now we support both the official namespaced template and the hacked non-namespaced template attributes
+        this.evaluate( '/model/instance[1]/*//*[@template] | /model/instance[1]/*//*[@jr:template]', 'nodes', null, null, true ).reverse().forEach( function( templateEl ) {
+            var nodeName = templateEl.nodeName,
+                selector = $( templateEl ).getXPath( 'instance' ),
+                ancestorTemplateNodes = that.evaluate( 'ancestor::' + nodeName + '[@template] | ancestor::' + nodeName + '[@jr:template]', 'nodes', selector, 0, true );
+            if ( ancestorTemplateNodes.length === 0 && $( templateEl ).siblings( nodeName ).length === 0 ) {
+                $( templateEl ).clone().insertAfter( $( templateEl ) ).find( '*' ).addBack().removeAttr( 'template' ).removeAttr( 'jr:template' );
+>>>>>>> 7154824... changed: replace $.xfind with native XPath evaluator
             }
         } );
     };
@@ -698,7 +740,11 @@ define( [ 'xpath', 'jquery', 'enketo-js/utils', 'enketo-js/plugins', 'enketo-js/
     FormModel.prototype.shiftRoot = function( expr ) {
         if ( this.hasInstance ) {
             expr = expr.replace( /^(\/(?!model\/)[^\/][^\/\s]*\/)/g, '/model/instance[1]$1' );
+<<<<<<< HEAD
             expr = expr.replace( /([^a-zA-Z0-9\.\]\)\/\*_-])(\/(?!model\/)[^\/][^\/\s]*\/)/g, '$1/model/instance[1]$2' );
+=======
+            expr = expr.replace( /([^a-zA-Z0-9\.\]\)\/\*])(\/(?!model\/)[^\/][^\/\s]*\/)/g, '$1/model/instance[1]$2' );
+>>>>>>> 7154824... changed: replace $.xfind with native XPath evaluator
         }
         return expr;
     };
