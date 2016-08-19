@@ -29,7 +29,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 "tiles": [ "https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png" ],
                 "attribution": "Tiles courtesy of <a href=\"https://hot.openstreetmap.se/\" target=\"_blank\">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>"
             } ],
-            searchSource = "https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}",
+            searchSource = "https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={api_key}",
             googleApiKey = smapConfig.googleApiKey || config.googleApiKey || config.google_api_key,
             iconSingle = L.divIcon( {
             	/*
