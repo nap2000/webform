@@ -877,7 +877,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 };
                 // make the request for the Google Maps script asynchronously
                 apiKeyQueryParam = ( googleApiKey ) ? "&key=" + googleApiKey : "";
-                loadUrl = "https://maps.google.com/maps/api/js?v=3.exp" + apiKeyQueryParam + "&sensor=false&libraries=places&callback=gmapsLoaded";
+                loadUrl = "https://maps.google.com/maps/api/js?v=3.exp" + apiKeyQueryParam + "&libraries=places&callback=gmapsLoaded";
                 require( [ loadUrl ] );
                 // ensure if won't be requested again
                 googleMapsScriptRequested = true;
