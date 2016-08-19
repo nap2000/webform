@@ -18,6 +18,15 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
     function( $, Widget, configStr, L, Q ) {
         "use strict";
 
+        // Start smap - get google api key from server
+        var smapGoogleApiKey;
+        if(typeof smapConfig === "undefined") {
+        	smapGoogleApiKey = $('#googleApiKey').text();
+        } else {
+        	smapGoogleApiKey = smapConfig.googleApiKey;
+        }
+        // end smap
+        
         var googleMapsScriptRequested, googleMapsScriptLoaded,
             pluginName = 'geopicker',
             config = JSON.parse( configStr ),
@@ -30,7 +39,7 @@ define( [ 'jquery', 'enketo-js/Widget', 'text!enketo-config', 'leaflet', 'q' ],
                 "attribution": "Tiles courtesy of <a href=\"https://hot.openstreetmap.se/\" target=\"_blank\">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href=\"https://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>"
             } ],
             searchSource = "https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={api_key}",
-            googleApiKey = smapConfig.googleApiKey || config.googleApiKey || config.google_api_key,
+            googleApiKey = smapGoogleApiKey || config.googleApiKey || config.google_api_key,
             iconSingle = L.divIcon( {
             	/*
                 iconSize: 24,
