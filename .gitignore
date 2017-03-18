@@ -22,3 +22,5 @@ npm-debug.log
 /src/widget/geo-esri/esri/**/*.pdf
 /src/widget/geo-esri/esri/**/*.md
 /src/widget/geo-esri/esri/**/*.json
+
+.idea
