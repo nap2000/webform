@@ -34,6 +34,7 @@ define( function( require, exports, module ) {
     var gui = require('./gui');
     var connection = require('./connection');
     var $ = require( 'jquery' );
+    var ecFm = require('../src/js/file-manager');
     require('bootstrap');
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileManager, startEditData;
@@ -61,7 +62,7 @@ define( function( require, exports, module ) {
         surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
 
         // Open an existing record if we need to
-        if(fileManager.isFileReaderSupported()) {
+        if(fileManager.isSupported()) {
             var recordName = store.getRecord( "draft" );	// Draft identifies the name of a draft record that is being opened
             if(recordName) {
 
@@ -73,6 +74,7 @@ define( function( require, exports, module ) {
 
                 // Set the global instanceID of the restored form so that filePicker can find media
                 var model = new FormModel( record.data );
+                model.init();
                 window.gLoadedInstanceID = model.getInstanceID();
 
                 // Delete the draft key
@@ -88,10 +90,8 @@ define( function( require, exports, module ) {
         /*
          * Initialise file manager if it is supported in this browser
          * The fileSystems API is used to store images prior to upload when operating offline
-         * This API is only available under Chrome. It is also not being standardised and presumably at
-         * some point it will be replaced, by a future cross browser standard.
          */
-        if ( fileManager.isFileStorageSupported() ) {
+        if ( fileManager.isSupported() ) {
             fileManager.init();
             if ( !store || store.getRecordList().length === 0 ) {
                 fileManager.deleteAll();
@@ -219,7 +219,7 @@ define( function( require, exports, module ) {
         var texts, choices, record, saveResult, overwrite,
             count = 0,
             i,
-            media = getMedia(),
+            media = ecFm.getCurrentFiles(),
             recordResult = {};
 
         draft = draft || getDraftStatus();
@@ -288,32 +288,18 @@ define( function( require, exports, module ) {
 
 
             // Save any media
+            var dirname = "/" + form.getInstanceID();
             if ( media.length > 0 ) {
-                fileManager.createDir( gLoadedInstanceID, {
-                    success: function() {
-                        for ( i = 0; i < media.length; i++ ) {
-                            fileManager.saveFile( media[ i ], {
-                                success: function() {
-                                    count++;
-                                    if ( count === media.length ) {
-                                        saveResult = writeRecord( recordName, record, draft );
-                                    }
-                                },
-                                error: function( e ) {
-                                    console.log( "File Save Error" );
-                                    console.log( e );
-                                    count++;
-                                    if ( count === media.length ) {
-                                        saveResult = writeRecord( recordName, record, draft );
-                                    }
-                                }
-                            }, gLoadedInstanceID );
-                        }
-                    },
-                    error: function() {
-                        console.log( "++++++++ Failed to create directory: " + instanceID );
+                fileManager.deleteDir( dirname );        // Remove any existing media
+                for ( i = 0; i < media.length; i++ ) {
+                    fileManager.saveFile( media[ i ], dirname );
+
+                    count++;
+                    if ( count === media.length ) {
+                        saveResult = writeRecord( recordName, record, draft );
                     }
-                } );
+                }
+
             } else {
                 saveResult = writeRecord( recordName, record, draft );
             }
@@ -414,12 +400,11 @@ define( function( require, exports, module ) {
 
     /*
      * Return true if this form can be saved and submitted asynchronously. This is possible if either:
-     *   1) The browser supports FileReader and there are no media files in the survey
-     *   2) or, the browser supports FileStorage
+     *   1) The browser supports FileReader
      */
     function canSaveRecord() {
 
-        if ( fileManager.isFileStorageSupported() || ( fileManager.isFileReaderSupported() && getMedia().length === 0 ) ) {
+        if ( fileManager.isSupported() ) {
             console.log( "Can Save record:" );
             return true;
         } else {
@@ -493,10 +478,11 @@ define( function( require, exports, module ) {
                 instanceID;
 
             if(model) {
+                model.init();
                 instanceID = model.getInstanceID();
             }
 
-            if ( fileManager.isFileStorageSupported() ) {
+            if ( fileManager.isSupported() ) {
                 fileManager.deleteDir( instanceID );
             }
             if ( store ) {
@@ -511,6 +497,7 @@ define( function( require, exports, module ) {
      */
     function getMedia() {
         var $media,
+            $preview,
             elem,
             count,
             i,
@@ -523,13 +510,16 @@ define( function( require, exports, module ) {
 
         $( '[type="file"]' ).each( function() {
             $media = $( this );
+            $preview = $media.parent().find(".file-preview").find("img");
+            name = $media.parent().find(".fake-file-input").text();
             elem = $media[ 0 ];
 
             for ( i = 0; i < elem.files.length; i++ ) {
                 filename = elem.files[ i ].name;
                 mediaArray.push( {
-                    name: filename,
-                    file: elem.files[ i ]
+                    name: name,
+                    file: elem.files[ i ],
+                    dataUrl: $preview.attr("src")
                 } );
             }
         } );
@@ -603,38 +593,24 @@ define( function( require, exports, module ) {
             if ( $fileNodes.length > 0 ) {
                 $fileNodes.each( function() {
 
+
                     fileO = {
-                        newName: $( this ).nodeName,
                         fileName: $( this ).text()
                     };
 
-                    fileManager.retrieveFile( directory, fileO, {
-                        success: function( fileObj ) {
-                            count++;
-                            if ( fileObj ) {
-                                var filename = fileObj.fileName;
-                                media.push( {
-                                    name: filename,
-                                    file: fileObj.file
-                                } );
-                                sizes.push( fileObj.file.size );
-                            } else {
-                                // Smap allow for file not to be found, as we could be be editing an existing record and the image was not replaced
-                                //failedFiles.push( fileO.fileName );
-                            }
-                            if ( count == $fileNodes.length ) {
-                                distributeFiles();
-                            }
-                        },
-                        error: function( e ) {
-                            count++;
-                            //failedFiles.push( fileO.fileName );
-                            console.error( 'Error occured when trying to retrieve ' + fileO.fileName + ' from local filesystem', e );
-                            if ( count == $fileNodes.length ) {
-                                distributeFiles();
-                            }
-                        }
-                    } );
+                    var fileObj = fileManager.retrieveFile( directory, fileO);
+                    count++;
+                    if ( fileObj ) {
+                        media.push( fileObj );
+                        sizes.push( fileObj.size );
+                    } else {
+                        // Smap allow for file not to be found, as we could be be editing an existing record and the image was not replaced
+                        //failedFiles.push( fileO.fileName );
+                    }
+                    if ( count == $fileNodes.length ) {
+                        distributeFiles();
+                    }
+
                 } );
             } else {
                 recordPrepped = basicRecordPrepped( 1, 0 );
@@ -651,7 +627,9 @@ define( function( require, exports, module ) {
                     recordPrepped = basicRecordPrepped( batches.length, k );
                     for ( l = 0; l < batches[ k ].length; l++ ) {
                         fileIndex = batches[ k ][ l ];
-                        recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
+                        //recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
+                        var blob = dataURLtoBlob(media[ fileIndex ].dataUrl);
+                        recordPrepped.formData.append( media[ fileIndex ].fileName, blob );
                     }
                     callbacks.success( recordPrepped );
                 }
@@ -660,6 +638,16 @@ define( function( require, exports, module ) {
                 callbacks.success( recordPrepped );
             }
 
+        }
+
+        // From: http://stackoverflow.com/questions/6850276/how-to-convert-dataurl-to-file-object-in-javascript
+        function dataURLtoBlob(dataurl) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
         }
 
         if ( immediate ) {
@@ -831,7 +819,7 @@ define( function( require, exports, module ) {
 
         //remove filesystem folder after successful submission
         $( document ).on( 'submissionsuccess', function( ev, recordName, instanceID ) {
-            if ( fileManager.isFileStorageSupported() ) {
+            if ( fileManager.isSupported() ) {
                 fileManager.deleteDir( instanceID );
             }
             if ( store ) {

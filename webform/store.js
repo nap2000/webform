@@ -26,7 +26,9 @@ define( function( require, exports, module ) {
     var $ = require( 'jquery' );
 
     "use strict";
-    var RESERVED_KEYS = ['user_locale', '__settings', 'null', '__history', 'Firebug', 'undefined', '__bookmark', '__counter', '__current_server', '__loadLog', '__writetest', '__maxSize'],
+    var RESERVED_KEYS = ['user_locale', '__settings', 'null', '__history', 'Firebug', 'undefined', '__bookmark', '__counter',
+            '__current_server', '__loadLog', '__writetest', '__maxSize'
+        ],
         localStorage = window.localStorage;
 
     // Could be replaced by Modernizr function if Modernizr remains used in final version
@@ -215,7 +217,7 @@ define( function( require, exports, module ) {
 
         for (i = 0; i < localStorage.length; i++) {
             key = localStorage.key(i);
-            if (!isReservedKey(key)) {
+            if (!isReservedKey(key) && !key.startsWith("fs::")) {
 
                 // get record -
                 record = getRecord(key);

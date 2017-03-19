@@ -94,9 +94,13 @@ define( function( require, exports, module ) {
         var file;
         var newFilename;
         var files = [];
+        var $media;
+        var $preview;
 
         // first get any files inside file input elements
         $( 'form.or input[type="file"]' ).each( function() {
+            $media = $( this );                                             // smap
+            $preview = $media.parent().find(".file-preview").find("img");   // smap
             file = this.files[ 0 ];
             if ( file && file.name ) {
                 // Correct file names by adding a unique-ish postfix
@@ -107,7 +111,10 @@ define( function( require, exports, module ) {
                 file = new Blob( [ file ], {
                     type: file.type
                 } );
+
                 file.name = newFilename;
+                file.dataUrl = $preview.attr("src");                         // smap
+
                 files.push( file );
             }
         } );

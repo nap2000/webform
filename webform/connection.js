@@ -26,6 +26,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 define( function( require, exports, module ) {
 //define( [ 'wfapp/gui', 'wfapp/settings', 'wfapp/store', 'jquery' ], function( gui, settings, store, $ ) {
 
+    var gui = require('./gui');
     var store = require('./store');
     var $ = require( 'jquery' );
 
