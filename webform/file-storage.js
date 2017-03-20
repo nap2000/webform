@@ -118,12 +118,11 @@ define( function( require, exports, module ) {
      * Deletes all files stored (for a subsubdomain)
      * @param {Function=} callbackComplete  function to call when complete
      */
-    function deleteAll (callbackComplete) {
+    function deleteAllAttachments () {
 
         console.log("delete all local storage");
 
         for (var key in localStorage){
-            console.log("Storage item: " + key);
             if(key.startsWith(FM_STORAGE_PREFIX)) {
                 console.log("Delete item: " + key);
                 localStorage.removeItem(key);
@@ -184,8 +183,7 @@ define( function( require, exports, module ) {
             console.log("delete directory: " + name);
 
             for (var key in localStorage) {
-                console.log("Storage item: " + key);
-                if (key.startsWith(FM_STORAGE_PREFIX + name)) {
+                if (key.startsWith(FM_STORAGE_PREFIX + "/" + name)) {
                     console.log("Delete item: " + key);
                     localStorage.removeItem(key);
                 }
@@ -295,7 +293,7 @@ define( function( require, exports, module ) {
         isWaitingForPermissions: isWaitingForPermissions,
         init: init,
         getCurrentFiles: getCurrentFiles,
-        deleteAll: deleteAll,
+        deleteAllAttachments: deleteAllAttachments,
         deleteDir: deleteDir,
         getCurrentQuota: getCurrentQuota,
         getCurrentQuotaUsed: getCurrentQuotaUsed,

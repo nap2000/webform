@@ -60,6 +60,7 @@ define( function( require, exports, module ) {
         store = options.recordStore || null;
 
         surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
+        surveyData.instanceStr = surveyData.instanceStrToEdit || null;
 
         // Open an existing record if we need to
         if(fileManager.isSupported()) {
@@ -68,9 +69,11 @@ define( function( require, exports, module ) {
 
                 var record = store.getRecord( recordName );
                 surveyData.instanceStrToEdit = record.data;
-                surveyData.instanceStrToEditId = record.instanceStrToEditId; // d1504
-                surveyData.assignmentId = record.assignmentId;				 // d1504
-                surveyData.key = record.accessKey;							 // d1504
+                surveyData.instanceStr = record.data;  // name used by enketo
+                surveyData.instanceStrToEditId = record.instanceStrToEditId;
+                surveyData.assignmentId = record.assignmentId;
+                surveyData.key = record.accessKey;
+                surveyData.submitted = false;
 
                 // Set the global instanceID of the restored form so that filePicker can find media
                 var model = new FormModel( record.data );
@@ -84,7 +87,7 @@ define( function( require, exports, module ) {
             }
         }
 
-        surveyData.instanceStr = surveyData.instanceStrToEdit;  // renamed by enketo
+
 
         // Initialise network connection
         connection.init( true, store );
@@ -96,7 +99,7 @@ define( function( require, exports, module ) {
         if ( fileManager.isSupported() ) {
             fileManager.init();
             if ( !store || store.getRecordList().length === 0 ) {
-                fileManager.deleteAll();
+                fileManager.deleteAllAttachments();
             }
         }
 
@@ -110,7 +113,7 @@ define( function( require, exports, module ) {
         }
 
         if ( loadErrors.length > 0 ) {
-            purpose = ( surveyData.instanceStrToEdit ) ? 'to edit data' : 'for data entry';
+            purpose = ( surveyData.instanceStr ) ? 'to edit data' : 'for data entry';
             gui.showLoadErrors( loadErrors,
                 'It is recommended <strong>not to use this form</strong> ' +
                 purpose + ' until this is resolved.' );
@@ -491,6 +494,9 @@ define( function( require, exports, module ) {
                 store.removeRecord( recordName );
             }
         }
+
+        // Just to be sure delete all attachments
+        fileManager.deleteAllAttachments();
 
     }
 
