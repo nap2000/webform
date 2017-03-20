@@ -67,7 +67,6 @@ define( function( require, exports, module ) {
             if(recordName) {
 
                 var record = store.getRecord( recordName );
-                surveyData.instanceStr = record.data;
                 surveyData.instanceStrToEdit = record.data;
                 surveyData.instanceStrToEditId = record.instanceStrToEditId; // d1504
                 surveyData.assignmentId = record.assignmentId;				 // d1504
@@ -84,6 +83,8 @@ define( function( require, exports, module ) {
                 window.gLoadedInstanceID = undefined;
             }
         }
+
+        surveyData.instanceStr = surveyData.instanceStrToEdit;  // renamed by enketo
 
         // Initialise network connection
         connection.init( true, store );

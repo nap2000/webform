@@ -17,6 +17,7 @@ define( function( require, exports, module ) {
     var Promise = require( 'lie' );
     var $ = require( 'jquery' );
     var utils = require( './utils' );
+    var store = require( '../../webform/file-storage');
 
     var supported = typeof FileReader !== 'undefined',
         notSupportedAdvisoryMsg = '';
@@ -59,11 +60,21 @@ define( function( require, exports, module ) {
     function getFileUrl( subject ) {
         return new Promise( function( resolve, reject ) {
             var error, reader;
-
             if ( !subject ) {
                 resolve( null );
             } else if ( typeof subject === 'string' ) {
-                // TODO obtain from storage
+                // start smap
+                var dirname = window.gLoadedInstanceID;
+                var file = {
+                    fileName: subject
+                }
+                store.retrieveFile(dirname, file);   // Attempt to get a saved file first
+                if (file.dataUrl) {
+                    resolve(file.dataUrl);
+                } else {
+                    resolve(location.origin + "/" + subject);		// URL must be from the server
+                }
+                // end smap
             } else if ( typeof subject === 'object' ) {
                 if ( _isTooLarge( subject ) ) {
                     error = new Error( 'File too large (max ' +

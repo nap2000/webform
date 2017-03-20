@@ -74,44 +74,6 @@ define( function( require, exports, module ) {
     }
 
     /**
-     * Obtains a url that can be used to show a preview of the file when used
-     * as a src attribute.
-     *
-     * @param  {?string|Object} subject File or filename
-     * @return {[type]}         promise url string or rejection with Error
-     */
-    function getFileUrl(subject) {
-        var error, reader,
-            deferred = Q.defer();
-
-        if (!subject) {
-            deferred.resolve(null);
-        } else if (typeof subject === 'string') {
-            deferred.resolve(location.origin + "/" + subject);		// Smap show existing URL
-        } else if (typeof subject === 'object') {
-            if (_isTooLarge(subject)) {
-                error = new Error('File too large (max ' +
-                    ( Math.round(( _getMaxSize() * 100 ) / ( 1024 * 1024 )) / 100 ) +
-                    ' Mb)');
-                console.log("Error: " + error);
-                deferred.reject(error);
-            } else {
-                reader = new FileReader();
-                reader.onload = function (e) {
-                    deferred.resolve(e.target.result);
-                };
-                reader.onerror = function (e) {
-                    deferred.reject(error);
-                };
-                reader.readAsDataURL(subject);
-            }
-        } else {
-            deferred.reject(new Error('Unknown error occurred'));
-        }
-        return deferred.promise;
-    }
-
-    /**
      * Obtain files currently stored in file input elements of open record
      * @return {[File]} array of files
      */
@@ -305,8 +267,7 @@ define( function( require, exports, module ) {
     /**
      * Obtains specified files from a specified directory (asynchronously)
      * @param {string}                              directoryName   directory to look in for files
-     * @param {{newName: string, fileName: string}} fileO           object of file properties
-     * @param {{success:Function, error:Function}}  callbacks       callback functions (error, and success)
+     * @param {{newName: string, fileName: string}} file           object of file properties
      */
     function retrieveFile(dirname, file) {
 
@@ -319,35 +280,8 @@ define( function( require, exports, module ) {
             file.size = 0;
         }
         return file;
-        /*
-        var retrievedFile = {},
-            pathPrefix = _getDirPrefix(directoryName),
-            callbacksForFileEntry = {
-                success: function (fileEntry) {
-                    console.log("retrieveFile success");
-                    console.log(fileEntry);
-                    if (fileEntry) {
-                        retrieveFileFromFileEntry(fileEntry, {
-                            success: function (file) {
-                                console.debug('retrieved file! ', file);
-                                fileO.file = file;
-                                callbacks.success(fileO);
-                            },
-                            error: callbacks.error
-                        });
-                    } else {
-                        // Smap allow for the file entry not being found
-                        callbacks.success(null);
-                    }
-                },
-                error: callbacks.error
-            };
 
-        retrieveFileEntry(pathPrefix + fileO.fileName, {
-            success: callbacksForFileEntry.success,
-            error: callbacksForFileEntry.error
-        });
-        */
+
     };
 
 
@@ -360,7 +294,6 @@ define( function( require, exports, module ) {
         isSupported: isSupported,
         isWaitingForPermissions: isWaitingForPermissions,
         init: init,
-        getFileUrl: getFileUrl,
         getCurrentFiles: getCurrentFiles,
         deleteAll: deleteAll,
         deleteDir: deleteDir,
