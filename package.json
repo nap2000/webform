@@ -1,8 +1,8 @@
 {
-    "name": "enketo-core",
-    "description": "Extensible Enketo core containing the form logic engine and responsive form styling",
-    "homepage": "https://enketo.org",
-    "version": "4.22.1",
+    "name": "webform",
+    "description": "A fork of Enketo Smart Paper that integrates with Smap",
+    "homepage": "http://www.smap.com.au",
+    "version": "2.0.0",
     "license": "Apache-2.0",
     "os": [
         "darwin",
@@ -13,7 +13,8 @@
         "enketo",
         "OpenRosa",
         "ODK",
-        "XForms"
+        "XForms",
+        "Smap"
     ],
     "repository": {
         "type": "git",
