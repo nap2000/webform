@@ -629,7 +629,7 @@ define( function( require, exports, module ) {
                         fileIndex = batches[ k ][ l ];
                         //recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
                         var blob = dataURLtoBlob(media[ fileIndex ].dataUrl);
-                        recordPrepped.formData.append( media[ fileIndex ].fileName, blob );
+                        recordPrepped.formData.append( media[ fileIndex ].fileName, blob, media[ fileIndex ].fileName );
                     }
                     callbacks.success( recordPrepped );
                 }

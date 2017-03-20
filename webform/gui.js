@@ -30,6 +30,7 @@ define( function( require, exports, module ) {
 
     var $ = require( 'jquery' );
     var plugin = require('./plugin');
+    var printForm = require('../src/js/print');
 
     var nav, pages, updateStatus, feedbackBar,
         supportLink = '<a href="mailto:' + settings[ 'supportEmail' ] + '">' + settings[ 'supportEmail' ] + '</a>';
