@@ -932,7 +932,7 @@ define( function( require, exports, module ) {
              * repeats such as with /path/to/repeat[3]/node, /path/to/repeat[position() = 3]/node or indexed-repeat(/path/to/repeat/node /path/to/repeat, 3)
              * so we add those (in a very inefficient way)
              **/
-            if ( $repeat ) {
+            if ( $repeat && $repeat.length ) {     // smap add length
                 // the non-repeat fields have to be added too, e.g. to update a calculated item with count(to/repeat/node) at the top level
                 $collection = this.$nonRepeats[ attr ]
                     .add( $repeat );
