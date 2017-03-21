@@ -11,6 +11,8 @@ define( function( require, exports, module ) {
     var enable;
     var disable;
     var destroy;
+    var initialized = false;
+    var hasInitialized;
     var _getElements;
     var _instantiate;
     var _setLangChangeListener;
@@ -42,6 +44,12 @@ define( function( require, exports, module ) {
         widgets.forEach( function( widget ) {
             _instantiate( widget, $group );
         } );
+
+        initialized = true;
+    };
+
+    hasInitialized = function() {
+        return initialized;
     };
 
     /**
@@ -178,7 +186,7 @@ define( function( require, exports, module ) {
      * @param {jQuery}         $els   The jQuery collection of elements that the widget has been instantiated on.
      */
     _setOptionChangeListener = function( widget, $els ) {
-        if ( $els.length > 0 && $els.prop( 'nodeName' ).toLowerCase() === 'select' ) {
+        if ( $els.length > 0 && widget.list ) {
             $els.on( 'changeoption', function() {
                 // update (itemselect) picker on which event was triggered because the options changed
                 $( this )[ widget.name ]( 'update' );
@@ -207,7 +215,8 @@ define( function( require, exports, module ) {
         init: init,
         enable: enable,
         disable: disable,
-        destroy: destroy
+        destroy: destroy,
+        hasInitialized: hasInitialized
     };
 
 } );

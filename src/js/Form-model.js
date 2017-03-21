@@ -98,6 +98,10 @@ define( function( require, exports, module ) {
                 }
                 instanceDoc.appendChild( $.parseXML( instance.xmlStr ).firstChild );
             } );
+
+            // TODO: in the future, we should search for jr://instance/session and 
+            // populate that one. This is just moving in that direction to implement preloads.
+            this.createSession( '__session', this.data.session );
         } catch ( e ) {
             console.error( 'parseXML error' );
             this.loadErrors.push( 'Error trying to parse XML ' + id + '. ' + e.message );
@@ -111,7 +115,7 @@ define( function( require, exports, module ) {
                 this.rootElement = this.xml.querySelector( 'instance > *' ) || this.xml.documentElement;
                 this.setNamespaces();
 
-                // check if instanceID is present
+                // Check if instanceID is present
                 if ( !this.getMetaNode( 'instanceID' ).get().get( 0 ) ) {
                     that.loadErrors.push( 'Invalid primary instance. Missing instanceID node.' );
                 }
@@ -143,6 +147,41 @@ define( function( require, exports, module ) {
         }
 
         return this.loadErrors;
+    };
+
+    FormModel.prototype.createSession = function( id, sessObj ) {
+        var instance;
+        var session;
+        var model = this.xml.querySelector( 'model' );
+        var fixedProps = [ 'deviceid', 'username', 'email', 'phonenumber', 'simserial', 'subscriberid' ];
+        if ( !model ) {
+            return;
+        }
+
+        sessObj = ( typeof sessObj === 'object' ) ? sessObj : {};
+        instance = model.querySelector( 'instance[id="' + id + '"]' );
+
+        if ( !instance ) {
+            instance = $.parseXML( '<instance id="' + id + '"/>' ).documentElement;
+            this.xml.adoptNode( instance );
+            model.appendChild( instance );
+        }
+
+        // fixed: /sesssion/context properties
+        fixedProps.forEach( function( prop ) {
+            sessObj[ prop ] = sessObj[ prop ] || utils.readCookie( '__enketo_meta_' + prop ) || prop + ' not found';
+        } );
+
+        session = $.parseXML( '<session><context>' +
+            fixedProps.map( function( prop ) {
+                return '<' + prop + '>' + sessObj[ prop ] + '</' + prop + '>';
+            } ) +
+            '</context></session>' ).documentElement;
+
+        // TODO: custom properties could be added to /session/user/data or to /session/data
+
+        this.xml.adoptNode( session );
+        instance.appendChild( session );
     };
 
     /**
@@ -1259,6 +1298,7 @@ define( function( require, exports, module ) {
         var curVal;
         var /**@type {string}*/ newVal;
         var updated;
+        var customData;
 
         curVal = this.getVal()[ 0 ];
 
@@ -1277,7 +1317,9 @@ define( function( require, exports, module ) {
             // then return validation result
             updated = this.getClosestRepeat();
             updated.nodes = [ $target.prop( 'nodeName' ) ];
-            //updated.file = ( xmlDataType === 'binary' ) ? newVal.toString() : false;
+
+            customData = this.model.getUpdateEventData( $target.get( 0 ), xmlDataType );
+            updated = ( customData ) ? $.extend( {}, updated, customData ) : updated;
 
             this.model.$events.trigger( 'dataupdate', updated );
 
@@ -1577,7 +1619,7 @@ define( function( require, exports, module ) {
                     // Comply with XML schema int type that has no special values. '' is our only option.
                     return '';
                 }
-                return Math.floor( num );
+                return ( num >= 0 ) ? Math.floor( num ) : -Math.floor( Math.abs( num ) );
             },
             validate: function( x ) {
                 var num = Number( x );
@@ -1592,18 +1634,25 @@ define( function( require, exports, module ) {
                 return ( segments && segments.length === 6 ) ? ( new Date( Number( segments[ 1 ] ), Number( segments[ 3 ] ) - 1, Number( segments[ 5 ] ) ).toString() !== 'Invalid Date' ) : false;
             },
             convert: function( x ) {
-                var pattern = /([0-9]{4})([\-]|[\/])([0-9]{2})([\-]|[\/])([0-9]{2})/,
-                    segments = pattern.exec( x ),
+                var pattern = /([0-9]{4})([\-]|[\/])([0-9]{2})([\-]|[\/])([0-9]{2})/;
+                var segments;
+                var date;
+
+                if ( utils.isNumber( x ) ) {
+                    // The XPath expression "2012-01-01" + 2 returns a number of days in XPath.
+                    date = new Date( x * 24 * 60 * 60 * 1000 );
+                } else {
                     date = new Date( x );
-                if ( new Date( x ).toString() === 'Invalid Date' ) {
-                    //this code is really only meant for the Rhino and PhantomJS engines, in browsers it may never be reached
-                    if ( segments && Number( segments[ 1 ] ) > 0 && Number( segments[ 3 ] ) >= 0 && Number( segments[ 3 ] ) < 12 && Number( segments[ 5 ] ) < 32 ) {
-                        date = new Date( Number( segments[ 1 ] ), ( Number( segments[ 3 ] ) - 1 ), Number( segments[ 5 ] ) );
+                    if ( date.toString() === 'Invalid Date' ) {
+                        segments = pattern.exec( x );
+                        //this code is really only meant for the Rhino and PhantomJS engines, in browsers it may never be reached
+                        if ( segments && Number( segments[ 1 ] ) > 0 && Number( segments[ 3 ] ) >= 0 && Number( segments[ 3 ] ) < 12 && Number( segments[ 5 ] ) < 32 ) {
+                            date = new Date( Number( segments[ 1 ] ), ( Number( segments[ 3 ] ) - 1 ), Number( segments[ 5 ] ) );
+                        }
                     }
                 }
-                //date.setUTCHours(0,0,0,0);
-                //return date.toUTCString();//.getUTCFullYear(), datetime.getUTCMonth(), datetime.getUTCDate());
-                return new Date( x ).toString() === 'Invalid Date' ?
+
+                return date.toString() === 'Invalid Date' ?
                     '' : date.getUTCFullYear().toString().pad( 4 ) + '-' + ( date.getUTCMonth() + 1 ).toString().pad( 2 ) + '-' + date.getUTCDate().toString().pad( 2 );
             }
         },
@@ -1617,17 +1666,19 @@ define( function( require, exports, module ) {
                 var patternCorrect = /([0-9]{4}\-[0-9]{2}\-[0-9]{2})([T]|[\s])([0-9]){2}:([0-9]){2}([0-9:.]*)(\+|\-)([0-9]{2}):([0-9]{2})$/;
                 var patternAlmostCorrect = /([0-9]{4}\-[0-9]{2}\-[0-9]{2})([T]|[\s])([0-9]){2}:([0-9]){2}([0-9:.]*)(\+|\-)([0-9]{2})$/;
 
-                /* 
-                 * If the format is correct, or almost correct but needs a small correction for JavaScript to handle it,
-                 * do not risk changing the time zone by calling toISOLocalString()
-                 */
-                if ( new Date( x ).toString() !== 'Invalid Date' && patternCorrect.test( x ) ) {
+                if ( utils.isNumber( x ) ) {
+                    // The XPath expression "2012-01-01T01:02:03+01:00" + 2 returns a number of days in XPath.
+                    date = new Date( x * 24 * 60 * 60 * 1000 );
+                } else if ( new Date( x ).toString() !== 'Invalid Date' && patternCorrect.test( x ) ) {
+                    // Do not risk changing the time zone by calling toISOLocalString()
                     return x;
-                }
-                if ( new Date( x ).toString() === 'Invalid Date' && patternAlmostCorrect.test( x ) ) {
+                } else if ( new Date( x ).toString() === 'Invalid Date' && patternAlmostCorrect.test( x ) ) {
+                    // Do not risk changing the time zone by calling toISOLocalString()
                     return x + ':00';
+                } else {
+                    date = new Date( x );
                 }
-                date = new Date( x );
+
                 return ( date.toString() !== 'Invalid Date' ) ? date.toISOLocalString() : '';
             }
         },
@@ -1710,6 +1761,9 @@ define( function( require, exports, module ) {
             }
         }
     };
+
+    // Placeholder function meant to be overwritten
+    FormModel.prototype.getUpdateEventData = function( node, type ) {};
 
     // Placeholder function meant to be overwritten
     FormModel.prototype.getValidationEventData = function( node, type ) {};

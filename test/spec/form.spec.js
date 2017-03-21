@@ -3,11 +3,12 @@ var Form = require( '../../src/js/Form' );
 var $ = require( 'jquery' );
 var forms = require( '../mock/forms' );
 
-var loadForm = function( filename, editStr, options ) {
+var loadForm = function( filename, editStr, options, session ) {
     var strings = forms[ filename ];
     return new Form( strings.html_form, {
         modelStr: strings.xml_model,
-        instanceStr: editStr
+        instanceStr: editStr,
+        session: session || {}
     }, options );
 };
 
@@ -133,6 +134,23 @@ describe( 'Preload and MetaData functionality', function() {
         [ '/dynamic-default/two', '/dynamic-default/four', '/dynamic-default/six' ].forEach( function( path ) {
             expect( form.getView().$.find( '[name="' + path + '"]' ).val().length > 9 ).toBe( true );
             expect( form.getModel().node( path ).getVal()[ 0 ].length > 9 ).toBe( true );
+        } );
+    } );
+
+    it( 'some session context can be passed to the data.session property when instantiating form', function() {
+        var session = {
+            deviceid: 'a',
+            username: 'b',
+            email: 'c',
+            phonenumber: 'd',
+            simserial: 'e',
+            subscriberid: 'f'
+        };
+        form = loadForm( 'preload.xml', undefined, undefined, session );
+        form.init();
+
+        [ 'deviceid', 'username', 'email', 'phonenumber', 'simserial', 'subscriberid' ].forEach( function( prop ) {
+            expect( form.getModel().node( '/preload/' + prop ).getVal()[ 0 ] ).toEqual( session[ prop ] );
         } );
     } );
 
@@ -332,6 +350,37 @@ describe( 'repeat functionality', function() {
                 '<immunization_info enk:ordinal="2"><vaccine>Flu</vaccine><date/></immunization_info>' +
                 '<immunization_info enk:ordinal="3"><vaccine>Polio</vaccine><date/></immunization_info>' +
                 '</kids_details>' );
+        } );
+    } );
+
+    describe( 'supports repeat count', function() {
+        it( 'to dynamically remove/add repeats', function() {
+            var f = loadForm( 'repeat-count.xml' );
+            var rep = '.or-repeat[name="/dynamic-repeat-count/rep"]';
+            var cnt = '[name="/dynamic-repeat-count/count"]';
+            var $form;
+            f.init();
+            $form = f.getView().$;
+            $model = f.getModel().$;
+            // check that repeat count is evaluated upon load for default values
+            expect( $form.find( rep ).length ).toEqual( 2 );
+            expect( $model.find( 'rep' ).length ).toEqual( 2 );
+            // increase
+            $form.find( cnt ).val( 10 ).trigger( 'change' );
+            expect( $form.find( rep ).length ).toEqual( 10 );
+            expect( $model.find( 'rep' ).length ).toEqual( 10 );
+            // decrease
+            $form.find( cnt ).val( 5 ).trigger( 'change' );
+            expect( $form.find( rep ).length ).toEqual( 5 );
+            expect( $model.find( 'rep' ).length ).toEqual( 5 );
+            // decrease too much
+            $form.find( cnt ).val( 0 ).trigger( 'change' );
+            expect( $form.find( rep ).length ).toEqual( 1 );
+            expect( $model.find( 'rep' ).length ).toEqual( 1 );
+            // decrease way too much
+            $form.find( cnt ).val( -10 ).trigger( 'change' );
+            expect( $form.find( rep ).length ).toEqual( 1 );
+            expect( $model.find( 'rep' ).length ).toEqual( 1 );
         } );
     } );
 

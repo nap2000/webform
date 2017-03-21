@@ -3,10 +3,68 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-[Unreleased] 
+[4.27.0] - 2017-03-20
+---------------------
+##### Changed
+- Reduced vertical whitespace between label and radiobuttons/checkboxes.
+
+##### Added
+- Safari and iOS browser support for autocomplete widget.
+- Ability to disable page validation (default is unchanged).
+
+[4.26.2] - 2017-03-16
+---------------------
+##### Fixed
+- Exception occurs when forms contains no textarea (multiline text widget).
+- Repeat count updates in pages mode causes unhelpful page flipping behaviour if the repeat has _field-list_ appearance.
+- Negative decimal numbers not converted correctly to integers.
+
+[4.26.1] - 2017-03-10
+---------------------
+##### Fixed
+- Styling issues with readonly questions.
+- Grid theme does not print complete textarea if text requires scrolling.
+
+[4.26.0] - 2017-03-09
+---------------------
+##### Added
+- Ability to add custom data to dataupdate event.
+
+[4.25.0] - 2017-03-07
+---------------------
+##### Added
+- Ability to pass session properties (metadata) when instantiating form.
+- Exp10() and log() functions.
+
+[4.24.2] - 2017-03-03
+---------------------
+##### Fixed
+- XPath number results not converted to date and datetime when stored.
+
+[4.24.1] - 2017-03-02
+---------------------
+##### Fixed
+- Widgets in cloned repeats not re-initialized.
+
+[4.24.0] - 2017-03-02
+---------------------
+##### Added
+- Support for truly dynamic repeat count (jr:count attribute).
+
+##### Fixed
+- Select desktop picker options cannot be selected by pressing spacebar.
+- Accessibility issue with file input picker (tab traversal, focus).
+
+[4.23.0] - 2017-03-01
+---------------------
+##### Added
+- Autocomplete widget for all browser except: Safari and all browsers on iOS.
+
+[4.22.2] - 2017-02-23 
 ---------------------
 ##### Fixed
 - jr:choice-name() inside a repeat produces incorrect results.
+- Media labels in itemsets are not shown.
 
 [4.22.1] - 2017-02-21
 ---------------------
@@ -22,8 +80,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [4.21.0] - 2017-02-10
 ---------------------
 ##### Added
-- a validateContinuously mode,
-- send _validated.enketo_ and _invalidated.enketo_ events with extensible/custom data
+- A validateContinuously mode.
+- Send _validated.enketo_ and _invalidated.enketo_ events with extensible/custom data.
 
 [4.20.0] - 2017-02-03
 ---------------------
