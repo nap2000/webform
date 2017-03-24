@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
+if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
+    var define = function( factory ) {
+        factory( require, exports, module );
+    };
+}
 
-define( [], function() {
+//define( [], function() {
+define( function( require, exports, module ) {
     "use strict";
     var queryParams = _getAllQueryParams(),
         evaluatedSettings = [],

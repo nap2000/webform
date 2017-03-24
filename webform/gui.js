@@ -28,6 +28,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 define( function( require, exports, module ) {
     "use strict";
 
+    var settings = require('./settings');
     var $ = require( 'jquery' );
     var plugin = require('./plugin');
     var printForm = require('../src/js/print');
