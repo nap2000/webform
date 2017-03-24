@@ -394,7 +394,7 @@ define( function( require, exports, module ) {
      */
     function closeAfterSending() {
 
-        if ( surveyData.instanceStrToEdit || surveyData.assignmentId ) {
+        if ( surveyData.assignmentId ) {
             console.log( "Close after saving" );
             return true;
         } else {
