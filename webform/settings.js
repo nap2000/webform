@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
+if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+    var define = function (factory) {
+        factory(require, exports, module);
     };
 }
 
 //define( [], function() {
-define( function( require, exports, module ) {
+define(function (require, exports, module) {
     "use strict";
     var queryParams = _getAllQueryParams(),
         evaluatedSettings = [],
-        settingsMap = [ {
+        settingsMap = [{
             q: 'return',
             s: 'returnURL'
         }, {
@@ -67,25 +67,25 @@ define( function( require, exports, module ) {
         }, {
             q: 'source',
             s: 'source'
-        } ];
+        }];
 
-    settingsMap.forEach( function( obj, i ) {
-        if ( queryParams[ obj.q ] || ( typeof settings !== 'undefined' && settings[ obj.q ] ) ) {
-            evaluatedSettings[ obj.s ] = queryParams[ obj.q ] || settings[ obj.q ] || null;
+    settingsMap.forEach(function (obj, i) {
+        if (queryParams[obj.q] || ( typeof settings !== 'undefined' && settings[obj.q] )) {
+            evaluatedSettings[obj.s] = queryParams[obj.q] || settings[obj.q] || null;
         }
-    } );
+    });
 
     function _getAllQueryParams() {
         var val, processedVal,
-            query = window.location.search.substring( 1 ),
-            vars = query.split( "&" ),
+            query = window.location.search.substring(1),
+            vars = query.split("&"),
             params = {};
-        for ( var i = 0; i < vars.length; i++ ) {
-            var pair = vars[ i ].split( "=" );
-            if ( pair[ 0 ].length > 0 ) {
-                val = decodeURIComponent( pair[ 1 ] );
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0].length > 0) {
+                val = decodeURIComponent(pair[1]);
                 processedVal = ( val === 'true' ) ? true : ( val === 'false' ) ? false : val;
-                params[ pair[ 0 ] ] = processedVal;
+                params[pair[0]] = processedVal;
             }
         }
 
@@ -93,4 +93,4 @@ define( function( require, exports, module ) {
     }
 
     return evaluatedSettings;
-} );
+});

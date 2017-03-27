@@ -25,7 +25,7 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 }
 //define( [ 'Modernizr', 'wfapp/settings', 'wfapp/print', 'jquery', 'wfapp/plugin', ], function( Modernizr, settings, printForm, $ ) {
 
-define( function( require, exports, module ) {
+define(function (require, exports, module) {
     "use strict";
 
     var settings = require('./settings');

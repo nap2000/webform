@@ -18,35 +18,35 @@
  * Deals with the main high level survey controls: saving, submitting etc.
  */
 
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
+if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+    var define = function (factory) {
+        factory(require, exports, module);
     };
 }
 
 //define( [ 'wfapp/gui', 'wfapp/connection', 'wfapp/settings',  'wfapp/Blob', 'jquery', 'bootstrap' ],
 //    function( gui, connection, settings,  Blob, vkbeautify, $ ) {
-define( function( require, exports, module ) {
+define(function (require, exports, module) {
     "use strict";
 
     var Form = require('../src/js/Form');
     var FormModel = require('../src/js/Form-model');
     var gui = require('./gui');
     var connection = require('./connection');
-    var $ = require( 'jquery' );
+    var $ = require('jquery');
     var ecFm = require('../src/js/file-manager');
     require('bootstrap');
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileManager, startEditData;
 
-    function init( selector, options ) {
+    function init(selector, options) {
         var loadErrors, purpose, originalUrl, recordName;
 
         /*
          * Add check prior to the user leaving the screen
          */
-        window.onbeforeunload = function() {
-            if(hasChanged()) {
+        window.onbeforeunload = function () {
+            if (hasChanged()) {
                 return "You have unsaved changes. Are you sure you want to leave?";
             }
         };
@@ -63,11 +63,11 @@ define( function( require, exports, module ) {
         surveyData.instanceStr = surveyData.instanceStrToEdit || null;
 
         // Open an existing record if we need to
-        if(fileManager.isSupported()) {
-            var recordName = store.getRecord( "draft" );	// Draft identifies the name of a draft record that is being opened
-            if(recordName) {
+        if (fileManager.isSupported()) {
+            var recordName = store.getRecord("draft");	// Draft identifies the name of a draft record that is being opened
+            if (recordName) {
 
-                var record = store.getRecord( recordName );
+                var record = store.getRecord(recordName);
                 surveyData.instanceStrToEdit = record.data;
                 surveyData.instanceStr = record.data;  // name used by enketo
                 surveyData.instanceStrToEditId = record.instanceStrToEditId;
@@ -76,7 +76,7 @@ define( function( require, exports, module ) {
                 surveyData.submitted = false;
 
                 // Set the global instanceID of the restored form so that filePicker can find media
-                var model = new FormModel( record.data );
+                var model = new FormModel(record.data);
                 model.init();
                 window.gLoadedInstanceID = model.getInstanceID();
 
@@ -88,47 +88,46 @@ define( function( require, exports, module ) {
         }
 
 
-
         // Initialise network connection
-        connection.init( true, store );
+        connection.init(true, store);
 
         /*
          * Initialise file manager if it is supported in this browser
          * The fileSystems API is used to store images prior to upload when operating offline
          */
-        if ( fileManager.isSupported() ) {
+        if (fileManager.isSupported()) {
             fileManager.init();
-            if ( !store || store.getRecordList().length === 0 ) {
+            if (!store || store.getRecordList().length === 0) {
                 fileManager.deleteAllAttachments();
             }
         }
 
         // Create the form
         formSelector = 'form.or:eq(0)';
-        form = new Form( formSelector, surveyData );
+        form = new Form(formSelector, surveyData);
         var loadErrors = form.init();
 
-        if ( recordName ) {
-            form.setRecordName( recordName );
+        if (recordName) {
+            form.setRecordName(recordName);
         }
 
-        if ( loadErrors.length > 0 ) {
+        if (loadErrors.length > 0) {
             purpose = ( surveyData.instanceStr ) ? 'to edit data' : 'for data entry';
-            gui.showLoadErrors( loadErrors,
+            gui.showLoadErrors(loadErrors,
                 'It is recommended <strong>not to use this form</strong> ' +
-                purpose + ' until this is resolved.' );
+                purpose + ' until this is resolved.');
         }
 
         $form = form.getView().$;
-        $formprogress = $( '.form-progress' );
+        $formprogress = $('.form-progress');
 
         setEventHandlers();
 
         // Save current data so we can check if there have been changes
-        startEditData = form.getDataStr( true, true );
+        startEditData = form.getDataStr(true, true);
 
-        if ( store ) {
-            $( '.side-slider' ).append(
+        if (store) {
+            $('.side-slider').append(
                 '<h3>Queue</h3>' +
                 '<p>Records are stored inside your browser until they have been uploaded ' +
                 '(even if you turn off your computer or go offline).</p>' +
@@ -141,17 +140,17 @@ define( function( require, exports, module ) {
                 '</div>' +
                 '<p>Queued records, except those marked as <em>draft</em> ( <span class="glyphicon glyphicon-pencil"></span> ), ' +
                 'are uploaded <strong>automatically</strong>, in the background, every 5 minutes when the web page is open ' +
-                'and an Internet connection is available. To force an upload in between automatic attempts, click Upload.</p>' );
+                'and an Internet connection is available. To force an upload in between automatic attempts, click Upload.</p>');
             //trigger fake save event to update formlist in slider
-            $form.trigger( 'save', JSON.stringify( store.getRecordList() ) );
+            $form.trigger('save', JSON.stringify(store.getRecordList()));
         }
-        if ( options.submitInterval ) {
-            window.setInterval( function() {
+        if (options.submitInterval) {
+            window.setInterval(function () {
                 submitQueue();
-            }, options.submitInterval );
-            window.setTimeout( function() {
+            }, options.submitInterval);
+            window.setTimeout(function () {
                 submitQueue();
-            }, 5 * 1000 );
+            }, 5 * 1000);
         }
     }
 
@@ -159,59 +158,59 @@ define( function( require, exports, module ) {
      * Controller function to reset to a blank form. Checks whether all changes have been saved first
      * @param  {boolean=} confirmed Whether unsaved changes can be discarded and lost forever
      */
-    function resetForm( confirmed ) {
+    function resetForm(confirmed) {
         var message, choices;
-        if ( !confirmed && form.getEditStatus() ) {
+        if (!confirmed && form.getEditStatus()) {
             message = 'There are unsaved changes, would you like to continue <strong>without</strong> saving those?';
             choices = {
-                posAction: function() {
-                    resetForm( true );
+                posAction: function () {
+                    resetForm(true);
                 }
             };
-            gui.confirm( message, choices );
+            gui.confirm(message, choices);
         } else {
-            setDraftStatus( false );
-            updateActiveRecord( null );
+            setDraftStatus(false);
+            updateActiveRecord(null);
             form.resetView();
-            form = new Form( 'form.or:eq(0)', originalSurveyData );
+            form = new Form('form.or:eq(0)', originalSurveyData);
             //window.form = form; DEBUG
             form.init();
             $form = form.getView().$;
-            $formprogress = $( '.form-progress' );
-            $( 'button#delete-form' ).button( 'disable' );
+            $formprogress = $('.form-progress');
+            $('button#delete-form').button('disable');
 
             // smap save the initial starting point
-            startEditData = form.getDataStr( true, true );
+            startEditData = form.getDataStr(true, true);
         }
     }
 
     /*
      * Load a record from the list of draft records
      */
-    function loadRecord( recordName, confirmed ) {
+    function loadRecord(recordName, confirmed) {
         var record, texts, choices, loadErrors;
 
-        if ( !confirmed && form.getEditStatus() ) {
+        if (!confirmed && form.getEditStatus()) {
             texts = {
                 msg: 'The current form has unsaved changes. Would you like to load a record <strong>without saving changes</strong> to the form you were working on?',
                 heading: 'Unsaved edits'
             };
             choices = {
                 posButton: 'Proceed without saving',
-                posAction: function() {
-                    loadRecord( recordName, true );
+                posAction: function () {
+                    loadRecord(recordName, true);
                 }
             };
-            gui.confirm( texts, choices );
+            gui.confirm(texts, choices);
         } else {
 
             /*
              * Open the form with the saved data
              */
-            record = store.getRecord( recordName );
-            if ( record && record.data ) {
+            record = store.getRecord(recordName);
+            if (record && record.data) {
                 store.setKey("draft", recordName);
-                window.location.replace( record.form) ;
+                window.location.replace(record.form);
             }
 
         }
@@ -220,7 +219,7 @@ define( function( require, exports, module ) {
     /*
      * Save a record to the Store
      */
-    function saveRecord( recordName, confirmed, error, draft ) {
+    function saveRecord(recordName, confirmed, error, draft) {
         var texts, choices, record, saveResult, overwrite,
             count = 0,
             i,
@@ -228,25 +227,25 @@ define( function( require, exports, module ) {
             recordResult = {};
 
         draft = draft || getDraftStatus();
-        console.log( 'saveRecord called with recordname:' + recordName, 'confirmed:' + confirmed, "error:" + error + 'draft:' + draft );
+        console.log('saveRecord called with recordname:' + recordName, 'confirmed:' + confirmed, "error:" + error + 'draft:' + draft);
 
         //triggering before save to update possible 'end' timestamp in form
-        $form.trigger( 'beforesave' );
+        $form.trigger('beforesave');
 
         confirmed = ( typeof confirmed !== 'undefined' ) ? confirmed : false;
         recordName = recordName || form.getRecordName() || form.getSurveyName() + ' - ' + store.getCounterValue();
 
-        if ( !recordName ) {
-            console.log( 'No record name could be created.' );
+        if (!recordName) {
+            console.log('No record name could be created.');
             return;
         }
 
-        if ( !draft && !form.validate() ) {
-            gui.alert( 'Form contains errors <br/>(please see fields marked in red)' );
+        if (!draft && !form.validate()) {
+            gui.alert('Form contains errors <br/>(please see fields marked in red)');
             return;
         }
 
-        if ( draft && !confirmed ) {
+        if (draft && !confirmed) {
             texts = {
                 dialog: 'save',
                 msg: '',
@@ -256,36 +255,36 @@ define( function( require, exports, module ) {
             choices = {
                 posButton: 'Save & Close',
                 negButton: 'Cancel',
-                posAction: function( values ) {
+                posAction: function (values) {
                     // if the record is new or
                     // if the record was previously loaded from storage and saved under the same name
-                    if ( !form.getRecordName() || form.getRecordName() === values[ 'record-name' ] ) {
-                        saveRecord( values[ 'record-name' ], true, error );
+                    if (!form.getRecordName() || form.getRecordName() === values['record-name']) {
+                        saveRecord(values['record-name'], true, error);
                     } else {
-                        gui.confirm( {
+                        gui.confirm({
                             msg: 'Are you sure you want to rename "' + form.getRecordName() +
-                            '"" to "' + values[ 'record-name' ] + '"?'
+                            '"" to "' + values['record-name'] + '"?'
                         }, {
-                            posAction: function() {
-                                saveRecord( values[ 'record-name' ], true, error );
+                            posAction: function () {
+                                saveRecord(values['record-name'], true, error);
                             }
-                        } );
+                        });
                     }
                 },
-                negAction: function() {
+                negAction: function () {
                     return false;
                 }
             };
-            gui.confirm( texts, choices, {
+            gui.confirm(texts, choices, {
                 'record-name': recordName
-            } );
+            });
         } else {
-            var originalUrl = window.location.href.split( "?" );
+            var originalUrl = window.location.href.split("?");
 
             record = {
                 'draft': draft,
-                'form': originalUrl[ 0 ],
-                'data': form.getDataStr( true, true ),
+                'form': originalUrl[0],
+                'data': form.getDataStr(true, true),
                 'instanceStrToEditId': surveyData.instanceStrToEditId,  		// d1504
                 'assignmentId': surveyData.assignmentId,				 		// d1504
                 'accessKey': surveyData.key										// d1504
@@ -294,19 +293,19 @@ define( function( require, exports, module ) {
 
             // Save any media
             var dirname = "/" + form.getInstanceID();
-            if ( media.length > 0 ) {
-                fileManager.deleteDir( dirname );        // Remove any existing media
-                for ( i = 0; i < media.length; i++ ) {
-                    fileManager.saveFile( media[ i ], dirname );
+            if (media.length > 0) {
+                fileManager.deleteDir(dirname);        // Remove any existing media
+                for (i = 0; i < media.length; i++) {
+                    fileManager.saveFile(media[i], dirname);
 
                     count++;
-                    if ( count === media.length ) {
-                        saveResult = writeRecord( recordName, record, draft );
+                    if (count === media.length) {
+                        saveResult = writeRecord(recordName, record, draft);
                     }
                 }
 
             } else {
-                saveResult = writeRecord( recordName, record, draft );
+                saveResult = writeRecord(recordName, record, draft);
             }
         }
 
@@ -317,70 +316,71 @@ define( function( require, exports, module ) {
     /*
      * Write the record
      */
-    function writeRecord( recordName, record, draft ) {
+    function writeRecord(recordName, record, draft) {
 
         var overwrite = form.getRecordName() === recordName;
-        var saveResult = store.setRecord( recordName, record, true, overwrite, form.getRecordName() );
+        var saveResult = store.setRecord(recordName, record, true, overwrite, form.getRecordName());
 
-        console.log( 'saveResult: ' + saveResult );
-        if ( saveResult === 'success' ) {
-            resetForm( true );
-            $form.trigger( 'save', JSON.stringify( store.getRecordList() ) );
+        console.log('saveResult: ' + saveResult);
+        if (saveResult === 'success') {
+            resetForm(true);
+            $form.trigger('save', JSON.stringify(store.getRecordList()));
 
-            if ( draft ) {
-                gui.feedback( 'Record stored as draft.', 3 );
+            if (draft) {
+                gui.feedback('Record stored as draft.', 3);
             } else {
                 //try to send the record immediately
-                gui.feedback( 'Record queued for submission.', 3 );
-                submitOneForced( recordName, record );
+                gui.feedback('Record queued for submission.', 3);
+                submitOneForced(recordName, record);
             }
-        } else if ( saveResult === 'require' || saveResult === 'existing' || saveResult === 'forbidden' ) {
-            saveRecord( undefined, false, 'Record name "' + recordName + '" already exists (or is not allowed). The record was not saved.' );
+        } else if (saveResult === 'require' || saveResult === 'existing' || saveResult === 'forbidden') {
+            saveRecord(undefined, false, 'Record name "' + recordName + '" already exists (or is not allowed). The record was not saved.');
         } else {
-            gui.alert( 'Error trying to save data locally (message: ' + saveResult + ')' );
+            gui.alert('Error trying to save data locally (message: ' + saveResult + ')');
         }
     }
 
     /*
      * Submit the data directly without using local storage
      */
-    function submitEditedRecord( autoClose ) {
+    function submitEditedRecord(autoClose) {
         var name, record, saveResult, redirect, beforeMsg, callbacks, $alert;
-        $form.trigger( 'beforesave' );
-        if ( !form.isValid() ) {
-            gui.alert( 'Form contains errors <br/>(please see fields marked in red)' );
+        $form.trigger('beforesave');
+        if (!form.isValid()) {
+            gui.alert('Form contains errors <br/>(please see fields marked in red)');
             return;
         }
 
-        gui.alert( '<progress style="text-align: center;"/>', 'Submitting...', 'info' );
+        gui.alert('<progress style="text-align: center;"/>', 'Submitting...', 'info');
 
         record = {
             'key': 'iframe_record',
-            'data': form.getDataStr( true, true ),
+            'data': form.getDataStr(true, true),
             'instanceStrToEditId': surveyData.instanceStrToEditId,  // d1504
             'assignmentId': surveyData.assignmentId,				 // d1504
             'accessKey': surveyData.key								 // d1504
         };
 
         callbacks = {
-            error: function() {
-                gui.alert( 'Please try submitting again.', 'Submission Failed' );
+            error: function () {
+                gui.alert('Please try submitting again.', 'Submission Failed');
             },
-            success: function() {
-                resetForm( true );
-                gui.alert( 'Success', 'Submission Successful!', 'success' );
+            success: function () {
+                resetForm(true);
+                gui.alert('Success', 'Submission Successful!', 'success');
             },
-            complete: function() {}
+            complete: function () {
+            }
         };
 
         //only upload the last one
         prepareFormDataArray(
             record, {
-                success: function( formDataArr ) {
-                    connection.uploadRecords( formDataArr, true, callbacks, closeAfterSending());
+                success: function (formDataArr) {
+                    connection.uploadRecords(formDataArr, true, callbacks, closeAfterSending());
                 },
-                error: function() {
-                    gui.alert( 'Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error' );
+                error: function () {
+                    gui.alert('Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error');
                 }
             },
             true // Use media referenced in browser
@@ -394,8 +394,8 @@ define( function( require, exports, module ) {
      */
     function closeAfterSending() {
 
-        if ( surveyData.assignmentId ) {
-            console.log( "Close after saving" );
+        if (surveyData.assignmentId) {
+            console.log("Close after saving");
             return true;
         } else {
             return false;
@@ -409,8 +409,8 @@ define( function( require, exports, module ) {
      */
     function canSaveRecord() {
 
-        if ( fileManager.isSupported() ) {
-            console.log( "Can Save record:" );
+        if (fileManager.isSupported()) {
+            console.log("Can Save record:");
             return true;
         } else {
             return false;
@@ -418,21 +418,21 @@ define( function( require, exports, module ) {
 
     }
 
-    function submitOneForced( recordName, record ) {
+    function submitOneForced(recordName, record) {
 
-        if ( !record.draft ) {
-            prepareFormDataArray( {
+        if (!record.draft) {
+            prepareFormDataArray({
                     key: recordName,
                     data: record.data,
                     assignmentId: record.assignmentId,				 // d1504
                     instanceStrToEditId: record.instanceStrToEditId, // d1505
                     accessKey: record.accessKey						 // d1504
                 }, {
-                    success: function( formDataArr ) {
-                        connection.uploadRecords( formDataArr, true, undefined, closeAfterSending() );		// d1504 add closeAfterSending
+                    success: function (formDataArr) {
+                        connection.uploadRecords(formDataArr, true, undefined, closeAfterSending());		// d1504 add closeAfterSending
                     },
-                    error: function() {
-                        gui.alert( 'Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error' );
+                    error: function () {
+                        gui.alert('Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error');
                     }
                 },
                 false // Use media from file store
@@ -443,22 +443,22 @@ define( function( require, exports, module ) {
     function submitQueue() {
 
         var i,
-            records = store.getSurveyDataArr( true ),
-            successHandler = function( recordPrepped ) {
-                connection.uploadRecords( recordPrepped, false, undefined, false);		// d1504 do not close after sending as this is a background job
+            records = store.getSurveyDataArr(true),
+            successHandler = function (recordPrepped) {
+                connection.uploadRecords(recordPrepped, false, undefined, false);		// d1504 do not close after sending as this is a background job
             },
-            errorHandler = function() {
-                console.log( 'Something went wrong while trying to prepare the record(s) for uploading.' );
+            errorHandler = function () {
+                console.log('Something went wrong while trying to prepare the record(s) for uploading.');
             };
 
         // reset recordsList with fake save
-        $form.trigger( 'save', JSON.stringify( store.getRecordList() ) );
+        $form.trigger('save', JSON.stringify(store.getRecordList()));
         // Clear any errors from recordList
-        $( '.record-list' ).find( 'li' ).removeClass( 'error' );
-        if ( !connection.getUploadOngoingID() && connection.getUploadQueue().length === 0 ) {
-            for ( i = 0; i < records.length; i++ ) {
+        $('.record-list').find('li').removeClass('error');
+        if (!connection.getUploadOngoingID() && connection.getUploadQueue().length === 0) {
+            for (i = 0; i < records.length; i++) {
                 prepareFormDataArray(
-                    records[ i ], {
+                    records[i], {
                         success: successHandler,
                         error: errorHandler
                     },
@@ -471,27 +471,27 @@ define( function( require, exports, module ) {
     function emptyQueue() {
 
         var i,
-            records = store.getSurveyDataArr( false );
+            records = store.getSurveyDataArr(false);
 
         // reset recordsList with fake save
-        $form.trigger( 'save', JSON.stringify( store.getRecordList() ) );
+        $form.trigger('save', JSON.stringify(store.getRecordList()));
 
-        for ( i = 0; i < records.length; i++ ) {
+        for (i = 0; i < records.length; i++) {
             var r = records[i],
                 recordName = r.key,
-                model = new FormModel( r.data ),
+                model = new FormModel(r.data),
                 instanceID;
 
-            if(model) {
+            if (model) {
                 model.init();
                 instanceID = model.getInstanceID();
             }
 
-            if ( fileManager.isSupported() ) {
-                fileManager.deleteDir( instanceID );
+            if (fileManager.isSupported()) {
+                fileManager.deleteDir(instanceID);
             }
-            if ( store ) {
-                store.removeRecord( recordName );
+            if (store) {
+                store.removeRecord(recordName);
             }
         }
 
@@ -516,24 +516,24 @@ define( function( require, exports, module ) {
             mediaArray = [],
             filename;
 
-        $( '[type="file"]' ).each( function() {
-            $media = $( this );
+        $('[type="file"]').each(function () {
+            $media = $(this);
             $preview = $media.parent().find(".file-preview").find("img");
             name = $media.parent().find(".fake-file-input").text();
-            elem = $media[ 0 ];
+            elem = $media[0];
 
-            for ( i = 0; i < elem.files.length; i++ ) {
-                filename = elem.files[ i ].name;
-                mediaArray.push( {
+            for (i = 0; i < elem.files.length; i++) {
+                filename = elem.files[i].name;
+                mediaArray.push({
                     name: name,
-                    file: elem.files[ i ],
+                    file: elem.files[i],
                     dataUrl: $preview.attr("src")
-                } );
+                });
             }
-        } );
+        });
 
-        console.log( "Returning media" );
-        console.log( mediaArray );
+        console.log("Returning media");
+        console.log(mediaArray);
         return mediaArray;
     }
 
@@ -542,28 +542,28 @@ define( function( require, exports, module ) {
      * @param { { name: string, data: string } } record[ description ]
      * @param {{success: Function, error: Function}} callbacks
      */
-    function prepareFormDataArray( record, callbacks, immediate ) {
+    function prepareFormDataArray(record, callbacks, immediate) {
         var j, k, l, xmlData, formData, model, $fileNodes, fileIndex, fileO, recordPrepped,
             count = 0,
             sizes = [],
             batches = [],
             media = [];
 
-        if(record.data) {
-            model = new FormModel( record.data );
+        if (record.data) {
+            model = new FormModel(record.data);
             model.init();
-            xmlData = model.getStr( );
-            xmlData = _fixIosMediaNames( xmlData ); // ios names all media image.jpg, Make each name unique
+            xmlData = model.getStr();
+            xmlData = _fixIosMediaNames(xmlData); // ios names all media image.jpg, Make each name unique
         } else {
-            callbacks.success( record );	// d1504 existing record from record store all pre-prepared
+            callbacks.success(record);	// d1504 existing record from record store all pre-prepared
         }
 
-        function basicRecordPrepped( batchesLength, batchIndex ) {
-            if(xmlData) {
+        function basicRecordPrepped(batchesLength, batchIndex) {
+            if (xmlData) {
                 formData = new FormData();
-                formData.append( 'xml_submission_data', xmlData );
-                if(record.assignmentId) {
-                    formData.append( 'assignment_id', record.assignmentId);
+                formData.append('xml_submission_data', xmlData);
+                if (record.assignmentId) {
+                    formData.append('assignment_id', record.assignmentId);
                 }
             } else {
                 formData = record.formData;
@@ -585,10 +585,10 @@ define( function( require, exports, module ) {
 
             media = getMedia();
 
-            if ( media ) {
-                for ( i = 0; i < media.length; i++ ) {
+            if (media) {
+                for (i = 0; i < media.length; i++) {
                     count++;
-                    sizes.push( media[ i ].file.size )
+                    sizes.push(media[i].file.size)
                 }
             }
 
@@ -596,54 +596,54 @@ define( function( require, exports, module ) {
 
         function gatherFiles(directory) {
 
-            $fileNodes = ( fileManager ) ? model.$.find( '[type="file"]' ).removeAttr( 'type' ) : [];
+            $fileNodes = ( fileManager ) ? model.$.find('[type="file"]').removeAttr('type') : [];
 
-            if ( $fileNodes.length > 0 ) {
-                $fileNodes.each( function() {
+            if ($fileNodes.length > 0) {
+                $fileNodes.each(function () {
 
 
                     fileO = {
-                        fileName: $( this ).text()
+                        fileName: $(this).text()
                     };
 
-                    var fileObj = fileManager.retrieveFile( directory, fileO);
+                    var fileObj = fileManager.retrieveFile(directory, fileO);
                     count++;
-                    if ( fileObj ) {
-                        media.push( fileObj );
-                        sizes.push( fileObj.size );
+                    if (fileObj) {
+                        media.push(fileObj);
+                        sizes.push(fileObj.size);
                     } else {
                         // Smap allow for file not to be found, as we could be be editing an existing record and the image was not replaced
                         //failedFiles.push( fileO.fileName );
                     }
-                    if ( count == $fileNodes.length ) {
+                    if (count == $fileNodes.length) {
                         distributeFiles();
                     }
 
-                } );
+                });
             } else {
-                recordPrepped = basicRecordPrepped( 1, 0 );
-                callbacks.success( recordPrepped );
+                recordPrepped = basicRecordPrepped(1, 0);
+                callbacks.success(recordPrepped);
             }
         }
 
         function distributeFiles() {
             var maxSize = connection.getMaxSubmissionSize();
-            if ( media.length > 0 ) {
-                batches = divideIntoBatches( sizes, maxSize );
-                console.log( 'splitting record into ' + batches.length + ' batches to reduce submission size ' );
-                for ( k = 0; k < batches.length; k++ ) {
-                    recordPrepped = basicRecordPrepped( batches.length, k );
-                    for ( l = 0; l < batches[ k ].length; l++ ) {
-                        fileIndex = batches[ k ][ l ];
+            if (media.length > 0) {
+                batches = divideIntoBatches(sizes, maxSize);
+                console.log('splitting record into ' + batches.length + ' batches to reduce submission size ');
+                for (k = 0; k < batches.length; k++) {
+                    recordPrepped = basicRecordPrepped(batches.length, k);
+                    for (l = 0; l < batches[k].length; l++) {
+                        fileIndex = batches[k][l];
                         //recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
-                        var blob = dataURLtoBlob(media[ fileIndex ].dataUrl);
-                        recordPrepped.formData.append( media[ fileIndex ].fileName, blob, media[ fileIndex ].fileName );
+                        var blob = dataURLtoBlob(media[fileIndex].dataUrl);
+                        recordPrepped.formData.append(media[fileIndex].fileName, blob, media[fileIndex].fileName);
                     }
-                    callbacks.success( recordPrepped );
+                    callbacks.success(recordPrepped);
                 }
             } else {
-                recordPrepped = basicRecordPrepped( 1, 0 );
-                callbacks.success( recordPrepped );
+                recordPrepped = basicRecordPrepped(1, 0);
+                callbacks.success(recordPrepped);
             }
 
         }
@@ -652,13 +652,13 @@ define( function( require, exports, module ) {
         function dataURLtoBlob(dataurl) {
             var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
                 bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){
+            while (n--) {
                 u8arr[n] = bstr.charCodeAt(n);
             }
-            return new Blob([u8arr], {type:mime});
+            return new Blob([u8arr], {type: mime});
         }
 
-        if ( immediate ) {
+        if (immediate) {
             getFileSizes();
             distributeFiles();
         } else if (model) {
@@ -674,30 +674,30 @@ define( function( require, exports, module ) {
      * The files are sent to the server with their duplicate names, the server then applies the same
      * logic as here to set the name of the file on the server
      */
-    function _fixIosMediaNames( xmlData ) {
-        var xml = $.parseXML( xmlData ),
+    function _fixIosMediaNames(xmlData) {
+        var xml = $.parseXML(xmlData),
             $xml,
             imageCount = 0,
             videoCount = 0;
 
-        $xml = $( xml );
-        $xml.find( '[type="file"]' ).each( function() {
-            var $this = $( this ),
+        $xml = $(xml);
+        $xml.find('[type="file"]').each(function () {
+            var $this = $(this),
                 name;
             name = $this.text();
-            if ( name === "image.jpg" ) {
+            if (name === "image.jpg") {
                 name = "image_" + imageCount + ".jpg";
-                $this.text( name );
+                $this.text(name);
                 imageCount++;
             }
-            if ( name === "capturedvideo.MOV" ) {
+            if (name === "capturedvideo.MOV") {
                 name = "capturedvideo_" + videoCount + ".MOV";
-                $this.text( name );
+                $this.text(name);
                 videoCount++;
             }
-        } );
+        });
 
-        return ( new XMLSerializer() ).serializeToString( xml );
+        return ( new XMLSerializer() ).serializeToString(xml);
 
     }
 
@@ -705,222 +705,222 @@ define( function( require, exports, module ) {
      * Function to export or backup data to a file. In Chrome it will get an appropriate file name.
      */
 
-    function exportToTextFile( fileName, dataStr ) {
+    function exportToTextFile(fileName, dataStr) {
         var blob;
-        blob = new Blob( [ dataStr ], {
+        blob = new Blob([dataStr], {
             type: "text/plain; charset=utf-8"
-        } );
-        saveAs( blob, fileName );
+        });
+        saveAs(blob, fileName);
     }
 
     function setEventHandlers() {
 
-        $( 'button#reset-form' )
-            .click( function() {
+        $('button#reset-form')
+            .click(function () {
                 resetForm();
-            } );
-        $( 'button#submit-form' )
-            .click( function() {
-                var $button = $( this );
-                $button.btnBusyState( true );
+            });
+        $('button#submit-form')
+            .click(function () {
+                var $button = $(this);
+                $button.btnBusyState(true);
                 // this timeout is to slow down the GUI a bit, UX
-                setTimeout( function() {
-                    if ( canSaveRecord() ) {
+                setTimeout(function () {
+                    if (canSaveRecord()) {
                         saveRecord();
-                    } else if ( getDraftStatus() ) {
-                        setDraftStatus( false );
-                        $button.btnBusyState( false );
-                        $button.text( "Submit" );
-                        gui.alert( 'Your browser does not support saving media files' );
+                    } else if (getDraftStatus()) {
+                        setDraftStatus(false);
+                        $button.btnBusyState(false);
+                        $button.text("Submit");
+                        gui.alert('Your browser does not support saving media files');
                     } else {
                         form.validate();
-                        submitEditedRecord( closeAfterSending() );
+                        submitEditedRecord(closeAfterSending());
                     }
-                    $button.btnBusyState( false );
+                    $button.btnBusyState(false);
                     return false;
-                }, 100 );
+                }, 100);
 
-            } );
-        $( 'button#submit-form-single' )
-            .click( function() {
-                var $button = $( this );
-                $button.btnBusyState( true );
-                setTimeout( function() {
+            });
+        $('button#submit-form-single')
+            .click(function () {
+                var $button = $(this);
+                $button.btnBusyState(true);
+                setTimeout(function () {
                     form.validate();
-                    submitEditedRecord( true );
-                    $button.btnBusyState( false );
+                    submitEditedRecord(true);
+                    $button.btnBusyState(false);
                     return false;
-                }, 100 );
-            } );
+                }, 100);
+            });
 
 
-        $( '.form-footer [name="draft"]' ).on( 'change', function() {
-            var text = ( $( this ).prop( 'checked' ) ) ? "Save Draft" : "Submit";
-            $( '#submit-form' ).text( text );
-        } );
+        $('.form-footer [name="draft"]').on('change', function () {
+            var text = ( $(this).prop('checked') ) ? "Save Draft" : "Submit";
+            $('#submit-form').text(text);
+        });
 
-        $( document ).on( 'click', 'button#validate-form:not(.disabled)', function() {
+        $(document).on('click', 'button#validate-form:not(.disabled)', function () {
             //$form.trigger('beforesave');
-            if ( typeof form !== 'undefined' ) {
-                var $button = $( this );
-                $button.btnBusyState( true );
-                setTimeout( function() {
+            if (typeof form !== 'undefined') {
+                var $button = $(this);
+                $button.btnBusyState(true);
+                setTimeout(function () {
                     form.validate();
-                    $button.btnBusyState( false );
-                    if ( !form.isValid() ) {
-                        gui.alert( 'Form contains errors <br/>(please see fields marked in red)' );
+                    $button.btnBusyState(false);
+                    if (!form.isValid()) {
+                        gui.alert('Form contains errors <br/>(please see fields marked in red)');
                         return;
                     }
-                }, 100 );
+                }, 100);
             }
-        } );
+        });
 
-        $( document ).on( 'click', '.export-records', function() {
+        $(document).on('click', '.export-records', function () {
             var server, exported, dataStr,
                 fileName = form.getSurveyName() + '_data_backup.xml';
 
             dataStr = store.getExportStr();
 
-            if ( !dataStr ) {
-                gui.alert( 'No records in queue. The records may have been successfully submitted already.' );
+            if (!dataStr) {
+                gui.alert('No records in queue. The records may have been successfully submitted already.');
             } else {
                 server = settings.serverURL || '';
-                exported = vkbeautify.xml( '<export date="' + new Date() + '" server="' + server + '">' + dataStr + '</export>' );
-                exportToTextFile( fileName, exported );
+                exported = vkbeautify.xml('<export date="' + new Date() + '" server="' + server + '">' + dataStr + '</export>');
+                exportToTextFile(fileName, exported);
             }
-        } );
+        });
 
-        $( document ).on( 'click', '.upload-records:not(:disabled)', function() {
+        $(document).on('click', '.upload-records:not(:disabled)', function () {
             submitQueue();
-        } );
+        });
 
-        $( document ).on( 'click', '.delete-records:not(:disabled)', function() {
+        $(document).on('click', '.delete-records:not(:disabled)', function () {
             var message = 'Are you sure you want to delete all the unsent results?',
                 choices = {
-                    posAction: function() {
+                    posAction: function () {
                         emptyQueue();
                     }
                 };
-            gui.confirm( message, choices );
-        } );
+            gui.confirm(message, choices);
+        });
 
-        $( document ).on( 'click', '.record.error', function() {
-            var name = $( this ).attr( 'name' ),
-                $info = $( this ).siblings( '[name="' + name + '"]' );
+        $(document).on('click', '.record.error', function () {
+            var name = $(this).attr('name'),
+                $info = $(this).siblings('[name="' + name + '"]');
 
-            if ( $info.is( ':visible' ) ) {
-                $info.hide( 500 );
+            if ($info.is(':visible')) {
+                $info.hide(500);
             } else {
-                $info.show( 500 );
+                $info.show(500);
             }
-        } );
+        });
 
-        $( document ).on( 'click', '.record-list [data-draft="true"]', function() {
-            loadRecord( $( this ).closest( '.record' ).attr( 'name' ), false );
-        } );
+        $(document).on('click', '.record-list [data-draft="true"]', function () {
+            loadRecord($(this).closest('.record').attr('name'), false);
+        });
 
         //$( '#form-controls button' ).toLargestWidth();
 
-        $( document ).on( 'save delete', 'form.or', function( e, formList ) {
-            updateRecordList( JSON.parse( formList ) );
-        } );
+        $(document).on('save delete', 'form.or', function (e, formList) {
+            updateRecordList(JSON.parse(formList));
+        });
 
         //remove filesystem folder after successful submission
-        $( document ).on( 'submissionsuccess', function( ev, recordName, instanceID ) {
-            if ( fileManager.isSupported() ) {
-                fileManager.deleteDir( instanceID );
+        $(document).on('submissionsuccess', function (ev, recordName, instanceID) {
+            if (fileManager.isSupported()) {
+                fileManager.deleteDir(instanceID);
             }
-            if ( store ) {
-                store.removeRecord( recordName );
+            if (store) {
+                store.removeRecord(recordName);
             }
-            console.log( 'After submission success, attempted to remove record with key:' + recordName + 'and files in folder:' + instanceID );
-        } );
+            console.log('After submission success, attempted to remove record with key:' + recordName + 'and files in folder:' + instanceID);
+        });
 
-        $( document ).on( 'progressupdate', 'form.or', function( event, status ) {
-            if ( $formprogress.length > 0 ) {
-                $formprogress.css( 'width', status + '%' );
+        $(document).on('progressupdate', 'form.or', function (event, status) {
+            if ($formprogress.length > 0) {
+                $formprogress.css('width', status + '%');
             }
-        } );
+        });
     }
 
 
     //update the survey forms names list
-    function updateRecordList( recordList ) {
+    function updateRecordList(recordList) {
         var name, draft, i, $li,
-            $buttons = $( '.side-slider .upload-records, .side-slider .export-records' ),
-            $list = $( '.side-slider .record-list' );
+            $buttons = $('.side-slider .upload-records, .side-slider .export-records'),
+            $list = $('.side-slider .record-list');
 
-        console.log( 'updating record list' );
+        console.log('updating record list');
 
         // get form list object (keys + upload) ordered by time last saved
         recordList = recordList || [];
-        $( '.queue-length' ).text( recordList.length );
+        $('.queue-length').text(recordList.length);
 
         //cleanup
-        $list.find( '.record' ).each( function() {
-            name = $( this ).attr( 'name' );
+        $list.find('.record').each(function () {
+            name = $(this).attr('name');
             //if the record in the DOM no longer exists in storage
-            if ( $.grep( recordList, function( record ) {
+            if ($.grep(recordList, function (record) {
                     return record.key == name;
-                } ).length === 0 ) {
+                }).length === 0) {
                 //remove the DOM element and its same-name-siblings (split submissions)
-                $( this ).siblings( '[name="' + name + '"]' ).addBack().hide( 2000, function() {
-                    $( this ).remove();
-                } );
+                $(this).siblings('[name="' + name + '"]').addBack().hide(2000, function () {
+                    $(this).remove();
+                });
             }
-        } );
+        });
 
         // disable buttons
-        $buttons.attr( 'disabled', 'disabled' );
+        $buttons.attr('disabled', 'disabled');
 
         // add new records
-        if ( recordList.length > 0 ) {
-            $list.find( '.no-records' ).remove();
+        if (recordList.length > 0) {
+            $list.find('.no-records').remove();
 
-            $( '.side-slider .export-records' ).removeAttr( 'disabled' );
+            $('.side-slider .export-records').removeAttr('disabled');
 
-            recordList.forEach( function( record ) {
+            recordList.forEach(function (record) {
                 name = record.key;
                 draft = record.draft;
 
                 // if there is at least one record not marked as draft
-                if ( !draft ) {
-                    $buttons.removeAttr( 'disabled' );
+                if (!draft) {
+                    $buttons.removeAttr('disabled');
                 }
 
                 // add a new item when necessary
-                $li = $list.find( '[name="' + name + '"]' );
-                if ( $li.length === 0 ) {
-                    $li = $( '<li class="record"></li>' );
-                    $li.text( name ); // encodes string to html
-                    $li.attr( 'name', name );
-                    $list.append( $li );
+                $li = $list.find('[name="' + name + '"]');
+                if ($li.length === 0) {
+                    $li = $('<li class="record"></li>');
+                    $li.text(name); // encodes string to html
+                    $li.attr('name', name);
+                    $list.append($li);
                 }
 
                 // update record status for new or existing records
-                $li.attr( 'data-draft', draft );
-            } );
-        } else if ( $list.find( '.no-records' ).length === 0 ) {
-            $list.append( '<li class="no-records">no records queued</li>' );
+                $li.attr('data-draft', draft);
+            });
+        } else if ($list.find('.no-records').length === 0) {
+            $list.append('<li class="no-records">no records queued</li>');
         }
     }
 
-    function updateActiveRecord( recordName ) {
-        var $list = $( '.side-slider .record-list' );
+    function updateActiveRecord(recordName) {
+        var $list = $('.side-slider .record-list');
 
-        $list.find( 'li' ).removeClass( 'active' );
-        if ( recordName ) {
-            $list.find( 'li[name="' + recordName + '"]' ).addClass( 'active' );
+        $list.find('li').removeClass('active');
+        if (recordName) {
+            $list.find('li[name="' + recordName + '"]').addClass('active');
         }
     }
 
-    function setDraftStatus( status ) {
+    function setDraftStatus(status) {
         status = status || false;
-        $( '.form-footer [name="draft"]' ).prop( 'checked', status ).trigger( 'change' );
+        $('.form-footer [name="draft"]').prop('checked', status).trigger('change');
     }
 
     function getDraftStatus() {
-        return $( '.form-footer [name="draft"]' ).prop( 'checked' );
+        return $('.form-footer [name="draft"]').prop('checked');
     }
 
     /**
@@ -930,33 +930,33 @@ define( function( require, exports, module ) {
      * @return {Array.<Array.<number>>} array of arrays with index, each secondary array of indices represents a batch
      */
 
-    function divideIntoBatches( fileSizes, limit ) {
+    function divideIntoBatches(fileSizes, limit) {
         var i, j, batch, batchSize,
             sizes = [],
             batches = [];
         //limit = limit || 5 * 1024 * 1024;
-        for ( i = 0; i < fileSizes.length; i++ ) {
-            sizes.push( {
+        for (i = 0; i < fileSizes.length; i++) {
+            sizes.push({
                 'index': i,
-                'size': fileSizes[ i ]
-            } );
+                'size': fileSizes[i]
+            });
         }
-        while ( sizes.length > 0 ) {
-            batch = [ sizes[ 0 ].index ];
-            batchSize = sizes[ 0 ].size;
-            if ( sizes[ 0 ].size < limit ) {
-                for ( i = 1; i < sizes.length; i++ ) {
-                    if ( ( batchSize + sizes[ i ].size ) < limit ) {
-                        batch.push( sizes[ i ].index );
-                        batchSize += sizes[ i ].size;
+        while (sizes.length > 0) {
+            batch = [sizes[0].index];
+            batchSize = sizes[0].size;
+            if (sizes[0].size < limit) {
+                for (i = 1; i < sizes.length; i++) {
+                    if (( batchSize + sizes[i].size ) < limit) {
+                        batch.push(sizes[i].index);
+                        batchSize += sizes[i].size;
                     }
                 }
             }
-            batches.push( batch );
-            for ( i = 0; i < sizes.length; i++ ) {
-                for ( j = 0; j < batch.length; j++ ) {
-                    if ( sizes[ i ].index === batch[ j ] ) {
-                        sizes.splice( i, 1 );
+            batches.push(batch);
+            for (i = 0; i < sizes.length; i++) {
+                for (j = 0; j < batch.length; j++) {
+                    if (sizes[i].index === batch[j]) {
+                        sizes.splice(i, 1);
                     }
                 }
             }
@@ -969,8 +969,8 @@ define( function( require, exports, module ) {
      */
     function finalise() {
         var $form = form.getView().$;
-        $form.trigger( 'beforesave' );
-        $(':focus').trigger( 'blur');
+        $form.trigger('beforesave');
+        $(':focus').trigger('blur');
         form.validate();
     }
 
@@ -979,27 +979,27 @@ define( function( require, exports, module ) {
     }
 
     function getXmlData() {
-        return form.getDataStr( true, true );
+        return form.getDataStr(true, true);
     }
 
     /*
      * Initialise the form without starting webforms connection or record store
      */
-    function initialiseForm( recordName, setAsChanged ) {
+    function initialiseForm(recordName, setAsChanged) {
         var loadErrors,
             purpose;
 
         window.gLoadedInstanceID = undefined;
 
         // Create the form
-        form = new Form( 'form.or:eq(0)', surveyData );			// form is global
+        form = new Form('form.or:eq(0)', surveyData);			// form is global
         loadErrors = form.init();
 
-        if ( recordName ) {
-            form.setRecordName( recordName );
+        if (recordName) {
+            form.setRecordName(recordName);
         }
 
-        if ( loadErrors.length > 0 ) {
+        if (loadErrors.length > 0) {
             alert(loadErrors.join(','));
             //purpose = ( surveyData.instanceStrToEdit ) ? 'to edit data' : 'for data entry';
             //gui.showLoadErrors( loadErrors,
@@ -1008,15 +1008,15 @@ define( function( require, exports, module ) {
         }
 
         $form = form.getView().$;
-        $formprogress = $( '.form-progress' );
+        $formprogress = $('.form-progress');
 
         setEventHandlers();
 
         // Save current data so we can check if there have been changes
-        if(setAsChanged) {
+        if (setAsChanged) {
             startEditData = "";		// hasChanged will return true immediately
         } else {
-            startEditData = form.getDataStr( true, true );
+            startEditData = form.getDataStr(true, true);
         }
 
 
@@ -1024,13 +1024,13 @@ define( function( require, exports, module ) {
 
     // Reset the start point (presumably after the data has been saved)
     function resetStartPoint() {
-        startEditData = form.getDataStr( true, true );
+        startEditData = form.getDataStr(true, true);
     }
 
     // Return true if the data has changed
     function hasChanged() {
-        if(typeof form !== "undefined") {
-            var latestData = form.getDataStr( true, true );
+        if (typeof form !== "undefined") {
+            var latestData = form.getDataStr(true, true);
             return (startEditData != latestData);
         } else {
             // return false as something has gone wrong with this form and the user should be able to exit (should be prevented from happening)
@@ -1040,7 +1040,7 @@ define( function( require, exports, module ) {
 
     // Get the instance name
     function getInstanceName() {
-        if(typeof form !== "undefined") {
+        if (typeof form !== "undefined") {
             return form.getInstanceName();
         } else {
             // return false as something has gone wrong with this form and the user should be able to exit (should be prevented from happening)
@@ -1051,11 +1051,11 @@ define( function( require, exports, module ) {
     // Get the languages used by the form
     function getLanguages() {
         var resp = {
-            defLang: $( '#form-languages' ).data( 'default-lang' ),
+            defLang: $('#form-languages').data('default-lang'),
             languages: []
         };
 
-        $( '#form-languages' ).find('option').each(function(index) {
+        $('#form-languages').find('option').each(function (index) {
             var $this = $(this);
             resp.languages.push({
                 value: $this.val(),
@@ -1100,4 +1100,4 @@ define( function( require, exports, module ) {
         divideIntoBatches: divideIntoBatches
     };
 
-} );
+});
