@@ -59,6 +59,7 @@ define(function (require, exports, module) {
         fileManager = options.fileStore;
         store = options.recordStore || null;
 
+        // Rename instanceStrToEdit to instanceStr as used by Enketo Core
         surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
         surveyData.instanceStr = surveyData.instanceStrToEdit || null;
 
@@ -69,7 +70,7 @@ define(function (require, exports, module) {
 
                 var record = store.getRecord(recordName);
                 surveyData.instanceStrToEdit = record.data;
-                surveyData.instanceStr = record.data;  // name used by enketo
+                surveyData.instanceStr = record.data;
                 surveyData.instanceStrToEditId = record.instanceStrToEditId;
                 surveyData.assignmentId = record.assignmentId;
                 surveyData.key = record.accessKey;

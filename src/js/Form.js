@@ -1665,7 +1665,7 @@ define(function (require, exports, module) {
             },
             'instance': function (o) {         // smap - Store instanceID in a global, this may be preset if form is laoded from the store
                 if (!gLoadedInstanceID) {
-                    gLoadedInstanceID = ( o.curVal.length > 0 ) ? o.curVal : model.evaluate("concat('uuid:', uuid())", 'string');
+                    window.gLoadedInstanceID = ( o.curVal.length > 0 ) ? o.curVal : model.evaluate("concat('uuid:', uuid())", 'string');
                 }
                 //store the current instanceID as data on the form element so it can be easily accessed by e.g. widgets
                 $form.data({
@@ -2090,6 +2090,10 @@ define(function (require, exports, module) {
                 var $clone = $(event.target);
                 // Set defaults of added repeats in FormView, setAllVals does not trigger change event
                 that.setAllVals($clone, index);
+                if(window.zmwidgets) {
+                    zmwidgets.addWidgets($clone);
+                }
+                $('#main').trigger('zmrepeat');         // smap
                 // for a NEW repeat ALL calculations inside that repeat have to be initialized
                 that.calcUpdate({
                     repeatPath: $clone.attr('name'),
