@@ -24,8 +24,6 @@ if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeo
     };
 }
 
-//define( [ 'wfapp/gui', 'wfapp/connection', 'wfapp/settings',  'wfapp/Blob', 'jquery', 'bootstrap' ],
-//    function( gui, connection, settings,  Blob, vkbeautify, $ ) {
 define(function (require, exports, module) {
     "use strict";
 
@@ -515,20 +513,35 @@ define(function (require, exports, module) {
             name,
             dataUrl,
             mediaArray = [],
-            filename;
+            filename,
+            filenameParts;
 
         $('[type="file"]').each(function () {
             $media = $(this);
             $preview = $media.parent().find(".file-preview").find("img");
-            name = $media.parent().find(".fake-file-input").text();
+            //name = $media.parent().find(".fake-file-input").text();
             elem = $media[0];
+
+            var postfix = $media.parent().find('input[type="file"]').data("filename-postfix");
+            postfix = postfix || '';
 
             for (i = 0; i < elem.files.length; i++) {
                 filename = elem.files[i].name;
+
+                // Add postfix
+                filenameParts = filename.split( '.' );
+                if ( filenameParts.length > 1 ) {
+                    filenameParts[ filenameParts.length - 2 ] += postfix;
+                } else if ( filenameParts.length === 1 ) {
+                    filenameParts[ 0 ] += postfix;
+                }
+                filename = filenameParts.join( '.' );
+
                 mediaArray.push({
-                    name: name,
-                    file: elem.files[i],
-                    dataUrl: $preview.attr("src")
+                    fileName: filename,
+                    //file: elem.files[i],              // Update media issue
+                    dataUrl: $preview.attr("src"),
+                    size: elem.files[i].size
                 });
             }
         });
@@ -589,7 +602,7 @@ define(function (require, exports, module) {
             if (media) {
                 for (i = 0; i < media.length; i++) {
                     count++;
-                    sizes.push(media[i].file.size)
+                    sizes.push(media[i].size)
                 }
             }
 
@@ -1019,7 +1032,6 @@ define(function (require, exports, module) {
         } else {
             startEditData = form.getDataStr(true, true);
         }
-
 
     }
 

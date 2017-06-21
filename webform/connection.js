@@ -76,6 +76,8 @@ define( function( require, exports, module ) {
         } else {
             url = "/submission" + dynamic + "/" + record.instanceStrToEditId; // Update existing record
         }
+        url += "?deviceID=webform";
+
         //if(record.assignmentId) {
         //	url += "?assignment_id=" + record.assignmentId;
         //}
