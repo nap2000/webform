@@ -1,27 +1,38 @@
-/** FORMHUB THEME **/
+.question {
+    input {
+        &[type=radio], &[type=checkbox] {
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            border-color: black;
+            border-width: 1px;
 
-// fancy radiobuttons
-.question:not(.or-appearance-label):not(.or-appearance-compact):not(.or-appearance-quickcompact) {
-    label {
-        input[type=checkbox] {
-            ~ .option-label::before {
-                content: '\e60b' !important;
-                color: black;
-            }
-            &:checked ~ .option-label::before {
-                content: '\e60c' !important;
-                color: black;
+            &:checked {
+                border-color: black;
             }
         }
-        input[type=radio] {
-            ~ .option-label::before {
-                content: '\e607' !important;
-                color: black;
-            }
-            &:checked ~ .option-label::before {
-                content: '\e606' !important;
-                color: black;
-            }
+
+        &[type=checkbox]:checked {
+            @include checkbox-checked-style(black, transparent);
+
+            background-position: -1px;
+        }
+
+        &[type=radio]:checked {
+            @include radio-checked-style(black);
+        }
+    }
+}
+
+.bootstrap-select {
+    .option-wrapper > label {
+        padding-left: 35px !important;
+    }
+}
+
+[dir="rtl"] {
+    .bootstrap-select {
+        .option-wrapper > label {
+            padding-right: 35px !important;
         }
     }
 }

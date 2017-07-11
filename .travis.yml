@@ -1,8 +1,11 @@
-before_install:
-  - git submodule update --init --recursive
+sudo: false
+dist: trusty
 language: node_js
 node_js:
-  - "0.10"
+  - "6"
+addons:
+  apt:
+    packages:
+      - google-chrome-stable
 before_script:
-  - npm install -g grunt-cli bower
-  - bower install
+  - npm install -g grunt-cli

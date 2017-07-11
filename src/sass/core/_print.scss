@@ -7,16 +7,21 @@ $printBaseFontSize: 12px;
 }
 
 body {
+    display: block;
     overflow: visible;
     background: none;
+
     .main {
         overflow: visible;
         margin: 0;
         padding: 0;
-        article {
+
+        .paper {
             padding: 3px;
+            display: block;
         }
     }
+
     .paper {
         overflow: visible;
         border: none;
@@ -24,7 +29,8 @@ body {
     }
 }
 
-.drawer,
+.side-slider,
+.side-slider__toggle,
 #feedback-bar,
 #dialog-alert,
 #dialog-confirm,
@@ -34,7 +40,6 @@ body {
 .form-logo,
 .form-footer,
 .or-appearance-no-print,
-button,
 .ad,
 .paper #submit-form {
     display: none !important;
@@ -46,7 +51,6 @@ button,
     .question:not(.or-appearance-maps) .map-canvas-wrapper,
     .geopoint .search-bar,
     .or-constraint-msg,
-    .required-subtle,
     .add-on,
     .file-feedback,
     video,
@@ -56,10 +60,12 @@ button,
     .invalid-constraint .or-constraint-msg.active {
         display: none;
     }
+
     .or-branch.disabled {
         opacity: 1;
         display: block;
     }
+
     input[type="file"] {
         // still let it take up space
         visibility: hidden;
@@ -91,45 +97,60 @@ label, legend, .trigger, .note {
     h2, h3, h4, .required {
         color: black;
     }
+
     h3, h4 {
         margin: 0;
     }
+
     h3 {}
+
     .question {
         margin-bottom: 0;
     }
+
     legend {
         margin-bottom: 5px;
+
         ~ label {
             padding: 0;
         }
+
         span:not(.or-output) {
             display: block;
         }
     }
+
     .note, .trigger {
         font-weight: normal;
         background: none;
         color: black;
         padding: 5px 5px 12px 5px;
     }
+
     .required {
         float: right;
     }
+
     .or-repeat {
         background: none;
     }
-    input[type=text], input[type=password], input[type=url], input[type=email], input[type=file],  input[type=date], input[type=time], input[type=datetime], input[type=number], select, textarea {
+
+    input[type=text], input[type=password], input[type=url], input[type=email], input[type=file], input[type=date], input[type=time], input[type=datetime], input[type=number], select, textarea {
         @include border-radius(0px);
+
         @include box-shadow-none;
+
         @include appearance-none;
+
         border: none;
         background: none;
         border-bottom: 1px solid black;
     }
+
     input[type="file"] {
         display: none !important;
     }
+
     .or-hint.active, .or-hint.or-form-print.active {
         color: black;
         display: block;
@@ -137,6 +158,7 @@ label, legend, .trigger, .note {
         margin-top: 0;
         line-height: 1em;
     }
+
     .or-hint.or-form-print.active {
         border: 1px dotted black;
         padding: 1px;
@@ -152,13 +174,16 @@ label, legend, .trigger, .note {
 
 .geopicker.widget {
     margin-top: 10px;
+
     .geo-inputs {
         width: 100%;
+
         label.geo {
             display: inline-block;
             width: 25%;
             padding: 0 !important;
             margin: 7px 0 0 0 !important;
+
             &:nth-of-type(3), &:nth-of-type(4) {
                 vertical-align: top;
                 margin-top: 0;
@@ -167,6 +192,11 @@ label, legend, .trigger, .note {
                 border-top: none;
                 font-size: auto;
             }
+
+            &.kml {
+                display: none;
+            }
+
             input {
                 width: 100% !important;
                 margin-top: 8px !important;
@@ -174,42 +204,70 @@ label, legend, .trigger, .note {
             }
         }
     }
+
     .points {
         display: none;
     }
+
     .search-bar {
         display: none;
     }
 }
 
+.esri-geopicker.widget {
+    .esri-ui-top-left {
+        display: none;
+    }
+
+    .btn[name="geodetect"] {
+        display: none !important;
+    }
+
+    .interaction-blocker {
+        display: none !important;
+    }
+
+    .map-canvas-wrapper:not(.hide-map) {
+        display: block !important;
+    }
+}
+
 .bootstrap-select {
     @include clearfix;
+
     .dropdown-toggle {
         display: none;
     }
-    ul {
+
+    .dropdown-menu {
         @include display-flex;
+
         @include flex-wrap(wrap);
+
         @include flex-direction(row);
-        position: static;
+
         display: block;
+        position: static;
         border: none;
         box-shadow: none;
         list-style-type: circle;
+
         li, li.active {
             flex: 1;
             min-width: 30%;
             display: inline-block;
             margin-right: 20px;
         }
+
         a {
             background: none;
             color: black;
         }
-        input {
-            display: none;
-        }
     }
+}
+
+.datalist.widget {
+    display: none;
 }
 
 .or-appearance-likert .option-wrapper > label .option-label {
@@ -226,21 +284,62 @@ label, legend, .trigger, .note {
         border: 1px solid black;
         border-bottom: none;
     }
+
     .bulb {
         border: 1px solid black;
+
         .inner {
             border: 1px solid black;
         }
     }
+
+    .slider-handle {
+        border: 1px solid black;
+    }
+
     .slider.slider-vertical .slider-track {
         border: 1px solid black;
         border-bottom: none;
     }
 }
 
+.or-appearance-analog-scale {
+    .show-value {
+        display: none;
+    }
+
+    .scale__ticks {
+        display: none;
+    }
+
+    .slider-vertical .slider-track {
+        border-right: 1px solid black;
+        margin-left: -8.5px;
+    }
+
+    .slider-horizontal .slider-track {
+        border-bottom: 1px solid black;
+        margin-top: -10px;
+    }
+
+    .slider-handle {
+        display: none;
+    }
+}
+
+.or-appearance-comment.hide {
+    display: block !important;
+}
+
 // pages mode
-.pages.or [role="page"] {
-    display: block;
+.pages.or {
+    [role="page"] {
+        display: inherit;
+    }
+
+    .or-group, .or-group-data, .or-repeat {
+        display: inherit;
+    }
 }
 
 // pagebreak management
@@ -252,6 +351,7 @@ label, legend, .trigger, .note {
 // but work fine in IE10, IE11 and Safari
 h3, h4 {
     page-break-after: avoid;
+
     + .trigger, + .question, + .note {
         page-break-before: avoid;
     }

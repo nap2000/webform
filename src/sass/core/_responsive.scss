@@ -1,95 +1,109 @@
-@mixin small-screen-paddings {
+@media screen and (max-width: $main-breakpoint) {
+    $form-padding: 45px;
+    $form-header-padding: 16px;
+
     body {
         padding: 0 !important;
-        header {
-            padding-left: 20px;
-            padding-right: 20px;
-        }
+        margin: 0;
     }
-}
 
-@media screen and (max-width: $main-breakpoint) {
-    @include small-screen-paddings;
-    body {
-        background: none;
-    }
     .main {
         margin: 0;
         padding: 0;
     }
+
     .preview-header {
         top: -5px;
     }
+
     .paper {
         @include border-radius(0px);
+
+        padding-top: 0;
     }
+
+    // When the form-header is absolutely positioned, we'd like the height to be 0,
+    // if there is no visible content (e.g. no languages, no print button, no brand)
+    // To do this we give the content a padding, but set padding, min-height and margin of form-header to 0.
     .form-header {
+        position: relative;
         top: 0;
-        padding-left: 16px;
-        padding-right: 16px;
+        padding: 0 14px;
         border-bottom: 1px solid $groupline;
-        .form-language-selector > span {
-            display: none;
+        min-height: 0;
+
+        @include form-header-margin($form-padding);
+
+        .form-language-selector {
+            padding-top: $form-header-padding;
+            padding-bottom: $form-header-padding;
+
+            span {
+                display: none;
+            }
         }
     }
-    h3 {
+
+    #form-title {
         padding-top: 25px;
     }
 }
 
 @media screen and (max-width: 600px) {
     $form-padding: 30px;
+
     body {
-        //background: none;
         line-height: 1.05 * $line-height-base;
     }
+
     .main {
-        //margin: 0;
-        article {
-            padding: 70px $form-padding $form-padding $form-padding;
+        .paper {
+            padding: 0 $form-padding $form-padding $form-padding;
         }
     }
+
+    .form-header {
+        @include form-header-margin($form-padding);
+    }
+
     .form-footer {
-        width: calc(100% + ( 2 * #{$form-padding} ));
-        margin: 45px;
-        margin-right: -#{$form-padding};
-        margin-bottom: -#{$form-padding};
-        margin-left: -#{$form-padding};
+        @include form-footer-margin($form-padding);
     }
 }
 
 @media screen and (max-width: 400px) {
     $form-padding: 20px;
+
     body {
-        //background: none;
         line-height: 1.09 * $line-height-base;
     }
+
     input {
-        &[type="text"],&[type="password"], &[type="url"], &[type="email"],
+        &[type="text"], &[type="password"], &[type="url"], &[type="email"],
         &[type="date"], &[type="number"], &[type="time"], &[type="datetime"], &[type="file"] {
             width: 100%;
         }
     }
+
     select, textarea {
         width: 100%;
     }
+
     .main {
-        //margin: 0;
-        article {
-            padding: 70px $form-padding $form-padding $form-padding;
+        .paper {
+            padding: 0 $form-padding $form-padding $form-padding;
         }
     }
+
     .form-header {
-        margin: 5px 0;
+        @include form-header-margin($form-padding);
+
         .form-language-selector {
             border-right: none;
         }
     }
+
     .form-footer {
-        width: calc(100% + ( 2 * #{$form-padding} ));
-        margin-top: 45px;
-        margin-right: -#{$form-padding};
-        margin-bottom: -#{$form-padding};
-        margin-left: -#{$form-padding};
+        @include form-footer-margin($form-padding);
     }
 }

@@ -11,15 +11,16 @@ $line-height-base: 1.25 !default;
 $line-height-base: 1.42857 !default;
 $line-height-computed: floor($font-size-base * $line-height-base) !default;
 
-// padding
+// padding, margin
 $padding-base-vertical: 6px !default;
 $padding-base-horizontal: 12px !default;
 $padding-large-vertical: 10px !default;
 $padding-large-horizontal: 16px !default;
+$question-margin: 20px !default;
 
 // input sizing
 $input-height: 34px !default;
-$input-min-width: 0.2 * 720px !default;
+$input-min-width: 180px !default;
 $input-max-width: 80% !default;
 
 // colors, icons
@@ -101,9 +102,12 @@ $state-warning-bg: #fcf8e3 !default;
 $state-warning-border: darken(adjust-hue($state-warning-bg, -10), 5%) !default;
 
 $state-danger-text: #a94442 !default;
+$state-dangerest-text: #e00e0e !default;
 
 // #B94A48
 $state-danger-bg: #f2dede !default;
 $state-danger-border: darken(adjust-hue($state-danger-bg, -10), 5%) !default;
 
 //#EED3D7;
+
+$golden-ratio: 1.61803;

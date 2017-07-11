@@ -1,5 +1,6 @@
 .question.or-appearance-list-nolabel, .question.or-appearance-label {
     margin: -0.9em 0 -0.7em 0;
+
     legend {
         float: left;
         border: none;
@@ -7,36 +8,39 @@
         width: 40%;
         min-height: 1px;
     }
+
     .option-wrapper {
         @include display-flex;
+
         @include flex-direction(row);
+
         @include flex-wrap(nowrap);
+
         label {
             @include flex(1);
-            max-width: 100px !important;
-            text-align: center !important;
-            padding-left: 0 !important;
+
+            max-width: 100px;
+            text-align: center;
+            padding-left: 0;
+
             .active {
                 margin: 0 auto;
             }
         }
     }
+
     .option-label.active {
         text-align: center;
     }
-    // center the checkboxes, radiobuttons, fake radiobuttions, and fake checkboxes
-    input[type=radio],
-    input[type=checkbox],
-    input[type=radio] ~ .option-label::before,
-    input[type=checkbox] ~ .option-label::before {
-        position: relative;
-        left: 50%;
-        margin-left: -10px;
-        visibility: visible;
-    }
-    ~ .note {
-        background-color: transparent;
-        @extend h4;
+}
+
+.or[dir="rtl"] {
+    .question.or-appearance-list-nolabel, .question.or-appearance-label {
+        margin: -0.9em 0 -0.7em 0;
+
+        legend {
+            float: right;
+        }
     }
 }
 
@@ -44,26 +48,46 @@
     label {
         .active {
             display: none;
-            //visibility: hidden;
             float: none;
         }
+    }
+
+    // center the checkboxes, radiobuttons
+    input[type=radio],
+    input[type=checkbox] {
+        float: none;
+        text-align: center;
+        display: inline-block;
     }
 }
 
 .question.or-appearance-label {
-    legend ~ .option-wrapper > label {
+    .option-wrapper > label {
         margin-bottom: 6px;
+
         &:hover {
             background-color: transparent;
         }
     }
-    input {
-        float: none;
-        display: none !important;
+
+    input[type=radio],
+    input[type=checkbox] {
+        display: none;
     }
+
     img {
         max-height: 30px;
         max-width: 30px;
         float: none;
+    }
+}
+
+.or[dir="rtl"] {
+    .question.or-appearance-label {
+        .option-wrapper > label {
+            img {
+                float: none;
+            }
+        }
     }
 }
