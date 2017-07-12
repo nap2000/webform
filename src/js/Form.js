@@ -369,7 +369,7 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
      * repeats such as with /path/to/repeat[3]/node, /path/to/repeat[position() = 3]/node or indexed-repeat(/path/to/repeat/node, /path/to/repeat, 3).
      * We accept that for now.
      **/
-    if ( $repeat ) {
+    if ( $repeat && $repeat.length ) {      // smap add length
         // the non-repeat fields have to be added too, e.g. to update a calculated item with count(to/repeat/node) at the top level
         $collection = this.$nonRepeats[ attr ]
             .add( $repeat );
@@ -593,6 +593,12 @@ Form.prototype.setEventHandlers = function() {
         };
         // Set defaults of added repeats in Form, setAllVals does not trigger change event
         that.setAllVals( $clone, index );
+
+        if(window.zmwidgets) {                  // Smap zm
+            zmwidgets.addWidgets($clone);
+        }
+        $('#main').trigger('zmrepeat');         // smap
+
         // Initialize calculations, branch, itemset, output inside that repeat. 
         that.evaluationCascade.forEach( function( fn ) {
             fn.call( that, updated );

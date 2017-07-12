@@ -119,5 +119,16 @@ module.exports = {
             return this.form.model.evaluate( 'concat("uuid:", uuid())', 'string' );
         }
         return o.curVal;
+    },
+    'instance': function (o) {         // smap - Store instanceID in a global, this may be preset if form is laoded from the store
+        if (!gLoadedInstanceID) {
+            window.gLoadedInstanceID = ( o.curVal.length > 0 ) ? o.curVal : model.evaluate("concat('uuid:', uuid())", 'string');
+        }
+        //store the current instanceID as data on the form element so it can be easily accessed by e.g. widgets
+        $form.data({
+            instanceID: gLoadedInstanceID
+        });
+        return gLoadedInstanceID;
     }
+
 };

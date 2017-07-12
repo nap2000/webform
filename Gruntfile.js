@@ -115,7 +115,7 @@ module.exports = function( grunt ) {
         browserify: {
             standalone: {
                 files: {
-                    'build/js/enketo-bundle.js': [ 'app.js' ]
+                    'build/js/webform-bundle.js': [ 'main-webform.js' ]
                 },
             },
             options: {
@@ -125,7 +125,7 @@ module.exports = function( grunt ) {
         uglify: {
             standalone: {
                 files: {
-                    'build/js/enketo-bundle.js': [ 'build/js/enketo-bundle.js' ]
+                    'build/js/webform-bundle.js': [ 'build/js/webform-bundle.js' ]
                 },
             },
         },
@@ -172,6 +172,6 @@ module.exports = function( grunt ) {
     grunt.registerTask( 'test', [ 'jsbeautifier:test', 'jshint', 'compile', 'transforms', 'karma:headless', 'style' ] );
     grunt.registerTask( 'style', [ 'sass' ] );
     grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );
-    grunt.registerTask( 'develop', [ 'style', 'browserify', 'concurrent:develop' ] );
+    grunt.registerTask( 'develop', [ 'style', 'browserify' ] );
     grunt.registerTask( 'default', [ 'style', 'compile' ] );
 };
