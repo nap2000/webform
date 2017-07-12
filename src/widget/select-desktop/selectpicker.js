@@ -1,10 +1,5 @@
-'use strict';
 /**
- * This widget is one gigantic mess. It should be replaced entirely.
- */
-
-/**
- * Copyright 2012 Silvio Moreto, Martijn van de Rijdt & Modilabs
+ * @preserve Copyright 2012 Silvio Moreto, Martijn van de Rijdt & Modilabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +14,11 @@
  * limitations under the License.
  */
 
+'use strict';
 var $ = require( 'jquery' );
 var Widget = require( '../../js/Widget' );
 var t = require( 'translator' ).t;
 var pluginName = 'desktopSelectpicker';
-require( '../../js/dropdown.jquery' );
 
 /**
  * Bootstrap Select picker that supports single and multiple selects
@@ -50,8 +45,10 @@ function DesktopSelectpicker( element, options, e ) {
     this._init();
 }
 
+//copy the prototype functions from the Widget super class
 DesktopSelectpicker.prototype = Object.create( Widget.prototype );
 
+//ensure the constructor is the new one
 DesktopSelectpicker.prototype.constructor = DesktopSelectpicker;
 
 DesktopSelectpicker.prototype._init = function() {
@@ -164,18 +161,13 @@ DesktopSelectpicker.prototype._clickListener = function() {
 
     this.$picker
         .on( 'click', 'li:not(.disabled)', function( e ) {
-            var $li = $( this );
-            var $input = $li.find( 'input' );
-            var $select = $( _this.element );
-            var $option = $select.find( 'option[value="' + $input.val() + '"]' );
-            var selectedBefore = $option.is( ':selected' );
-
-            // We need to prevent default unless click was on on input
-            // Without this 'fix', clicks on radiobuttons/checkboxes themselves will update the value
-            // but will not show checked status.
-            if ( e.target.nodeName.toLowerCase() !== 'input' ) {
+            //console.debug( 'click' );
                 e.preventDefault();
-            }
+            var $li = $( this ),
+                $input = $li.find( 'input' ),
+                $select = $( _this.element ),
+                $option = $select.find( 'option[value="' + $input.val() + '"]' ),
+                selectedBefore = $option.is( ':selected' );
 
             if ( !_this.multiple ) {
                 _this.$picker.find( 'li' ).removeClass( 'active' );
@@ -202,20 +194,6 @@ DesktopSelectpicker.prototype._clickListener = function() {
 
             $select.trigger( 'change' );
         } )
-        // Enter/Space keys
-        .on( 'keydown', 'li:not(.disabled)', function( e ) {
-            if ( /(13|32)/.test( e.keyCode.toString( 10 ) ) ) {
-                if ( !/(32)/.test( e.keyCode.toString( 10 ) ) ) {
-                    e.preventDefault();
-                }
-                var elem = $( ':focus' );
-                elem.click();
-                // Bring back focus for multiselects
-                elem.focus();
-                // Prevent screen from scrolling if the user hit the spacebar
-                e.preventDefault();
-            }
-        } )
         .on( 'click', 'li.disabled', function( e ) {
             e.stopPropagation();
             return false;
@@ -225,14 +203,11 @@ DesktopSelectpicker.prototype._clickListener = function() {
 DesktopSelectpicker.prototype._focusListener = function() {
     var _this = this;
 
-    // Focus on original element (form.goTo functionality)
-    $( this.element ).on( 'applyfocus', function() {
-        _this.$picker.find( '.dropdown-toggle' ).focus();
-    } );
-
-    // focus on widget
     this.$picker.on( 'shown.bs.dropdown', function() {
         $( _this.element ).trigger( 'fakefocus' );
+        return true;
+    } ).on( 'hidden.bs.dropdown', function() {
+        $( _this.element ).trigger( 'fakeblur' );
         return true;
     } );
 };
@@ -277,8 +252,175 @@ $.fn[ pluginName ] = function( options, event ) {
 };
 
 
+
+// DROPDOWN CLASS DEFINITION
+// =========================
+
+var backdrop = '.dropdown-backdrop';
+var toggle = '[data-toggle=dropdown]';
+var Dropdown = function( element ) {
+    $( element ).on( 'click.bs.dropdown', this.toggle );
+};
+
+Dropdown.prototype.toggle = function( e ) {
+    var $this = $( this );
+
+    if ( $this.is( '.disabled, :disabled' ) ) {
+        return;
+    }
+
+    var $parent = getParent( $this );
+    var isActive = $parent.hasClass( 'open' );
+
+    clearMenus();
+
+    if ( !isActive ) {
+        if ( 'ontouchstart' in document.documentElement && !$parent.closest( '.navbar-nav' ).length ) {
+            // if mobile we use a backdrop because click events don't delegate
+            $( '<div class="dropdown-backdrop"/>' ).insertAfter( $( this ) ).on( 'click', clearMenus );
+        }
+
+        var relatedTarget = {
+            relatedTarget: this
+        };
+        $parent.trigger( e = $.Event( 'show.bs.dropdown', relatedTarget ) );
+
+        if ( e.isDefaultPrevented() ) {
+            return;
+        }
+
+        $parent
+            .toggleClass( 'open' )
+            .trigger( 'shown.bs.dropdown', relatedTarget );
+
+        $this.focus();
+    }
+
+    return false;
+};
+
+Dropdown.prototype.keydown = function( e ) {
+    if ( !/^(38|40|27)$/.test( e.keyCode ) ) {
+        return;
+    }
+
+    var $this = $( this );
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if ( $this.is( '.disabled, :disabled' ) ) {
+        return;
+    }
+
+    var $parent = getParent( $this );
+    var isActive = $parent.hasClass( 'open' );
+
+    if ( !isActive || ( isActive && e.keyCode === 27 ) ) {
+        if ( e.which === 27 ) {
+            $parent.find( toggle ).focus();
+        }
+        return $this.click();
+    }
+
+    var desc = ' li:not(.divider):visible a';
+    var $items = $parent.find( '[role=menu]' + desc + ', [role=listbox]' + desc );
+
+    if ( !$items.length ) {
+        return;
+    }
+
+    var index = $items.index( $items.filter( ':focus' ) );
+
+    if ( e.keyCode === 38 && index > 0 ) {
+        index--; // up
+    }
+    if ( e.keyCode === 40 && index < $items.length - 1 ) {
+        index++; // down
+    }
+    if ( !~index ) {
+        index = 0;
+    }
+
+    $items.eq( index ).focus();
+};
+
+function clearMenus( e ) {
+    $( backdrop ).remove();
+    $( toggle ).each( function() {
+        var $parent = getParent( $( this ) );
+        var relatedTarget = {
+            relatedTarget: this
+        };
+        if ( !$parent.hasClass( 'open' ) ) {
+            return;
+        }
+        $parent.trigger( e = $.Event( 'hide.bs.dropdown', relatedTarget ) );
+        if ( e.isDefaultPrevented() ) {
+            return;
+        }
+        $parent.removeClass( 'open' ).trigger( 'hidden.bs.dropdown', relatedTarget );
+    } );
+}
+
+function getParent( $this ) {
+    var selector = $this.attr( 'data-target' );
+
+    if ( !selector ) {
+        selector = $this.attr( 'href' );
+        selector = selector && /#[A-Za-z]/.test( selector ) && selector.replace( /.*(?=#[^\s]*$)/, '' ); //strip for ie7
+    }
+
+    var $parent = selector && $( selector );
+
+    return $parent && $parent.length ? $parent : $this.parent();
+}
+
+
+// DROPDOWN PLUGIN DEFINITION
+// ==========================
+
+var old = $.fn.dropdown;
+
+$.fn.dropdown = function( option ) {
+    return this.each( function() {
+        var $this = $( this );
+        var data = $this.data( 'bs.dropdown' );
+
+        if ( !data ) {
+            $this.data( 'bs.dropdown', new Dropdown( this ) );
+        }
+        if ( typeof option === 'string' ) {
+            data[ option ].call( $this );
+        }
+    } );
+};
+
+$.fn.dropdown.Constructor = Dropdown;
+
+
+// DROPDOWN NO CONFLICT
+// ====================
+
+$.fn.dropdown.noConflict = function() {
+    $.fn.dropdown = old;
+    return this;
+};
+
+
+// APPLY TO STANDARD DROPDOWN ELEMENTS
+// ===================================
+
+$( document )
+    .on( 'click.bs.dropdown.data-api', clearMenus )
+    .on( 'click.bs.dropdown.data-api', '.dropdown form', function( e ) {
+        e.stopPropagation();
+    } )
+    .on( 'click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle )
+    .on( 'keydown.bs.dropdown.data-api', toggle + ', [role=menu], [role=listbox]', Dropdown.prototype.keydown );
+
+
 module.exports = {
     'name': pluginName,
-    'list': true,
     'selector': 'select:not(#form-languages)'
 };
