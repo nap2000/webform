@@ -239,9 +239,47 @@ define(function (require, exports, module) {
             return;
         }
 
-        if (!draft && !form.validate()) {
-            gui.alert('Form contains errors <br/>(please see fields marked in red)');
-            return;
+        if (!draft) {
+
+            form.validate()
+                .then( function( valid ) {
+                    if ( !valid ) {
+                        gui.alert('Form contains errors <br/>(please see fields marked in red)');
+                        return;
+                    } else {
+                        var originalUrl = window.location.href.split("?");
+
+                        record = {
+                            'draft': draft,
+                            'form': originalUrl[0],
+                            'data': form.getDataStr(true, true),
+                            'instanceStrToEditId': surveyData.instanceStrToEditId,  		// d1504
+                            'assignmentId': surveyData.assignmentId,				 		// d1504
+                            'accessKey': surveyData.key										// d1504
+                        };
+
+
+                        // Save any media
+                        var dirname = "/" + form.getInstanceID();
+                        if (media.length > 0) {
+                            fileManager.deleteDir(dirname);        // Remove any existing media
+                            for (i = 0; i < media.length; i++) {
+                                fileManager.saveFile(media[i], dirname);
+
+                                count++;
+                                if (count === media.length) {
+                                    saveResult = writeRecord(recordName, record, draft);
+                                }
+                            }
+
+                        } else {
+                            saveResult = writeRecord(recordName, record, draft);
+                        }
+                    }
+                } );
+
+
+
         }
 
         if (draft && !confirmed) {
@@ -277,36 +315,7 @@ define(function (require, exports, module) {
             gui.confirm(texts, choices, {
                 'record-name': recordName
             });
-        } else {
-            var originalUrl = window.location.href.split("?");
-
-            record = {
-                'draft': draft,
-                'form': originalUrl[0],
-                'data': form.getDataStr(true, true),
-                'instanceStrToEditId': surveyData.instanceStrToEditId,  		// d1504
-                'assignmentId': surveyData.assignmentId,				 		// d1504
-                'accessKey': surveyData.key										// d1504
-            };
-
-
-            // Save any media
-            var dirname = "/" + form.getInstanceID();
-            if (media.length > 0) {
-                fileManager.deleteDir(dirname);        // Remove any existing media
-                for (i = 0; i < media.length; i++) {
-                    fileManager.saveFile(media[i], dirname);
-
-                    count++;
-                    if (count === media.length) {
-                        saveResult = writeRecord(recordName, record, draft);
-                    }
-                }
-
-            } else {
-                saveResult = writeRecord(recordName, record, draft);
-            }
-        }
+        } 
 
         recordResult.key = recordName;
         return recordResult;
