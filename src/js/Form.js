@@ -339,7 +339,7 @@ Form.prototype.setAllVals = function( $group, groupIndex ) {
  * @param  {{nodes:Array<string>=, repeatPath: string=, repeatIndex: number=}=} updated The object containing info on updated data nodes
  * @return {jQuery}           A jQuery collection of elements
  */
-Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
+Form.prototype.getRelatedNodes = function( attr, filter, updated, repeatCountOnly ) {     // smap add repeatCountOnly (performance)
     var $collection;
     var $repeat = null;
     var selector = [];
@@ -400,6 +400,15 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
                 }
                 radioCheckNames.push( radioCheckName );
             }
+
+            // start smap - if repeatCountOnly is passed filter out nodes that are not related to counts
+            if(repeatCountOnly) {
+                if(!this.name || this.name.lastIndexOf('_count') < 0) {
+                    return false;
+                }
+            }
+            // end smap
+
             return true;
         } );
 };

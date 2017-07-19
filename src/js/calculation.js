@@ -12,14 +12,19 @@ module.exports = {
     update: function( updated ) {
         var $nodes;
         var that = this;
+        var repeatCountOnly;
 
         if ( !this.form ) {
             throw new Error( 'Calculation module not correctly instantiated with form property.' );
         }
 
         updated = updated || {};
+        repeatCountOnly = (typeof updated.nodes === "undefined" || updated.nodes.length === 0);
 
-        $nodes = this.form.getRelatedNodes( 'data-calculate', '', updated );
+        console.log("update calculations with repeat only: " + repeatCountOnly);
+        console.log(updated);
+
+        $nodes = this.form.getRelatedNodes( 'data-calculate', '', updated, repeatCountOnly );    // smap if there is no list of nodes to update then just update the repeat counts
 
         // add relevant items that have a (any) calculation
         $nodes = $nodes.add( this.form.getRelatedNodes( 'data-relevant', '[data-calculate]', updated ) );
