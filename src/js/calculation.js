@@ -19,12 +19,10 @@ module.exports = {
         }
 
         updated = updated || {};
-        repeatCountOnly = (typeof updated.nodes === "undefined" || updated.nodes.length === 0);
 
-        console.log("update calculations with repeat only: " + repeatCountOnly);
         console.log(updated);
 
-        $nodes = this.form.getRelatedNodes( 'data-calculate', '', updated, repeatCountOnly );    // smap if there is no list of nodes to update then just update the repeat counts
+        $nodes = this.form.getRelatedNodes( 'data-calculate', '', updated);
 
         // add relevant items that have a (any) calculation
         $nodes = $nodes.add( this.form.getRelatedNodes( 'data-relevant', '[data-calculate]', updated ) );
