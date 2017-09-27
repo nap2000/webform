@@ -276,12 +276,12 @@ define(function (require, exports, module) {
 
                                 count++;
                                 if (count === media.length) {
-                                    saveResult = writeRecord(recordName, record, draft);
+                                    saveResult = writeRecord(recordName, record, draft, media);
                                 }
                             }
 
                         } else {
-                            saveResult = writeRecord(recordName, record, draft);
+                            saveResult = writeRecord(recordName, record, draft, media);
                         }
                     }
                 } );
@@ -332,7 +332,7 @@ define(function (require, exports, module) {
     /*
      * Write the record
      */
-    function writeRecord(recordName, record, draft) {
+    function writeRecord(recordName, record, draft, media) {
 
         var overwrite = form.getRecordName() === recordName;
         var saveResult = store.setRecord(recordName, record, true, overwrite, form.getRecordName());
@@ -347,7 +347,7 @@ define(function (require, exports, module) {
             } else {
                 //try to send the record immediately
                 gui.feedback('Record queued for submission.', 3);
-                submitOneForced(recordName, record);
+                submitOneForced(recordName, record, media);
             }
         } else if (saveResult === 'require' || saveResult === 'existing' || saveResult === 'forbidden') {
             saveRecord(undefined, false, 'Record name "' + recordName + '" already exists (or is not allowed). The record was not saved.');
@@ -434,7 +434,7 @@ define(function (require, exports, module) {
 
     }
 
-    function submitOneForced(recordName, record) {
+    function submitOneForced(recordName, record, media) {
 
         if (!record.draft) {
             prepareFormDataArray({
@@ -442,7 +442,8 @@ define(function (require, exports, module) {
                     data: record.data,
                     assignmentId: record.assignmentId,				 // d1504
                     instanceStrToEditId: record.instanceStrToEditId, // d1505
-                    accessKey: record.accessKey						 // d1504
+                    accessKey: record.accessKey,						 // d1504
+                    media: media
                 }, {
                     success: function (formDataArr) {
                         connection.uploadRecords(formDataArr, true, undefined, closeAfterSending());		// d1504 add closeAfterSending
@@ -614,7 +615,11 @@ define(function (require, exports, module) {
         function getFileSizes() {
             var i;
 
-            media = getMedia();
+            if(record.media) {
+                media = record.media;
+            } else {
+                media = getMedia();
+            }
 
             if (media) {
                 for (i = 0; i < media.length; i++) {
@@ -667,8 +672,13 @@ define(function (require, exports, module) {
                     for (l = 0; l < batches[k].length; l++) {
                         fileIndex = batches[k][l];
                         //recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
-                        var blob = dataURLtoBlob(media[fileIndex].dataUrl);
-                        recordPrepped.formData.append(media[fileIndex].fileName, blob, media[fileIndex].fileName);
+                        var blob;
+                        if (media[fileIndex].dataUrl) {
+                            blob = dataURLtoBlob(media[fileIndex].dataUrl);
+                        } else {
+                            blob = media[fileIndex];
+                        }
+                        recordPrepped.formData.append(media[fileIndex].name, blob, media[fileIndex].name);
                     }
                     callbacks.success(recordPrepped);
                 }
