@@ -264,7 +264,15 @@ define(function (require, exports, module) {
                         if (media.length > 0) {
                             fileManager.deleteDir(dirname);        // Remove any existing media
                             for (i = 0; i < media.length; i++) {
-                                fileManager.saveFile(media[i], dirname);
+                                if(!media[i].dataUrl) {
+                                    ecFm.getFileUrl(media[i]).then(function(url) {
+                                        var m = media[i];
+                                        m.dataUrl = url;
+                                        fileManager.saveFile(m, dirname);
+                                    });
+                                } else {
+                                    fileManager.saveFile(media[i], dirname);
+                                }
 
                                 count++;
                                 if (count === media.length) {
@@ -443,7 +451,7 @@ define(function (require, exports, module) {
                         gui.alert('Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error');
                     }
                 },
-                false // Use media from file store
+                true // Use media from file store
             );
         }
     }

@@ -199,7 +199,13 @@ define( function( require, exports, module ) {
     function saveFile(media, dirname) {
 
         console.log("save file: " + media.name + " : " + dirname);
-        localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl );
+        try {
+            localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl );
+        }
+        catch(err) {
+             alert("Error: " + err.message);
+        }
+
 
         /*
          filesystemReady.done(function () {
