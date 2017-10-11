@@ -121,6 +121,7 @@ define(function (require, exports, module) {
         $formprogress = $('.form-progress');
 
         setEventHandlers();
+        setSubmitLogic();
 
         // Save current data so we can check if there have been changes
         startEditData = form.getDataStr(true, true);
@@ -784,14 +785,18 @@ define(function (require, exports, module) {
             });
         $('button#submit-form-single')
             .click(function () {
-                var $button = $(this);
-                $button.btnBusyState(true);
-                setTimeout(function () {
-                    form.validate();
-                    submitEditedRecord(true);
-                    $button.btnBusyState(false);
-                    return false;
-                }, 100);
+                if(surveyData.viewOnly) {
+                    window.open( '', '_self' ).close();
+                } else {
+                    var $button = $(this);
+                    $button.btnBusyState(true);
+                    setTimeout(function () {
+                        form.validate();
+                        submitEditedRecord(true);
+                        $button.btnBusyState(false);
+                        return false;
+                    }, 100);
+                }
             });
 
 
@@ -884,6 +889,12 @@ define(function (require, exports, module) {
         });
     }
 
+    function setSubmitLogic() {
+        if(surveyData.viewOnly) {
+            $('.form-footer [name="draft"]').parent().hide();
+            $('#submit-form, #submit-form-single').text("close");
+        }
+    }
 
     //update the survey forms names list
     function updateRecordList(recordList) {
