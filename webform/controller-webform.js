@@ -240,7 +240,7 @@ define(function (require, exports, module) {
             return;
         }
 
-        if (!draft) {
+        if (!draft || (draft && confirmed)) {
 
             form.validate()
                 .then( function( valid ) {

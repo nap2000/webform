@@ -120,12 +120,6 @@ define( function( require, exports, module ) {
 
     }
 
-    function delKey(key) {
-
-        localStorage.setItem(key, JSON.stringify(value));
-
-    }
-
 
     /**
      * Returns a form data record as an object. This is the only function that obtains records from the local storage.
