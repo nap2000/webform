@@ -791,8 +791,19 @@ define(function (require, exports, module) {
                     var $button = $(this);
                     $button.btnBusyState(true);
                     setTimeout(function () {
-                        form.validate();
-                        submitEditedRecord(true);
+                        if (canSaveRecord()) {
+                            saveRecord();
+                        } else if (getDraftStatus()) {
+                            setDraftStatus(false);
+                            $button.btnBusyState(false);
+                            $button.text("Submit");
+                            gui.alert('Your browser does not support saving media files');
+                        } else {
+                            form.validate();
+                            submitEditedRecord(true);
+                        }
+                        //form.validate();
+                        //submitEditedRecord(true);
                         $button.btnBusyState(false);
                         return false;
                     }, 100);
