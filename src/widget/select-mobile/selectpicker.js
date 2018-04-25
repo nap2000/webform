@@ -2,6 +2,7 @@
 
 var $ = require( 'jquery' );
 var Widget = require( '../../js/Widget' );
+var support = require( '../../js/support' );
 var pluginName = 'mobileSelectpicker';
 
 /**
@@ -14,7 +15,7 @@ var pluginName = 'mobileSelectpicker';
  * @param {*=} e     event
  */
 
-function MobileSelectpicker( element, options, e ) {
+function MobileSelectpicker( element, options /*, e*/ ) {
     this.namespace = pluginName;
     Widget.call( this, element, options );
     this._init();
@@ -73,7 +74,7 @@ $.fn[ pluginName ] = function( options, event ) {
             data = $this.data( pluginName );
 
         //only instantiate if options is an object AND if options.touch is truthy
-        if ( !data && typeof options === 'object' && options.touch ) {
+        if ( !data && typeof options === 'object' && support.touch ) {
             $this.data( pluginName, new MobileSelectpicker( this, options, event ) );
         }
         if ( data && typeof options === 'string' ) {

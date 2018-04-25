@@ -1,5 +1,9 @@
+/* global describe, require, it, beforeEach, afterEach, expect*/
+
+'use strict';
+
 var $ = require( 'jquery' );
-require( '../../src/widget/geo/geopicker' );
+var widget = require( '../../src/widget/geo/geopicker' );
 
 var form = '<form class="or"><label class="question"><input type="text" data-type-xml="geoshape"/></label></form>';
 
@@ -9,7 +13,7 @@ describe( 'geoshape widget', function() {
     beforeEach( function() {
         $form = $( form );
         $( 'body' ).append( $form );
-        geoshapePicker = $form.find( '[data-type-xml="geoshape"]' ).geopicker().data( 'geopicker' );
+        geoshapePicker = $form.find( widget.selector )[ widget.name ]().data( widget.name );
     } );
 
     afterEach( function() {

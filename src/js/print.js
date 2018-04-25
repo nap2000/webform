@@ -5,8 +5,10 @@
  */
 
 var $ = require( 'jquery' );
+var Promise = require( 'lie' );
 var dpi, printStyleSheet;
 var $printStyleSheetLink;
+var dialog = require( 'enketo/dialog' );
 
 // make sure setDpi is not called until DOM is ready
 $( document ).ready( function() {
@@ -59,6 +61,7 @@ function styleToAll() {
     printStyleSheet.media.mediaText = 'all';
     // Firefox:
     $printStyleSheetLink.attr( 'media', 'all' );
+    return !!printStyleSheet;
 }
 
 /**
@@ -78,134 +81,142 @@ function isGrid() {
 }
 
 function fixGrid( paper ) {
-    var $row, $el, top, rowTop, maxWidth, diff;
-
     // to ensure cells grow correctly with text-wrapping before fixing heights and widths.
     $( '.main' ).css( 'width', getPaperPixelWidth( paper ) ).addClass( 'print-width-adjusted' );
     // wait for browser repainting after width change
-    setTimeout( function() {
-        // the -1px adjustment is necessary because the h3 element width is calc(100% + 1px)
-        maxWidth = $( '#form-title' ).outerWidth() - 1;
-        $( '.question, .note, .trigger' ).not( '.draft' ).each( function() {
-            $el = $( this );
-            top = $el.offset().top;
-            rowTop = ( rowTop || rowTop === 0 ) ? rowTop : top;
-            $row = $row || $el;
+    return new Promise( function( resolve ) {
+        setTimeout( function() {
+            var $row;
+            var rowTop;
+            // the -1px adjustment is necessary because the h3 element width is calc(100% + 1px)
+            var maxWidth = $( '#form-title' ).outerWidth() - 1;
+            var $els = $( '.question, .note, .trigger' ).not( '.draft' );
 
-            if ( top === rowTop ) {
-                $row = $row.add( $el );
-            } else if ( top > rowTop ) {
-                var height,
-                    widths = [],
-                    cumulativeWidth = 0,
-                    maxHeight = 0;
+            $els.each( function( index ) {
+                var lastElement = index === $els.length - 1;
+                var $el = $( this );
+                var top = $el.offset().top;
+                rowTop = ( rowTop || rowTop === 0 ) ? rowTop : top;
+                $row = $row || $el;
 
-                $row.each( function() {
-                    height = $( this ).outerHeight();
-                    maxHeight = ( height > maxHeight ) ? height : maxHeight;
-                    widths.push( Number( $( this ).css( 'width' ).replace( 'px', '' ) ) );
-                } );
-                $row.addClass( 'print-height-adjusted' ).css( 'height', maxHeight + 'px' );
-
-                // adjusts widths if w-values don't add up to 100%
-                widths.forEach( function( width ) {
-                    cumulativeWidth += width;
-                } );
-
-                if ( cumulativeWidth < maxWidth ) {
-
-                    diff = maxWidth - cumulativeWidth;
-                    $row.each( function( index ) {
-                        var width = widths[ index ] + ( widths[ index ] / cumulativeWidth ) * diff;
-                        // round down to 2 decimals to avoid 100.001% totals
-                        $( this )
-                            .css( 'width', ( Math.floor( ( width * 100 / maxWidth ) * 100 ) / 100 ) + '%' )
-                            .addClass( 'print-width-adjusted' );
-                    } );
+                if ( top === rowTop ) {
+                    $row = $row.add( $el );
                 }
-                // start a new row
-                $row = $el;
-                rowTop = $el.offset().top;
-            } else {
-                console.error( 'unexpected question top position: ', top, 'for element:', $el, 'expected >=', rowTop );
-            }
-        } );
-        // Chrome 34 doesn't like the fact that main has an inline fixed width (see issue #99)
-        // since we do not need it any more, after we have set the adjusted widths to a %-value, we can remove it. 
-        $( '.main' ).css( 'width', 'auto' ).removeClass( 'print-width-adjusted' );
 
-        $( window ).trigger( 'printviewready' );
-    }, 1000 );
+                if ( top > rowTop || lastElement ) {
+                    var widths = [];
+                    var cumulativeWidth = 0;
+                    var maxHeight = 0;
+
+                    $row.each( function() {
+                        var width = Number( $( this ).css( 'width' ).replace( 'px', '' ) );
+                        widths.push( width );
+                        cumulativeWidth += width;
+                    } );
+
+                    // adjusts widths if w-values don't add up to 100%
+                    if ( cumulativeWidth < maxWidth ) {
+                        var diff = maxWidth - cumulativeWidth;
+                        $row.each( function( index ) {
+                            var width = widths[ index ] + ( widths[ index ] / cumulativeWidth ) * diff;
+                            // round down to 2 decimals to avoid 100.001% totals
+                            $( this )
+                                .css( 'width', ( Math.floor( ( width * 100 / maxWidth ) * 100 ) / 100 ) + '%' )
+                                .addClass( 'print-width-adjusted' );
+                        } );
+                    }
+
+                    $row.each( function() {
+                        var height = $( this ).outerHeight();
+                        maxHeight = ( height > maxHeight ) ? height : maxHeight;
+                    } );
+
+                    $row.addClass( 'print-height-adjusted' ).css( 'height', maxHeight + 'px' );
+
+                    // start a new row
+                    $row = $el;
+                    rowTop = $el.offset().top;
+                } else if ( rowTop < top ) {
+                    console.error( 'unexpected question top position: ', top, 'for element:', $el, 'expected >=', rowTop );
+                }
+            } );
+
+            // In case anybody is using this event.
+            $( window ).trigger( 'printviewready' );
+            resolve();
+        }, 800 );
+    } );
 }
 
 function getPaperPixelWidth( paper ) {
     var printWidth;
-    // the final margin is determined by the browser's print functionality
-    // better too large than too small here
-    var margin = 0.4;
-    var formats = {
-        A4: {
-            width: 8.27,
-            height: 11.69
-        },
-        letter: {
-            width: 8.5,
-            height: 11
-        }
+    var FORMATS = {
+        Letter: [ 8.5, 11 ],
+        Legal: [ 8.5, 14 ],
+        Tabloid: [ 11, 17 ],
+        Ledger: [ 17, 11 ],
+        A0: [ 33.1, 46.8 ],
+        A1: [ 23.4, 33.1 ],
+        A2: [ 16.5, 23.4 ],
+        A3: [ 11.7, 16.5 ],
+        A4: [ 8.27, 11.7 ],
+        A5: [ 5.83, 8.27 ],
+        A6: [ 4.13, 5.83 ],
     };
+    paper.landscape = typeof paper.landscape === 'boolean' ? paper.landscape : paper.orientation === 'landscape';
+    delete paper.orientation;
 
-    printWidth = ( paper.orientation === 'portrait' ) ? formats[ paper.format ].width : formats[ paper.format ].height;
+    if ( typeof paper.margin === 'undefined' ) {
+        paper.margin = 0.4;
+    } else if ( /^[\d.]+in$/.test( paper.margin.trim() ) ) {
+        paper.margin = parseFloat( paper.margin, 10 );
+    } else if ( /^[\d.]+cm$/.test( paper.margin.trim() ) ) {
+        paper.margin = parseFloat( paper.margin, 10 ) / 2.54;
+    } else if ( /^[\d.]+mm$/.test( paper.margin.trim() ) ) {
+        paper.margin = parseFloat( paper.margin, 10 ) / 25.4;
+    }
 
-    return ( ( printWidth - ( 2 * margin ) ) * dpi ) + 'px';
+    paper.format = typeof paper.format === 'string' && typeof FORMATS[ paper.format ] !== 'undefined' ? paper.format : 'A4';
+    printWidth = ( paper.landscape === true ) ? FORMATS[ paper.format ][ 1 ] : FORMATS[ paper.format ][ 0 ];
+
+    return ( ( printWidth - ( 2 * paper.margin ) ) * dpi ) + 'px';
 }
 
+
 /**
- * Show print setting dialog and proceed upon user's direction.
+ * Prints the form after first preparing the Grid (every time it is called).
+ * 
+ * It's just demo function that only collects paper format and should be replaced
+ * in your app with a dialog that collects a complete paper format (size, margin, orientation);
  */
-function confirmPaperSettingsAndPrint( confirm ) {
-    var texts = {
-        dialog: 'print',
-        heading: 'Select Print Settings'
-    };
-    var options = {
-        posButton: 'Prepare',
-        posAction: function( values ) {
-            fixGrid( values );
-            $( window ).one( 'printviewready', function() {
-                window.print();
+function print( theme ) {
+    if ( theme === 'grid' || ( !theme && isGrid() ) ) {
+        var swapped = false;
+        dialog.prompt( 'Enter valid paper format', 'A4' )
+            .then( function( format ) {
+                swapped = styleToAll();
+                return fixGrid( {
+                    format: format
+                } );
+            } )
+            .then( window.print )
+            .catch( console.error )
+            .then( function() {
+                if ( swapped ) {
+                    setTimeout( styleReset, 500 );
+                }
             } );
-        },
-        negButton: 'Close',
-        negAction: function() {
-            styleReset();
-        },
-        afterAction: function() {
-            setTimeout( function() {
-                styleReset();
-            }, 1500 );
-        }
-    };
-
-    // TODO: would be nice if fixGrid can become synchronous again or
-    // a progress is shown when it is churning away.
-
-    confirm( texts, options );
-}
-
-/**
- * Prints the form after first setting page breaks (every time it is called)
- */
-function printForm( confirm ) {
-    if ( isGrid() ) {
-        styleToAll();
-        // add temp reset button, just in case somebody gets stuck in print view
-        $( '<button class="btn back-to-screen-view">Back to Normal View</button>' ).prependTo( $( 'form.or' ) ).on( 'click', function() {
-            styleReset();
-        } );
-        confirmPaperSettingsAndPrint( confirm );
     } else {
         window.print();
     }
 }
 
-module.exports = printForm;
+//window.printthis = print;
+
+module.exports = {
+    print: print,
+    fixGrid: fixGrid,
+    styleToAll: styleToAll,
+    styleReset: styleReset,
+    isGrid: isGrid,
+};

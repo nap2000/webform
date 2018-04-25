@@ -3,7 +3,6 @@
 var Widget = require( '../../js/Widget' );
 var support = require( '../../js/support' );
 var $ = require( 'jquery' );
-var types = require( '../../js/types' );
 require( './timepicker' );
 require( '../../js/dropdown.jquery' );
 
@@ -54,7 +53,10 @@ TimepickerExtended.prototype._init = function() {
 
     // reset button
     $resetBtn.on( 'click', function() {
-        $fakeTimeI.val( '' ).trigger( 'change' );
+        var event = $timeI.val() ? 'change' : '';
+        if ( event || $fakeTimeI.val() ) {
+            $fakeTimeI.val( '' ).trigger( event );
+        }
     } );
 
     // pass widget focus event
@@ -77,7 +79,7 @@ $.fn[ pluginName ] = function( options, event ) {
         var $this = $( this ),
             data = $this.data( pluginName );
 
-        if ( !data && typeof options === 'object' && ( !options.touch || !support.inputtypes.time ) ) {
+        if ( !data && typeof options === 'object' && ( !support.touch || !support.inputTypes.time ) ) {
             $this.data( pluginName, new TimepickerExtended( this, options, event ) );
         }
         //only call method if widget was instantiated before

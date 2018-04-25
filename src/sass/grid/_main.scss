@@ -2,7 +2,15 @@
 @import "../formhub/form-controls";
 
 /** core/layout **/
-body, .main, .paper, .or, .or-group, .or-group-data, .or-repeat, .question {
+
+body,
+.main,
+.paper,
+.or,
+.or-group,
+.or-group-data,
+.or-repeat,
+.question {
     position: relative;
 }
 
@@ -12,42 +20,55 @@ body {
 
 .paper {
     border-width: 1px;
+
     @include border-radius(0);
+
     box-shadow: 0 0 5px #888;
 }
 
 .question {
-    input[type=radio], input[type=checkbox] {
+    input[type=radio],
+    input[type=checkbox] {
         border-width: 1px;
     }
+
     input[type=checkbox]:checked {
         @include checkbox-checked-style($radiocheck-checked-color, transparent);
+
         background-position: -1px;
     }
 }
 
 /** core/main **/
+
 .or-group {
     margin: 0;
     border-top: none;
+
     .or-group {
         margin: 0;
     }
 }
 
-h4 + .or-repeat {
+h4+.or-repeat {
     border-top: none;
 }
 
 // trick to hide group border on screen view
-.or-group > h4 {
+.or-group>h4 {
     background: #ffffff;
     margin: 0 -1px 0 0;
-    padding: 12px $q-pad-right $q-pad-right $q-pad-left;
+    padding: 12px $q-pad-side $q-pad-side $q-pad-side; // collapse icon positioning;
+    &::before {
+        margin-top: 14px;
+    }
 }
 
 // flexboxes
-.or, .or-group, .or-group-data, .or-repeat {
+.or,
+.or-group,
+.or-group-data,
+.or-repeat {
     @include display-flex;
     @include flex-wrap(wrap);
     @include flex-direction(row);
@@ -61,7 +82,10 @@ h4 + .or-repeat {
     @include flex-wrap(wrap);
     @include flex-direction(row);
     @include border-box;
-    .or-group:not(.disabled), .or-group-data:not(.disabled), .or-repeat:not(.disabled) {
+
+    .or-group:not(.disabled),
+    .or-group-data:not(.disabled),
+    .or-repeat:not(.disabled) {
         @include display-flex;
         @include flex-wrap(wrap);
         @include flex-direction(row);
@@ -70,99 +94,148 @@ h4 + .or-repeat {
 }
 
 // top-level groups border
-.or > .or-group, .or > .or-group-data {
+.or>.or-group,
+.or>.or-group-data {
     border-right: $grid-border;
 }
 
 // top-level data-group (without title) that is the first element after the form title
-.or > #form-title + .or-group-data {
+.or>#form-title+.or-group-data {
+    border-top: $grid-border;
+}
+
+// anything that is a page
+.or [role="page"] {
     border-top: $grid-border;
 }
 
 // top-level questions border
-.or > .question {
-    border: $grid-border;
-    // This is cheating for top-level questions to avoid thick double borders.
+.or>.question {
+    border: $grid-border; // This is cheating for top-level questions to avoid thick double borders.
     // Normally, recommend to group everything.
     margin-left: -1px;
     margin-top: -1px;
+}
+
+// repeat border to differentiate between repeat instances
+.or-repeat:not(:empty) {
+    border-bottom: 2px solid black;
 }
 
 // griddable elements - ie. wrappers around questions and notes
 .question {
     @include flex(1, 1);
     @include border-box;
+
     border-bottom: $grid-border;
-    border-left: $grid-border;
-    // overrides note border
-    border-right: none;
-    // overrides note border
+    border-left: $grid-border; // overrides note border
+    border-right: none; // overrides note border
     border-top: none;
     position: relative;
     margin: $question-margin;
     padding: $question-padding;
 }
 
-// display: flex messes up img size so apply it sparingly only to questions
-// and not to notes. We loose the ability to display image labels nicely in 
-// questions (though fine in tables)
+/*
+ * display: flex messes up img size so apply it sparingly only to questions
+ * and not to notes. We loose the ability to display image labels nicely in 
+ * questions (though fine in tables). It also unfortunately prevents us from 
+ * displaying comment icons inline with labels.
+ * 
+ * display: flex is used to:
+ * - display error messages at the bottom of cells
+ * - ... (other things probably)
+ */
+
 .question {
     @include display-flex;
     @include flex-wrap(nowrap);
     @include flex-direction(column);
-    cursor: text;
+
     &:not(.note):not(.focus):hover {
         background: $question-hover-bg;
     }
+
     &.note {
         background: $input-bg-disabled;
     }
+
     &.focus {
         background: $question-focus-bg;
     }
+
     .required {
         position: absolute;
         top: -2px;
         left: auto;
         right: 0;
-        margin-left: 3px;
-        margin-right: 3px;
+        margin: 0 3px;
     }
-    &.invalid-constraint, &.invalid-required {
+
+    &.invalid-constraint,
+    &.invalid-required {
         border-radius: 0;
         margin: $question-margin;
         padding: $question-padding;
     }
+
     .question-label {
         text-transform: uppercase;
         font-weight: normal;
         font-size: 12px;
+        width: calc(100% - 25px);
         order: 1;
     }
+
     .or-hint.active {
         order: 2;
     }
-    audio, video, img {
+
+    audio,
+    video,
+    img {
         order: 3;
     }
-    input[type=text], input[type=password], input[type=url], input[type=email], input[type=file], input[type=date], input[type=time], input[type=datetime], input[type=number], textarea {
+
+    input[type=text],
+    input[type=tel],
+    input[type=password],
+    input[type=url],
+    input[type=email],
+    input[type=file],
+    input[type=date],
+    input[type=time],
+    input[type=datetime],
+    input[type=number],
+    textarea {
         width: 100%;
     }
+
     textarea {
         min-height: 2 * $input-height;
     }
+
     .file-feedback {
         order: 4;
-    }
-    // the use of the :not(.ignore) selector may not work forever
+    } // the use of the :not(.ignore) selector may not work forever
     // but so far only those input inside widgets have that class
-    input:not(.ignore), textarea, select, .widget, .option-wrapper {
+    input:not(.ignore),
+    textarea,
+    select,
+    .widget,
+    .option-wrapper {
         order: 4;
     }
-    .or-constraint-msg, .or-required-msg {
+
+    .or-constraint-msg,
+    .or-required-msg,
+    .or-relevant-msg {
         order: 5;
     }
+
     .btn-comment {
+        margin: 0 12px;
+        top: 3px;
         order: 1;
     }
 }
@@ -177,10 +250,28 @@ h4 + .or-repeat {
         right: auto;
         left: 0;
     }
+
+    legend {
+        .required {
+            left: -$q-pad-side;
+            right: auto;
+        }
+    }
 }
 
 .touch {
-    input[type=text], input[type=password], input[type=url], input[type=email], input[type=file], input[type=date], input[type=time], input[type=datetime], input[type=number], textarea, select {
+    input[type=text],
+    input[type=tel],
+    input[type=password],
+    input[type=url],
+    input[type=email],
+    input[type=file],
+    input[type=date],
+    input[type=time],
+    input[type=datetime],
+    input[type=number],
+    textarea,
+    select {
         border: none;
     }
 }
@@ -190,7 +281,7 @@ h4 + .or-repeat {
     line-height: 12px;
 }
 
-.option-wrapper > label {
+.option-wrapper>label {
     margin-left: 0;
 }
 
@@ -198,7 +289,7 @@ h4 + .or-repeat {
     margin: 0;
     padding: 0;
     background: $repeat-bg;
-    &.clone {}
+
     .repeat-number {
         position: absolute;
         left: 100%;
@@ -210,34 +301,72 @@ h4 + .or-repeat {
         font-size: 18px;
         font-weight: bold;
     }
+
     .repeat-buttons {
         width: calc(100% + 1px);
-        position: relative;
         margin-top: 0;
         height: 0px;
     }
-    .repeat, .remove {
+
+    .remove {
         padding: 0;
         border: none;
         margin-top: -20px;
-    }
-    .repeat {
-        float: right;
-        margin-right: -25px;
-    }
-    .remove {
-        float: left;
-        margin-left: -20px;
+        margin-right: -20px;
     }
 }
 
-//wrappers around questions
-.or-group, .or-group-data, .or-repeat {
+.or[dir="rtl"] {
+    .or-repeat {
+        .repeat-number {
+            right: 100%;
+            left: auto;
+            padding-left: 0;
+            padding-right: 4px;
+        }
+        .remove {
+            margin-left: -20px;
+        }
+    }
+}
+
+.or-repeat-info:not(:empty) {
+    flex: 100%;
+    width: 100%;
+    margin-right: -1px;
+    border-bottom: $grid-border;
+    border-left: $grid-border;
+}
+
+// wrappers around questions
+.or-group,
+.or-group-data,
+.or-repeat {
     @include flex(1, 1);
 }
 
-legend {
+// fix for radiobuttons/checkboxes
+.question legend {
+    line-height: 1.1em;
     margin-bottom: 8px;
+
+    .question-label {
+        // to allow width to be adjusted to fit required/comment icons
+        display: block;
+    }
+
+    .required {
+        right: -$q-pad-side;
+    }
+
+    .btn-comment {
+        top: 0;
+
+        .icon {
+            // undo a hack in the widget itself
+            position: static;
+        }
+    }
 }
 
 #form-title {
@@ -247,7 +376,8 @@ legend {
     text-align: inherit;
 }
 
-.or-group > h4, .or-repeat > h4 {
+.or-group>h4,
+.or-repeat>h4 {
     width: calc(100% + 1px);
     border-right: $grid-border;
     border-right-color: transparent;
@@ -257,12 +387,12 @@ legend {
 }
 
 // the awesome grid
-@media print, screen and (min-width: 600px) {
+@media print,
+screen and (min-width: 600px) {
     @for $total from 1 through $max-columns {
         .or-appearance-w#{$total} {
             //default total of 4 if not provided
-            @include flex_IEhack($total, $default-grid-width);
-            //the actual proper grid
+            @include flex_IEhack($total, $default-grid-width); //the actual proper grid
             @for $width from 1 through $total {
                 .or-appearance-w#{$width} {
                     @include flex_IEhack($width, $total);
@@ -272,7 +402,8 @@ legend {
     }
 }
 
-@media print, screen and (min-width: 1100px) and (max-width: 1200px) {
+@media print,
+screen and (min-width: 1100px) and (max-width: 1200px) {
     // correction
     .paper .or .form-logo {
         margin-top: 0;

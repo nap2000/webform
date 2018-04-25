@@ -1,11 +1,11 @@
-/* jshint node:true */
 /* global Promise */
-
 /**
  * When using enketo-core in your own app, you'd want to replace
  * this build file with one of your own in your project root.
  */
 'use strict';
+
+var nodeSass = require( 'node-sass' );
 
 module.exports = function( grunt ) {
     // show elapsed time at the end
@@ -52,11 +52,8 @@ module.exports = function( grunt ) {
                 }
             }
         },
-        jshint: {
-            options: {
-                jshintrc: '.jshintrc'
-            },
-            all: [ '*.js', 'src/**/*.js', '!esri/**/*.js' ]
+        eslint: {
+            all: [ '*.js', 'src/**/*.js' ]
         },
         watch: {
             sass: {
@@ -81,12 +78,18 @@ module.exports = function( grunt ) {
                 singleRun: true,
                 reporters: [ 'dots' ],
                 configFile: 'test/karma.conf.js',
+                customLaunchers: {
+                    ChromeHeadlessNoSandbox: {
+                        base: 'ChromeHeadless',
+                        flags: [ '--no-sandbox' ]
+                    }
+                }
             },
             headless: {
-                browsers: [ 'ChromeHeadless' ]
+                browsers: [ 'ChromeHeadlessNoSandbox' ]
             },
             browsers: {
-                browsers: [ 'Chrome', 'ChromeCanary', 'Firefox', /*'Opera','Safari' */ ]
+                browsers: [ 'Chrome', 'Firefox', 'Safari' ]
             }
         },
         sass: {
@@ -99,6 +102,15 @@ module.exports = function( grunt ) {
                     done( {
                         file: url
                     } );
+                },
+                // Temporary workaround for SVG tickmarks in checkboxes in Firefox. 
+                // See https://github.com/enketo/enketo-core/issues/439
+                functions: {
+                    'base64-url($mimeType, $data)': function( mimeType, data ) {
+                        var base64 = new Buffer( data.getValue() ).toString( 'base64' );
+                        var urlString = 'url("data:' + mimeType.getValue() + ';base64,' + base64 + '")';
+                        return nodeSass.types.String( urlString );
+                    }
                 }
             },
             compile: {
@@ -138,7 +150,7 @@ module.exports = function( grunt ) {
 
     grunt.loadNpmTasks( 'grunt-sass' );
 
-    grunt.registerTask( 'transforms', 'Creating forms.json', function( task ) {
+    grunt.registerTask( 'transforms', 'Creating forms.json', function() {
         var forms = {};
         var done = this.async();
         var jsonStringify = require( 'json-pretty' );
@@ -150,9 +162,7 @@ module.exports = function( grunt ) {
                 return prevPromise.then( function() {
                     var xformStr = grunt.file.read( filePath );
                     grunt.log.writeln( 'Transforming ' + filePath + '...' );
-                    return transformer.transform( {
-                            xform: xformStr
-                        } )
+                    return transformer.transform( { xform: xformStr } )
                         .then( function( result ) {
                             forms[ filePath.substring( filePath.lastIndexOf( '/' ) + 1 ) ] = {
                                 html_form: result.form,
@@ -160,7 +170,6 @@ module.exports = function( grunt ) {
                             };
                         } );
                 } );
-
             }, Promise.resolve() )
             .then( function() {
                 grunt.file.write( formsJsonPath, jsonStringify( forms ) );
@@ -169,7 +178,7 @@ module.exports = function( grunt ) {
     } );
 
     grunt.registerTask( 'compile', [ 'browserify', 'uglify' ] );
-    grunt.registerTask( 'test', [ 'jsbeautifier:test', 'jshint', 'compile', 'transforms', 'karma:headless', 'style' ] );
+    grunt.registerTask( 'test', [ 'jsbeautifier:test', 'eslint', 'compile', 'transforms', 'karma:headless', 'style' ] );
     grunt.registerTask( 'style', [ 'sass' ] );
     grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );
     grunt.registerTask( 'develop', [ 'style', 'browserify' ] );

@@ -2,10 +2,8 @@ sudo: false
 dist: trusty
 language: node_js
 node_js:
-  - "6"
+  - lts/*
 addons:
-  apt:
-    packages:
-      - google-chrome-stable
+  chrome: stable
 before_script:
   - npm install -g grunt-cli

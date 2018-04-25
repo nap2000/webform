@@ -17,7 +17,8 @@
 'use strict';
 var $ = require( 'jquery' );
 var Widget = require( '../../js/Widget' );
-var t = require( 'translator' ).t;
+var support = require( '../../js/support' );
+var t = require( 'enketo/translator' ).t;
 var pluginName = 'desktopSelectpicker';
 
 /**
@@ -26,7 +27,7 @@ var pluginName = 'desktopSelectpicker';
  *
  * @constructor
  * @param {Element} element [description]
- * @param {(boolean|{touch: boolean, btnStyle: string, noneSelectedText: string, maxlength:number})} options options
+ * @param {*} options options
  * @param {*=} e     event
  */
 
@@ -82,7 +83,6 @@ DesktopSelectpicker.prototype._createLi = function( template ) {
     var li = [];
     var liHtml = '';
     var inputAttr = ( this.multiple ) ? 'type="checkbox"' : 'type="radio" name="' + Math.random() * 100000 + '"';
-    var _this = this;
     var readonlyAttr = ( this.readonly ) ? ' readonly="readonly"' : '';
     var disabledAttr = ( this.readonly ) ? ' disabled="disabled"' : '';
     var disabledClass = ( this.readonly ) ? ' class="disabled"' : '';
@@ -101,8 +101,8 @@ DesktopSelectpicker.prototype._createLi = function( template ) {
         template = template.replace( '__SELECTED_OPTIONS', this._createSelectedStr() );
         for ( var i = 0; i < li.length; i++ ) {
             if ( li[ i ].value ) {
-                checkedInputAttr = ( li[ i ].selected ) ? ' checked="checked"' : '';
-                checkedLiAttr = ( li[ i ].selected && !_this.multiple ) ? 'class="active"' : '';
+                checkedInputAttr = li[ i ].selected ? ' checked="checked"' : '';
+                checkedLiAttr = li[ i ].selected ? 'class="active"' : '';
                 /**
                  * e.g.:
                  * <li checked="checked">
@@ -183,9 +183,7 @@ DesktopSelectpicker.prototype._clickListener = function() {
                 $input.prop( 'checked', false );
                 $option.prop( 'selected', false );
             } else {
-                if ( !_this.multiple ) {
-                    $li.addClass( 'active' );
-                }
+                $li.addClass( 'active' );
                 $input.prop( 'checked', true );
                 $option.prop( 'selected', true );
             }
@@ -219,7 +217,9 @@ DesktopSelectpicker.prototype.disable = function() {
 
 //override super method
 DesktopSelectpicker.prototype.enable = function() {
-    this.$picker.find( 'li' ).removeClass( 'disabled' );
+    if ( !this.readonly ) {
+        this.$picker.find( 'li' ).removeClass( 'disabled' );
+    }
 };
 
 //override super method
@@ -242,8 +242,8 @@ $.fn[ pluginName ] = function( options, event ) {
         var $this = $( this ),
             data = $this.data( pluginName );
 
-        //only instantiate if options is an object AND if options.touch is falsy
-        if ( !data && typeof options === 'object' && !options.touch ) {
+        //only instantiate if options is an object AND if support.touch is falsy
+        if ( !data && typeof options === 'object' && !support.touch ) {
             $this.data( pluginName, ( data = new DesktopSelectpicker( this, options, event ) ) );
         } else if ( data && typeof options === 'string' ) {
             data[ options ]( this );

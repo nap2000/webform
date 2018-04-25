@@ -3,6 +3,7 @@
 var Widget = require( '../../js/Widget' );
 var support = require( '../../js/support' );
 var $ = require( 'jquery' );
+var types = require( '../../js/types' );
 var pluginName = 'datetimepickerExtended';
 require( '../../js/extend' );
 require( 'bootstrap-datepicker' );
@@ -13,7 +14,7 @@ require( '../../js/dropdown.jquery' );
  *
  * @constructor
  * @param {Element}                       element   Element to apply widget to.
- * @param {(boolean|{touch: boolean})}    options   options
+ * @param {*}    options   options
  * @param {*=}                            event     event
  */
 
@@ -55,7 +56,8 @@ DatetimepickerExtended.prototype._init = function() {
     this.$fakeDateI.datepicker( {
         format: 'yyyy-mm-dd',
         autoclose: true,
-        todayHighlight: true
+        todayHighlight: true,
+        forceParse: false
     } );
 
     this.$fakeTimeI
@@ -67,10 +69,13 @@ DatetimepickerExtended.prototype._init = function() {
         //the time picker itself has input elements
         .closest( '.widget' ).find( 'input' ).addClass( 'ignore' );
 
-    this._setManualHandler( this.$fakeDateI );
+    //this._setManualHandler( this.$fakeDateI );
     this._setFocusHandler( this.$fakeDateI.add( this.$fakeTimeI ) );
 
     this.$fakeDateI.on( 'change changeDate', function() {
+        if ( !types.date.validate( this.value ) ) {
+            that.$fakeDateI.val( '' ).datepicker( 'update' );
+        }
         changeVal();
         return false;
     } );
@@ -82,8 +87,11 @@ DatetimepickerExtended.prototype._init = function() {
 
     //reset button
     this.$fakeTimeI.next( '.btn-reset' ).on( 'click', function() {
-        that.$fakeDateI.val( '' ).trigger( 'change' ).datepicker( 'update' );
-        that.$fakeTimeI.val( '' ).trigger( 'change' );
+        var event = $dateTimeI.val() ? 'change' : '';
+        if ( event || that.$fakeDateI.val() || that.$fakeTimeI.val() ) {
+            that.$fakeDateI.val( '' ).trigger( event ).datepicker( 'update' );
+            that.$fakeTimeI.val( '' ).trigger( event );
+        }
     } );
 
     function changeVal() {
@@ -134,7 +142,7 @@ DatetimepickerExtended.prototype._createFakeTimeInput = function( timeVal ) {
  *
  * @param { jQuery } $fakeDateI Fake date input element
  */
-DatetimepickerExtended.prototype._setManualHandler = function() {};
+//DatetimepickerExtended.prototype._setManualHandler = function() {};
 
 
 DatetimepickerExtended.prototype.update = function() {
@@ -172,9 +180,9 @@ $.fn[ pluginName ] = function( options, event ) {
     options = options || {};
 
     return this.each( function() {
-        var $this = $( this ),
-            data = $this.data( pluginName ),
-            badSamsung = /GT-P31[0-9]{2}.+AppleWebKit\/534\.30/;
+        var $this = $( this );
+        var data = $this.data( pluginName );
+        var badSamsung = /GT-P31[0-9]{2}.+AppleWebKit\/534\.30/;
 
         /*
             Samsung mobile browser (called "Internet") has a weird bug that appears sometimes (?) when an input field
@@ -186,7 +194,7 @@ $.fn[ pluginName ] = function( options, event ) {
             browser: "Mozilla/5.0 (Linux; U; Android 4.1.1; en-us; GT-P3113 Build/JRO03C) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30";
             webview: "Mozilla/5.0 (Linux; U; Android 4.1.2; en-us; GT-P3100 Build/JZO54K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30" 
             */
-        if ( !data && typeof options === 'object' && ( !options.touch || !support.inputtypes.datetime || badSamsung.test( navigator.userAgent ) ) ) {
+        if ( !data && typeof options === 'object' && ( !support.touch || !support.inputTypes.datetime || badSamsung.test( navigator.userAgent ) ) ) {
             $this.data( pluginName, new DatetimepickerExtended( this, options, event ) );
         }
         //only call method if widget was instantiated before

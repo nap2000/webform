@@ -4,9 +4,9 @@
  * When using enketo-core as a library inside your app, it is recommended to just **ignore** this file.
  * Place a replacement for this controller elsewhere in your app.
  */
+'use strict';
 
 var $ = require( 'jquery' );
-window.jQuery = $; // required for bootstrap-timepicker
 var support = require( './src/js/support' );
 var Form = require( './src/js/Form' );
 var fileManager = require( './src/js/file-manager' );
@@ -27,15 +27,20 @@ if ( getURLParameter( 'touch' ) === 'true' ) {
 if ( xform && xform !== 'null' ) {
     $( '.guidance' ).remove();
     xform = /^https?:\/\//.test( xform ) ? xform : location.origin + '/' + xform;
-    $.getJSON( 'http://' + location.hostname + ':8085/transform?xform=' + xform, function( survey ) {
-        formStr = survey.form;
-        modelStr = survey.model;
-        $( '.form-header' ).after( formStr );
-        initializeForm();
-    } );
+    var transformerUrl = 'http://' + location.hostname + ':8085/transform?xform=' + xform;
+    $.getJSON( transformerUrl )
+        .done( function( survey ) {
+            formStr = survey.form;
+            modelStr = survey.model;
+            $( '.form-header' ).after( formStr );
+            initializeForm();
+        } )
+        .fail( function() {
+            window.alert( 'Error fetching form from enketo-transformer at:\n\n' + transformerUrl + '.\n\nPlease check that enketo-transformer has been started.' );
+        } );
 } else if ( $( 'form.or' ).length > 0 ) {
     $( '.guidance' ).remove();
-    modelStr = globalModelStr;
+    modelStr = window.globalModelStr;
     initializeForm();
 }
 
@@ -45,9 +50,9 @@ $( '#validate-form' ).on( 'click', function() {
     form.validate()
         .then( function( valid ) {
             if ( !valid ) {
-                alert( 'Form contains errors. Please see fields marked in red.' );
+                window.alert( 'Form contains errors. Please see fields marked in red.' );
             } else {
-                alert( 'Form is valid! (see XML record and media files in the console)' );
+                window.alert( 'Form is valid! (see XML record and media files in the console)' );
                 $( 'form.or' ).trigger( 'beforesave' );
                 console.log( 'record:', form.getDataStr() );
                 console.log( 'media files:', fileManager.getCurrentFiles() );
@@ -61,19 +66,18 @@ function initializeForm() {
         modelStr: modelStr
     }, {
         arcGis: {
-            basemaps: [ "streets", "topo", "satellite", "osm" ],
+            basemaps: [ 'streets', 'topo', 'satellite', 'osm' ],
             webMapId: 'f2e9b762544945f390ca4ac3671cfa72',
             hasZ: true
         },
-        'clearIrrelevantImmediately': false,
-        'goTo': true
+        'clearIrrelevantImmediately': true
     } );
     // for debugging
     window.form = form;
     //initialize form and check for load errors
     loadErrors = form.init();
     if ( loadErrors.length > 0 ) {
-        alert( 'loadErrors: ' + loadErrors.join( ', ' ) );
+        window.alert( 'loadErrors: ' + loadErrors.join( ', ' ) );
     }
 }
 

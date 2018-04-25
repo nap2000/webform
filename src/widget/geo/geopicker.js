@@ -2,11 +2,12 @@
 
 var $ = require( 'jquery' );
 var Widget = require( '../../js/Widget' );
-var config = require( 'enketo-config' );
+var config = require( 'enketo/config' );
 var L = require( 'leaflet' );
 var Promise = require( 'lie' );
-var t = require( 'translator' ).t;
-
+var t = require( 'enketo/translator' ).t;
+var support = require( '../../js/support' );
+var dialog = require( 'enketo/dialog' );
 var googleMapsScriptRequest;
 var pluginName = 'geopicker';
 var defaultZoom = 15;
@@ -15,7 +16,7 @@ var maps = ( config && config.maps && config.maps.length > 0 ) ? config.maps : [
     'name': 'streets',
     'maxzoom': 24,
     'tiles': [ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' ],
-    'attribution': '© <a href=\"http://openstreetmap.org\">OpenStreetMap</a> | <a href=\"www.openstreetmap.org/copyright\">Terms</a>'
+    'attribution': '© <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="www.openstreetmap.org/copyright">Terms</a>'
 } ];
 var searchSource = 'https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}';
 var googleApiKey = config.googleApiKey || config.google_api_key;
@@ -36,7 +37,7 @@ var iconMultiActive = L.divIcon( {
  * Geotrace widget Class
  * @constructor
  * @param {Element} element [description]
- * @param {(boolean|{touch: boolean, repeat: boolean})} options options
+ * @param {*} options options
  * @param {*=} e     event
  */
 
@@ -181,8 +182,11 @@ Geopicker.prototype._init = function() {
     this.$widget.find( '.btn-remove' ).on( 'click', function() {
         if ( that.points.length < 2 ) {
             that._updateInputs( [] );
-        } else if ( window.confirm( 'This will completely remove the current geopoint from the list of geopoints and cannot be undone. Are you sure you want to do this?' ) ) {
-            that._removePoint();
+        } else {
+            dialog.confirm( t( 'geopicker.removePoint' ) )
+                .then( function() {
+                    that._removePoint();
+                } );
         }
     } );
 
@@ -243,7 +247,7 @@ Geopicker.prototype._init = function() {
     } );
 
     // pass focus events on widget elements back to original input
-    this.$widget.on( 'focus', 'input', function( event ) {
+    this.$widget.on( 'focus', 'input', function() {
         $( that.element ).trigger( 'fakefocus' );
     } );
 
@@ -302,9 +306,8 @@ Geopicker.prototype._switchInputType = function( type ) {
  */
 Geopicker.prototype._getProps = function() {
     var appearances = [];
-    var map = this.options.touch !== true || ( this.options.touch === true && $( this.element ).closest( '.or-appearance-maps' ).length > 0 ) ||
-                                ( this.options.touch === true && $( this.element ).closest( '.or-appearance-placement-map' ).length > 0);   // smap add placement-map as appearance
-
+    var map = support.touch !== true || ( support.touch === true && $( this.element ).closest( '.or-appearance-maps' ).length > 0 )
+                                     || ( support.touch === true && $( this.element ).closest( '.or-appearance-placement-map' ).length > 0);   // smap add placement-map as appearance
 
     if ( map ) {
         appearances = $( this.element ).closest( '.question' ).attr( 'class' ).split( ' ' )
@@ -322,7 +325,7 @@ Geopicker.prototype._getProps = function() {
         search: map,
         appearances: appearances,
         type: this.element.attributes[ 'data-type-xml' ].value,
-        touch: this.options.touch,
+        touch: support.touch,
         wide: ( this.$question.width() / this.$question.closest( 'form.or' ).width() > 0.8 ),
         readonly: this.element.readOnly
     };
@@ -642,8 +645,6 @@ Geopicker.prototype._enableSearch = function() {
                     .always( function() {
 
                     } );
-            } else {
-
             }
         } );
 };
@@ -784,7 +785,7 @@ Geopicker.prototype._updateDynamicMapView = function( latLng, zoom ) {
 };
 
 Geopicker.prototype._showIntersectError = function() {
-    window.alert( 'Borders cannot intersect!' );
+    dialog.alert( 'Borders cannot intersect!' );
 };
 
 /**
@@ -875,7 +876,7 @@ Geopicker.prototype._loadGoogleMapsScript = function() {
     // in case multiple widgets exist in the same form
     if ( !googleMapsScriptRequest ) {
         // create deferred object, also outside of the scope of the current widget
-        googleMapsScriptRequest = new Promise( function( resolve, reject ) {
+        googleMapsScriptRequest = new Promise( function( resolve ) {
             var apiKeyQueryParam, loadUrl;
 
             // create a global callback to be called by the Google Maps script once this has loaded

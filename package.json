@@ -2,7 +2,7 @@
     "name": "webform",
     "description": "A fork of Enketo Smart Paper that integrates with Smap",
     "homepage": "http://www.smap.com.au",
-    "version": "2.1.0",
+    "version": "3.0.0",
     "license": "Apache-2.0",
     "os": [
         "darwin",
@@ -31,46 +31,49 @@
     "bugs": "https://github.com/enketo/enketo-core/issues",
     "main": "src/js/Form.js",
     "scripts": {
-        "start": "grunt server",
+        "start": "grunt develop",
         "test": "grunt test"
     },
     "devDependencies": {
-        "enketo-transformer": "1.17.2",
+        "enketo-transformer": "1.25.2",
         "grunt": "1.0.x",
-        "grunt-browserify": "5.0.x",
+        "grunt-browserify": "5.2.x",
         "grunt-concurrent": "2.x.x",
         "grunt-contrib-connect": "1.0.x",
-        "grunt-contrib-jshint": "1.1.x",
-        "grunt-contrib-uglify": "3.0.x",
+        "grunt-contrib-uglify": "3.2.x",
         "grunt-contrib-watch": "1.x.x",
+        "grunt-eslint": "^20.1.0",
         "grunt-jsbeautifier": "0.x.x",
         "grunt-karma": "2.0.0",
-        "grunt-sass": "2.0.x",
+        "grunt-sass": "2.1.x",
         "grunt-shell": "2.1.0",
-        "jasmine-core": "2.6.x",
+        "jasmine-core": "^2.9.1",
         "json-pretty": "0.0.1",
-        "karma": "1.7.x",
-        "karma-browserify": "5.1.x",
+        "karma": "2.0.x",
+        "karma-browserify": "^5.1.3",
         "karma-chrome-launcher": "2.2.x",
-        "karma-firefox-launcher": "1.0.x",
+        "karma-firefox-launcher": "1.1.x",
         "karma-jasmine": "1.1.x",
         "karma-safari-launcher": "1.0.x",
         "load-grunt-tasks": "3.x.x",
         "time-grunt": "1.x.x"
     },
     "browser": {
-        "enketo-config": "./config.json",
-        "widgets": "./src/js/widgets.js",
-        "translator": "./src/js/fake-translator"
+        "enketo/config": "./config.json",
+        "enketo/widgets": "./src/js/widgets.js",
+        "enketo/translator": "./src/js/fake-translator",
+        "enketo/dialog": "./src/js/fake-dialog",
+        "enketo/file-manager": "./src/js/file-manager"
     },
     "dependencies": {
-        "bootstrap-datepicker": "1.7.x",
+        "bootstrap-datepicker": "1.8.x",
         "bootstrap-slider-basic": "3.3.x",
-        "enketo-xpathjs": "1.6.0",
-        "jquery": "3.2.x",
-        "jquery-touchswipe": "1.6.x",
+        "enketo-xpathjs": "1.7.0",
+        "jquery": "3.3.x",
+        "jquery-touchswipe": "^1.6.18",
         "leaflet": "0.7.x",
-        "lie": "3.1.x",
-        "mergexml": "1.1.2"
+        "lie": "3.3.x",
+        "mergexml": "1.1.2",
+        "signature_pad": "2.3.x"
     }
 }

@@ -3,7 +3,9 @@
 $printBaseFontSize: 10px;
 
 .or {
-    input:not([type="radio"]):not([type="checkbox"]), select, textarea {
+    input:not([type="radio"]):not([type="checkbox"]),
+    select,
+    textarea {
         border-bottom: none;
     }
 }
@@ -15,15 +17,10 @@ $printBaseFontSize: 10px;
     width: calc(100% + 1px);
 }
 
-.note, .trigger {
+.note,
+.trigger {
     //-webkit-print-color-adjust: exact;
     background: #cccccc;
-}
-
-.or .or-branch.disabled {
-    // warning: took me hours to find this, default is set to block...
-    /* override inline style */
-    @include display-flex;
 }
 
 .or-repeat .repeat-number {
@@ -31,8 +28,18 @@ $printBaseFontSize: 10px;
     font-size: 12px;
 }
 
+.or.print-relevant-only {
+    // targeting is getting a little weird here
+    .question.or-branch.disabled,
+    .or-branch.disabled {
+        display: none;
+    }
+}
+
 .question {
-    &.non-select::after, &.or-appearance-search:after, &.or-appearance-autocomplete:after {
+    &.non-select::after,
+    &.or-appearance-search:after,
+    &.or-appearance-autocomplete:after {
         content: ' ';
         display: block;
         height: 1px;
@@ -42,34 +49,20 @@ $printBaseFontSize: 10px;
         border-bottom: 1px dotted black;
     }
 
-    &.widget.date, &.widget.bootstrap-timepicker {
+    &.widget.date,
+    &.widget.bootstrap-timepicker {
         display: none;
     }
 
-    &:not(.or-appearance-maps) input {
-        &[type=date], &[type=time], &[type=datetime] {
+    input {
+        &[type=date],
+        &[type=time],
+        &[type=datetime] {
             opacity: 0.7;
             display: block !important;
             visibility: hidden;
         }
-    }
-
-    &.or-appearance-maps label.geo {
-        &::after {
-            content: ' ';
-            display: block;
-            height: 1px;
-            width: 100%;
-            border-bottom: 1px dotted black;
-        }
-
-        input {
-            display: block !important;
-            visibility: hidden;
-        }
-    }
-
-    // just hiding file-feedback so it provides a bit of empty space in the printout
+    } // just hiding file-feedback so it provides a bit of empty space in the printout
     .file-feedback {
         visibility: hidden;
         display: block !important;
@@ -78,18 +71,6 @@ $printBaseFontSize: 10px;
 
 .question {
     padding-bottom: 10px;
-
-    .question-label, .option-label, label.geo {
-        line-height: $printBaseFontSize;
-        font-size: $printBaseFontSize;
-    }
-
-    input:not([type=radio]):not([type=checkbox]),
-    .geopicker.widget input[type=number] {
-        font-size: $printBaseFontSize;
-        line-height: $printBaseFontSize;
-        height: 20px;
-    }
 
     textarea {
         height: 45px;
@@ -118,7 +99,8 @@ $printBaseFontSize: 10px;
 }
 
 .geopicker.widget {
-    .geo-inputs label.geo:nth-of-type(3), .geo-inputs label.geo:nth-of-type(4) {
+    .geo-inputs label.geo:nth-of-type(3),
+    .geo-inputs label.geo:nth-of-type(4) {
         min-height: 0;
 
         input {
@@ -129,8 +111,9 @@ $printBaseFontSize: 10px;
 
 .or-appearance-likert .option-wrapper {
     // Not clear to me why all these likert fixes are necessary
-    > label {
-        input[type=radio], input[type=checkbox] {
+    >label {
+        input[type=radio],
+        input[type=checkbox] {
             margin-top: -40px;
         }
     }
@@ -140,12 +123,13 @@ $printBaseFontSize: 10px;
     margin: 0;
     padding: 0;
 
-    .dropdown-toggle ~ .dropdown-menu .option-wrapper {
+    .dropdown-toggle~.dropdown-menu .option-wrapper {
         padding-left: 0;
     }
 
     ul {
-        li, li.active {
+        li,
+        li.active {
             border: none;
             margin-right: 0;
 
@@ -174,8 +158,10 @@ $printBaseFontSize: 10px;
 
 // below are (hopefully) temporary adjustments to get page-breaks to work in multi-line flexbox layouts
 // the issue it attemps to solve is described here: http://stackoverflow.com/questions/20408033/how-to-get-page-break-inside-avoid-to-work-nicely-with-flex-wrap-wrap
-
-.or, .or-group, .or-group-data, .or-repeat {
+.or,
+.or-group,
+.or-group-data,
+.or-repeat {
     display: block;
     width: 100%;
 }
@@ -186,27 +172,26 @@ $printBaseFontSize: 10px;
 
     @include display-inline-flex;
 
-    vertical-align: top;
-
-    //padding: 5px 5px 12px 5px;
+    vertical-align: top; //padding: 5px 5px 12px 5px;
     // unfortunately we cannot target actual page-breaks to provide a top-border
     &:not(.invalid-required):not(.invalid-constraint) {
         border-top: $grid-border;
     }
 }
 
-.or .or-branch.disabled {
-    @include display-inline-flex;
+.pages.or [role="page"].current:not(.question) {
+    display: inherit;
 }
 
-@media print, screen and (min-width: 700px) {
+@media print,
+screen and (min-width: 700px) {
     @for $total from 1 through $max-columns {
         .or-appearance-w#{$total} {
             display: block;
             width: 100%;
 
             &.question {
-                @if $total >= $default-grid-width {
+                @if $total>=$default-grid-width {
                     width: 100%;
                 }
                 @else {

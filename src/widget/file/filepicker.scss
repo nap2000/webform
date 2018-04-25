@@ -1,12 +1,14 @@
 .file-picker {
+
     .fake-file-input {
         @include form-control;
-
+        display: inline-block;
         width: $input-max-width;
         text-align: start;
     }
 
-    .file-feedback, .file-preview {
+    .file-feedback,
+    .file-preview {
         @include font-normal;
     }
 
@@ -23,10 +25,12 @@
     .file-preview {
         margin-top: 10px;
     }
-}
 
-input[type="file"].transparent {
-    position: absolute;
-    visibility: hidden;
-    z-index: 5;
+    .btn-download {
+        margin-right: 0;
+        &[href=""] {
+            display: none;
+        }
+    }
+
 }

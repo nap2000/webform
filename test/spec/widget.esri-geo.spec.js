@@ -1,5 +1,9 @@
+/* global describe, require, it, beforeEach, afterEach, expect*/
+
+'use strict';
+
 var $ = require( 'jquery' );
-require( '../../src/widget/geo-esri/geopicker' );
+var widget = require( '../../src/widget/geo-esri/geopicker' );
 
 var form = '<form class="or"><label class="question"><input type="text" data-type-xml="geopoint"/></label></form>';
 
@@ -9,7 +13,7 @@ describe( 'ESRI geopoint widget', function() {
     beforeEach( function() {
         $form = $( form );
         $( 'body' ).append( $form );
-        geopointPicker = $form.find( '[data-type-xml="geopoint"]' ).esriGeopicker().data( 'geopicker' );
+        geopointPicker = $form.find( widget.selector )[ widget.name ]().data( 'geopicker' );
     } );
 
     afterEach( function() {
@@ -17,7 +21,7 @@ describe( 'ESRI geopoint widget', function() {
     } );
 
     it( 'can be instantiated', function() {
-        expect( geopointPicker ).not.toBeUndefined();
+        expect( widget.name ).not.toBeUndefined();
     } );
 
     describe( 'convertor of LatLng and degrees, minutes, seconds', function() {

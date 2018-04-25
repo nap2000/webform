@@ -3,6 +3,404 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+[Unreleased]
+----------------------
+##### Fixed
+- In Safari, readonly checkboxes and radiobuttons can still be manipulated and WILL modify the record, even if the UI doesn't update.
+
+[4.50.0] - 2018-04-22 
+----------------------
+##### Added
+- Basic randomize() support to shuffle nodesets (no support for itemsets with itext labels).
+
+##### Changed
+- GoTo function separated from form.init and should now be called separately with form.goTo(xpath). **WARNING: Update app if GoTo functionality was used.**
+- Increased linespacing for labels of "select" questions.
+
+##### Fixed
+- Min() and max() ignore non-last arguments/nodes with value 0.
+- Goto functionality throws exception if target is a comment question that is not inside a group and the form is in Pages Mode.
+
+[4.49.0] - 2018-04-14
+---------------------
+##### Removed
+- function `printForm` in print script **WARNING: Rewrite function call and use the `print` function as an example**.
+
+##### Fixed
+- Add-repeat (+) button not aligned properly in Grid theme when no repeats exist.
+- Manual date input without hyphen (i.e. large number) is converted to non-sensible date.
+
+[4.48.1] - 2018-04-06
+---------------------
+##### Fixed
+- Grid theme print script does not size cells with images correctly causing overflow into neighboring cells.
+
+[4.48.0] - 2018-04-03
+---------------------
+##### Changed
+- Annotate widget will now no longer allow drawing until an image has been uploaded.
+
+##### Fixed
+- If the form starts with a lengthy group, the print view shows only the form title on the first page.
+- Loading drawings from existing records, results in blank canvas after window resizing. **WARNING: Requires adding a getObjectURL function to the file manager module (in case this is overridden your app)**
+- The image map widget shows 'SVG not found error' in Firefox sometimes, and if so, it fails to scale the image.
+
+[4.47.6] - 2018-03-23
+---------------------
+##### Changed
+- Print script has been reorganized. **WARNING: If your app is using the print script (for Grid Theme forms), update your code!**
+
+##### Fixed
+- Print view of Grid Theme form in Pages mode doesn't properly stretch cells in the current page.
+- Print script for Grid Theme doesn't have a default for paper format and doesn't apply user-defined margin.
+- Markdown headers in Grid Theme are overlapping in print view.
+- Print script for Grid Theme doesn't correct width of last question in form.
+
+[4.47.5] - 2018-03-21
+---------------------
+##### Changed
+- Positioning of comment widget icon next to question label.
+- Center media inside labels.
+
+[4.47.4] - 2018-03-14
+---------------------
+##### Changed
+- Enketo Transformer: In Markdown, make a distinction between paragraphs (2+ subsequent new lines) and simple new lines.
+
+##### Fixed:
+- Image Map widget inside repeat sometimes shows 'SVG image cannot be loaded' message when all is okay.
+- Enketo Transformer: In Markdown, newline characters are not converted if they follow a heading.
+
+[4.47.3] - 2018-03-09
+---------------------
+##### Fixed:
+- If existing drawing/signature/annotion is loaded from a http URL, an exception occurs.
+- When radiobutton or checkbox is cleared programmatically the `data-checked` attribute is not updated.
+- Filenames of signature, annotation and drawing inputs are set to undefined-xx.png.
+
+[4.47.2] - 2018-03-02
+---------------------
+##### Removed:
+- File upload "no preview for this file type" message.
+
+##### Fixed
+- Cursor in Grid theme set to text for no seemingly good reason.
+- Markdown headers not limited from h1-h6 as they should be (in Enketo Transformer)
+
+[4.47.1] - 2018-02-27
+---------------------
+##### Changed
+- Show separate custom reset messages for drawing, signature and annotation widgets.
+
+##### Fixed
+- Date format shown to user in readonly field is different from non-readonly field.
+- Autocomplete widget does not accept options that have multiple subsequent spaces in their label.
+- Draw widget draw color gets reset to the default color after undo-ing strokes.
+
+[4.47.0] - 2018-02-21
+---------------------
+##### Added
+- Download functionality to draw widgets.
+- Support for "new", "new-front", "new-rear" on media inputs.
+- Feature to undo drawing strokes in draw and annotate widgets.
+
+##### Changed
+- Show helpful error message if SVG image cannot be found with Image Map widget.
+- Native month-year datepicker used on mobile devices when available.
+
+##### Fixed
+- In annotate widget loaded file disappears when screen is resized.
+- Annotate widget not working on touchscreen devices.
+- Annotate widget stretches uploaded image.
+- Downloaded drawings have a different filename from the one stored in the record.
+- Imagemap widget does not work for a group `<g>` of `<path>`s.
+- Imagemap scaling issue when width and height defined in SVG file have units (pt).
+
+[4.46.0] - 2018-02-14
+---------------------
+##### Added
+- Full support for annotate widget.
+
+##### Changed
+- Draw/signature widget requires confirmation before reset.
+- Modal dialogs can now be overridden in app
+- Renamed 'enketo-config', 'translator', '../path/to/file-manager', and 'widgets' modules to 'enketo/config', 'enketo/translator', 'enketo/file-manager', 'enketo/widgets'. **WARNING: update overrides for these modules in your app!**
+
+##### Fixed
+- Printing: geo widget with appearance "maps" does not show coordinate fields.
+
+[4.45.0] - 2018-02-08
+---------------------
+##### Added
+- File pickers can now (only) be reset by reset button.
+- Download functionality to file pickers.
+
+##### Changed
+- If repeat is completely empty it no longer takes up any visual space.
+- Show upload placeholder with max file size.
+- Error messages in geopicker are now translatable.
+
+[4.44.4] - 2018-01-31
+---------------------
+##### Fixed
+- Instances with special characters in instance id attributes fail to be queried.
+- Namespaces not resolved for secondary instances.
+
+[4.44.3] - 2018-01-30
+---------------------
+##### Fixed
+- Instance('id' )/path/to/node does not work if 'id' is surrounded by whitespace.
+- (In Enketo Transformer) Markdown headers preceded by whitespace fail to render as header and whitespace trimming is to aggresive.
+- Datepicker with "month-year" and "year" appearance shows full value.
+
+[4.44.2] - 2018-01-23
+---------------------
+##### Changed
+- Upgraded to jQuery 3.3.x. **Warning: Likely requires the app that uses enketo-core to also upgrade to jQuery 3.3.x!**
+
+##### Fixed
+- Date strings returned by XPath evaluator for question with type 'date' are not considered valid dates and set to ''.
+
+[4.44.1] - 2018-01-18
+---------------------
+##### Changed
+- Reduced margins around markdown headers.
+- (In Enketo Transformer) better markdown headers with escaping and inline hashtag use.
+
+##### Fixed
+- A top-level group with a relevant that refers to a node inside a repeat may not get re-evaluated when the node changes and multiple repeats exist.
+- Editing a record with an empty group fails miserably.
+
+[4.44.0] - 2018-01-16
+---------------------
+##### Added
+- Option to turn off page-swipe support.
+
+##### Fixed
+- An output inside a group label that is the parent of a repeat with 0 instances, causes a loading exception.
+- (In Enketo Transformer) Readonly question does not show constraint message.
+
+[4.43.0] - 2018-01-05
+---------------------
+##### Changed
+- Invalid dates (and datetimes) such as 2018-12-35 are no longer automically converted to a valid date. They convert to empty now.
+
+##### Fixed
+- Repeat with field-list and parent group with field-list does not show "+" button and both groups fail to collapse.
+- Printing: datetime picker inputs print below each other in Chrome.
+- Safari invalidates any valid date (and datetime) with segments < 10, e.g. 2018-01-06.
+
+[4.42.3] - 2017-12-29
+---------------------
+##### Changed
+- Modest performance improvement with large repeat counts.
+
+##### Fixed
+- The IE11 (optional) workaround for checkboxes/radiobuttons does not work when a table has image labels.
+- RTL scripts not supported for the (optional) IE11 radiobutton/checkbox workaround.
+- RTL scripts do not have centered checkboxes/radiobuttons in tables.
+- If preload item is placed inside a repeat with a repeat-count of 0, an exception occurs.
+- RTL scripts with Grid Theme have mislocated repeat numbers and repeat removal button.
+
+[4.42.2] - 2017-12-28
+---------------------
+##### Changed
+- Added optional workarounds for IE11 to match regular checkbox and radiobutton styling.
+
+##### Fixed
+- Group collapse icon overlaps border on small screens.
+- Black background shown behind radiobuttons and checkboxes on iOS browsers.
+
+[4.42.1] - 2017-12-25
+---------------------
+##### Changed
+- Image scaling by Image Map widget is more sensitive to screen size to avoid scrolling.
+
+##### Fixed
+- The advertised required transformer version fails to build on Windows 10.
+- In Signature/Draw widget a line can be detected as a page-swipe in Pages mode.
+- If Signature/Draw widget has loaded an existing value and is not on the first page, the drawing won't be shown until clicked.
+- If SVG image in Image Map widget contains inline `style` attribute with fill and stroke the 'selected' state is not shown.
+
+[4.42.0] - 2017-12-22
+---------------------
+##### Changed
+- Error messages in filepicker are now translatable.
+- Start development server with `npm start`.
+- Firefox checkboxes now styled properly. **WARNING: Make sure to [update your css build task](https://github.com/enketo/enketo-core/commit/9575559c015514dcec1942c30582a52bafb149f7)!**
+
+##### Fixed
+- jr:choicename() is causing an exception when wrapped inside other functions.
+- Workaround for an XLSForm limitation by moving "no-collapse" appearance of repeat to its parent group.
+
+[4.41.9] - 2017-12-20
+---------------------
+##### Fixed
+- Npm refuses to install previous version with enketo-xslt 1.15.2, since December 19th 2017 or before. 
+
+[4.41.8] - 2017-12-19
+---------------------
+##### Changed
+- When clicking the label of an upload question, the filepicker will no longer launch.
+
+##### Fixed
+- Datepicker not available on iOS browsers (again, sorry).
+
+[4.41.7] - 2017-12-11
+---------------------
+##### Fixed
+- Printing: Non-relevant non-select fields are not greyed out.
+- Printing: Geo widget without "maps" appearance is shown on screen but not on printout.
+- Printing: Geo widget map/zoom selector buttons are shown on printouts.
+- Printing: Various Analog Scale widget styling issues.
+- Grid Theme: A table-list/list-no-label question does not have a bottom border.
+- Grid Theme: Top of page sometimes does not have a border.
+- jr:choice-name() function can not handle syntax with more complex XPaths.
+- Nodenames with dots cause an exception during extraction of a serialized model without irrelevant nodes.
+
+[4.41.6] - 2017-11-29
+---------------------
+##### Fixed
+- When a repeat is removed any logic that depends on repeat position changes is not updated when it should be.
+- Printing: only first page printed in Firefox.
+- Printing: group collapse carets shown.
+- Printing: number input up/down buttons shown in Firefox.
+- Repeat with relevants and parent group without `ref` attribute is not revealed when relevant becomes true.
+- In pages mode, text and number inputs can no longer get focus.
+- Printing: select-one does not show all options in long lists.
+- Printing: styling improvements for draw/distress/likert widgets.
+
+[4.41.5] - 2017-11-24
+---------------------
+##### Fixed
+- Draw/signature widget not working in pages mode sometimes, if it is not on the first page.
+
+[4.41.4] - 2017-11-16 
+---------------------
+##### Changed
+- Visually separate repeat instances in Grid Theme.
+
+##### Fixed
+- A new repeat with a date field that is not relevant by default does not get the date widget on non-touchscreen devices.
+
+[4.41.3] - 2017-11-13
+---------------------
+##### Changed
+- Styling of repeat + button in Grid Theme.
+
+##### Fixed
+- Various issues with repeat + button in Pages Mode when repeat=page.
+- Excessive change events fired by datepicker, timepicker, and datetimepicker when reset button is clicked when value is empty.
+
+[4.41.2] - 2017-11-08
+---------------------
+##### Changed
+- More customization options of the file manager module.
+
+##### Fixed
+- A calculated item (without form control) and with a relevant inside a repeat throws an exception when there are 0 repeats and the relevant is evaluated.
+
+[4.41.1] - 2017-10-27
+---------------------
+##### Fixed
+- If repeat = page in Pages mode, the second+ repeat is now shown.
+
+[4.41.0] - 2017-10-18
+---------------------
+##### Changed
+- Time format according to ODK XForms Specification (10:12 -> 10:12.00.000-06:00). **WARNING: Make sure your backend is ready for this.**
+
+[4.40.0] - 2017-10-16
+---------------------
+##### Added
+- Make all label groups collapsible.
+- Let appearance "compact" on a group collapse this group by default.
+- Make first repeat removable with button if repeat-count is not used.
+- Let appearance "minimal" on a repeat prevent automatic creation of the first repeat instance.
+
+#### Fixed
+- Data type conversion issues for integers and dates.
+
+[4.39.5] - 2017-10-09
+----------------------
+##### Fixed
+- Datepicker not available on iOS browsers.
+- In nested repeats a user-entered repeat count is always taken from the first repeat if current repeat instances in the series are zero.
+
+[4.39.4] - 2017-10-06
+----------------------
+##### Fixed
+- Max() and min() fail if nodeset is empty (0 repeats).
+- If first page is not relevant it is still displayed upon load.
+
+[4.39.3] - 2017-10-03
+----------------------
+##### Fixed
+- CSS build issue with Grid Theme.
+- With validateContinuously=true, a new repeat instance should not be evaluated as soon as it is created.
+- Pesky "error" message that sourcemap for bootstrap-datepicker.css is not found (when dev tools are open in browser).
+
+[4.39.2] - 2017-09-26
+----------------------
+##### Fixed
+- Readonly fields with calculation are not cleared in model when they become irrelevant if clearIrrelevantImmediately is set to `true`.
+- Calculated items without form control were calculated even if they were inside an irrelevant group.
+- Radiobuttons inside a repeat are sometimes incorrectly removed from the submission.
+
+[4.39.1] - 2017-09-13
+----------------------
+##### Fixed
+- Form loading error with new decimal input mask. 
+ 
+[4.39.0] - 2017-09-06
+----------------------
+##### Added
+- Support for appearance="numbers" on text inputs.
+- Fixed input masks for integer and decimal inputs.
+
+##### Changed
+- Make goto-target-not-found error translatable.
+
+[4.38.2] - 2017-08-17
+----------------------
+##### Fixed
+- In some occasions, nested repeat nodes that are relevant are removed from the record string as if they were irrelevant.
+- In tables, the heading row (appearance=label) can be misaligned with the lower rows.
+- Cloned select minimal question with relevant inside repeat is hidden when loading record with multiple repeats.
+- Draw/signature widget is instantiated for file input types other than "image".
+- Draw/signature widget is never enabled if it has a relevant expression.
+- File inputs do not always clear properly when they become irrelevant.
+
+[4.38.1] - 2017-08-10
+---------------------
+##### Fixed
+- Manual date edits do not get propagated to model if Enter key is not pressed.
+- When loading record with repeats, any select/select1 questions (without appearance "minimal") in non-first repeats are not initialized properly.
+- Comment icon and required asterisk overlapping with each other and with label in Grid theme.
+- Timepicker styling issues in Grid theme.
+
+[4.38.0] - 2017-08-03
+---------------------
+##### Added
+- Draw/signature widget.
+
+[4.37.0] - 2017-07-25
+---------------------
+##### Added
+- Ability to hide irrelevant questions from printout (now the default) with a setting.
+ 
+##### Changed
+- Touchscreen detection to change widgets and appearance has been tweaked and is now only considering iOS and Android browsers.
+- Native date inputs (touchscreen or readonly) do not show 'yyyy-mm-dd' placeholder text anymore when empty and unfocused,
+
+[4.36.2] - 2017-07-21
+---------------------
+##### Changed
+- Made branch module more extensible.
+
+##### Fixed
+- A readonly select minimal (desktop) widget becomes editable when it has a "relevant" expression that evaluates to true.
+
 [4.36.1] - 2017-07-05
 ---------------------
 ##### Fixed

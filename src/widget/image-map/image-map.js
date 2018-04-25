@@ -3,6 +3,7 @@
 var Widget = require( '../../js/Widget' );
 var $ = require( 'jquery' );
 var pluginName = 'imageMap';
+var t = require( 'enketo/translator' ).t;
 
 /**
  * Image Map widget that turns an SVG image into a clickable map 
@@ -13,7 +14,7 @@ var pluginName = 'imageMap';
  * @param {(boolean|{touch: boolean})}    options   options
  * @param {*=}                            event     event
  */
-function ImageMap( element, options, event ) {
+function ImageMap( element, options /*, event*/ ) {
     this.namespace = pluginName;
     Widget.call( this, element, options );
     this.options = options;
@@ -37,15 +38,18 @@ ImageMap.prototype._init = function() {
      *
      * We could use the same with online-only forms, but that would cause a loading delay.
      */
-    if ( img.getAttribute( 'src' ) ) {
+    if ( !img ) {
+        return this._showSvgNotFoundError();
+    } else if ( img.getAttribute( 'src' ) ) {
         this._addMarkup( img ).then( this._addFunctionality.bind( this ) );
     } else {
         $( img )
             .on( 'load', function() {
                 that._addMarkup( img ).then( that._addFunctionality.bind( that ) );
             } );
+        // Ignore errors, because an img element without source may throw one.
+        // E.g. in Enketo Express inside a repeat: https://github.com/kobotoolbox/enketo-express/issues/961
     }
-
 };
 
 ImageMap.prototype._addFunctionality = function( $widget ) {
@@ -74,28 +78,47 @@ ImageMap.prototype._addMarkup = function( img ) {
      * For translated forms, we now discard everything except the first image,
      * since we're assuming the images will be the same in all languages.
      */
-    return $.get( src ).then( function( data ) {
-        var $svg;
-        var $widget;
-        var width;
-        var height;
-        if ( that._isSvgDoc( data ) ) {
-            $svg = that._removeUnmatchedIds( $( data.querySelector( 'svg' ) ) );
-            $widget = $( '<div class="widget image-map"/>' )
-                .append( '<div class="image-map__ui"><span class="image-map__ui__tooltip"></span></div>' )
-                .append( $svg );
-            // remove images in all languages
-            $( that.element ).find( 'img' ).remove();
-            $( that.element ).find( '.option-wrapper' ).before( $widget );
-            // Resize, using original unscaled SVG dimensions
-            // svg.getBBox() only works after SVG has been added to DOM.
-            width = $svg.attr( 'width' ) || $svg[ 0 ].getBBox().width;
-            height = $svg.attr( 'height' ) || $svg[ 0 ].getBBox().height;
-            $svg.attr( 'viewBox', [ 0, 0, width, height ].join( ' ' ) );
+    return $.get( src )
+        .then( function( data ) {
+            var $svg;
+            var $widget;
+            var width;
+            var height;
+            if ( that._isSvgDoc( data ) ) {
+                $svg = that._removeUnmatchedIds( $( data.querySelector( 'svg' ) ) );
+                $widget = $( '<div class="widget image-map"/>' )
+                    .append( '<div class="image-map__ui"><span class="image-map__ui__tooltip"></span></div>' )
+                    .append( $svg );
+                // remove images in all languages
+                $( that.element ).find( 'img' ).remove();
+                $( that.element ).find( '.option-wrapper' ).before( $widget );
+                // Resize, using original unscaled SVG dimensions
+                // svg.getBBox() only works after SVG has been added to DOM.
+                // In FF getBBox causes an "NS_ERROR_FAILURE" exception likely because the SVG
+                // image has not finished rendering. This doesn't always happen though.
+                // For now, we just log the FF error, and hope that resizing is done correctly via
+                // attributes.
+                var bbox = {};
+                try {
+                    bbox = $svg[ 0 ].getBBox();
+                } catch ( e ) {
+                    console.error( 'Could not obtain Boundary Box of SVG element', e );
+                }
 
-            return $widget;
-        }
-    } );
+                width = bbox.width || $svg.attr( 'width' );
+                height = bbox.height || $svg.attr( 'height' );
+                $svg.attr( 'viewBox', [ 0, 0, parseInt( width, 10 ), parseInt( height, 10 ) ].join( ' ' ) );
+
+                return $widget;
+            } else {
+                throw ( 'Image is not an SVG doc' );
+            }
+        } )
+        .catch( this._showSvgNotFoundError.bind( that ) );
+};
+
+ImageMap.prototype._showSvgNotFoundError = function() {
+    $( this.element ).find( '.option-wrapper' ).before( '<div class="widget image-map"><div class="image-map__error">' + t( 'imagemap.svgNotFound' ) + '</div></div>' );
 };
 
 /**
@@ -105,7 +128,7 @@ ImageMap.prototype._addMarkup = function( img ) {
  */
 ImageMap.prototype._removeUnmatchedIds = function( $svg ) {
     var that = this;
-    $svg.find( 'path[id]' ).each( function() {
+    $svg.find( 'path[id], g[id]' ).each( function() {
         if ( !that._getInput( this.id ) ) {
             this.removeAttribute( 'id' );
         }
@@ -121,9 +144,9 @@ ImageMap.prototype._getInput = function( id ) {
 ImageMap.prototype._setSvgClickHandler = function() {
     var that = this;
 
-    this.$svg.not( '[or-readonly]' ).on( 'click', 'path[id]', function( event ) {
-
-        var input = that._getInput( event.target.id );
+    this.$svg.not( '[or-readonly]' ).on( 'click', 'path[id], g[id]', function( event ) {
+        var id = event.target.id || $( event.target ).closest( 'g[id]' )[ 0 ].id;
+        var input = that._getInput( id );
         if ( input ) {
             $( input ).prop( 'checked', !input.checked ).trigger( 'change' );
         }
@@ -138,11 +161,12 @@ ImageMap.prototype._setHoverHandler = function() {
     var that = this;
 
     this.$svg
-        .on( 'mouseenter', 'path[id]', function( event ) {
-            var optionLabel = $( that._getInput( event.target.id ) ).siblings( '.option-label.active' ).text();
+        .on( 'mouseenter', 'path[id], g[id]', function( event ) {
+            var id = event.target.id || $( event.target ).closest( 'g[id]' )[ 0 ].id;
+            var optionLabel = $( that._getInput( id ) ).siblings( '.option-label.active' ).text();
             that.$tooltip.text( optionLabel );
         } )
-        .on( 'mouseleave', 'path[id]', function( event ) {
+        .on( 'mouseleave', 'path[id], g[id]', function() {
             that.$tooltip.text( '' );
         } );
 };
@@ -159,7 +183,7 @@ ImageMap.prototype._updateImage = function() {
     var that = this;
     var values = this.options.helpers.input.getVal( this.$inputs.eq( 0 ) );
 
-    this.$svg.find( 'path[or-selected]' ).removeAttr( 'or-selected' );
+    this.$svg.find( 'path[or-selected], g[or-selected]' ).removeAttr( 'or-selected' );
 
     if ( typeof values === 'string' ) {
         values = [ values ];
@@ -168,7 +192,7 @@ ImageMap.prototype._updateImage = function() {
     values.forEach( function( value ) {
         if ( value ) {
             // if multiple values have the same id, change all of them (e.g. a province that is not contiguous)
-            that.$svg.find( 'path#' + value ).attr( 'or-selected', '' );
+            that.$svg.find( 'path#' + value + ',g#' + value ).attr( 'or-selected', '' );
         }
     } );
 };

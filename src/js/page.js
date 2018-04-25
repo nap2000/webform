@@ -6,7 +6,7 @@
 
 var $ = require( 'jquery' );
 var Promise = require( 'lie' );
-var config = require( 'enketo-config' );
+var config = require( 'enketo/config' );
 
 require( 'jquery-touchswipe' );
 
@@ -20,6 +20,7 @@ module.exports = {
         }
         if ( this.form.view.$.hasClass( 'pages' ) ) {
             var $allPages = this.form.view.$.find( ' .question:not([role="comment"]), .or-appearance-field-list' )
+                .add( '.or-repeat.or-appearance-field-list + .or-repeat-info' )
                 .filter( function() {
                     // something tells me there is a more efficient way to doing this
                     // e.g. by selecting the descendants of the .or-appearance-field-list and removing those
@@ -33,7 +34,6 @@ module.exports = {
                 this.$btnPrev = this.$formFooter.find( '.previous-page' );
                 this.$btnNext = this.$formFooter.find( '.next-page' );
                 this.$btnLast = this.$formFooter.find( '.last-page' );
-
                 this.updateAllActive( $allPages );
                 this.toggleButtons( 0 );
                 this.setButtonHandlers();
@@ -77,6 +77,9 @@ module.exports = {
         } );
     },
     setSwipeHandlers: function() {
+        if ( config.swipePage === false ) {
+            return;
+        }
         var that = this;
         var $main = $( '.main' );
 
@@ -84,6 +87,7 @@ module.exports = {
         $main.swipe( {
             allowPageScroll: 'vertical',
             threshold: 250,
+            preventDefaultEvents: false,
             swipeLeft: function() {
                 that.$btnNext.click();
             },
@@ -127,8 +131,12 @@ module.exports = {
                 // note that that.$current will have length 1 even if it was removed from DOM!
                 if ( that.$current.closest( 'html' ).length === 0 ) {
                     that.updateAllActive();
+                    var $target = $( event.target ).prev();
+                    if ( $target.length === 0 ) {
+                        $target = $( event.target );
+                    }
                     // is it best to go to previous page always?
-                    that.flipToPageContaining( $( event.target ) );
+                    that.flipToPageContaining( $target );
                 }
             } );
     },
@@ -148,8 +156,13 @@ module.exports = {
     updateAllActive: function( $all ) {
         $all = $all || $( '.or [role="page"]' );
         this.$activePages = $all.filter( function() {
-            return $( this ).closest( '.disabled' ).length === 0 &&
-                ( $( this ).is( '.question' ) || $( this ).find( '.question:not(.disabled)' ).length > 0 );
+            var $this = $( this );
+            return $this.closest( '.disabled' ).length === 0 &&
+                ( $this.is( '.question' ) || $this.find( '.question:not(.disabled)' ).length > 0 ||
+                    // or-repeat-info is only considered a page by itself if it has no sibling repeats
+                    // When there are siblings repeats, we use CSS trickery to show the + button underneath the last 
+                    // repeat.
+                    ( $this.is( '.or-repeat-info' ) && $this.siblings( '.or-repeat' ).length === 0 ) );
         } );
     },
     getAllActive: function() {
@@ -175,7 +188,7 @@ module.exports = {
         var that = this;
         var currentIndex;
         var validate;
-        this.updateAllActive();
+
         currentIndex = this.getCurrentIndex();
         validate = ( config.validatePage === false ) ? Promise.resolve( true ) : this.form.validateContent( this.$current );
 
@@ -201,7 +214,7 @@ module.exports = {
     prev: function() {
         var prev;
         var currentIndex;
-        this.updateAllActive();
+
         currentIndex = this.getCurrentIndex();
         prev = this.getPrev( currentIndex );
 
@@ -234,11 +247,9 @@ module.exports = {
         }
     },
     flipToFirst: function() {
-        this.updateAllActive();
         this.flipTo( this.$activePages[ 0 ] );
     },
     flipToLast: function() {
-        this.updateAllActive();
         this.flipTo( this.$activePages.last()[ 0 ] );
     },
     // flips to the page provided as jQueried parameter or the page containing
@@ -247,11 +258,14 @@ module.exports = {
     // it flips to the page contained with the jQueried parameter;
     flipToPageContaining: function( $e ) {
         var $closest;
+
         $closest = $e.closest( '[role="page"]' );
         $closest = ( $closest.length === 0 ) ? $e.find( '[role="page"]' ) : $closest;
 
-        //this.updateAllActive();
-        this.flipTo( $closest[ 0 ] );
+        // If $e is a comment question, and it is not inside a group, there may be no $closest.
+        if ( $closest.length ) {
+            this.flipTo( $closest[ 0 ] );
+        }
     },
     focusOnFirstQuestion: function( pageEl ) {
         //triggering fake focus in case element cannot be focused (if hidden by widget)

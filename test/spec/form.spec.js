@@ -1,6 +1,10 @@
-/* global describe, require, it, beforeEach, afterEach*/
+/* global describe, require, it, xit, beforeEach, expect, spyOn, beforeAll, afterAll*/
+
+'use strict';
+
 var Form = require( '../../src/js/Form' );
 var $ = require( 'jquery' );
+var Promise = require( 'lie' );
 var forms = require( '../mock/forms' );
 
 var loadForm = function( filename, editStr, options, session ) {
@@ -34,7 +38,7 @@ describe( 'Output functionality within repeats', function() {
     var $o = [];
     var form = loadForm( 'outputs_in_repeats.xml' );
     form.init();
-    form.view.$.find( 'button.repeat' ).click();
+    form.view.$.find( '.add-repeat-btn' ).click();
 
     $o = form.view.$.find( '.or-output' );
 
@@ -120,8 +124,8 @@ describe( 'Preload and MetaData functionality', function() {
         setTimeout( function() {
             form.view.$.trigger( 'beforesave' );
             timeEndNew = form.model.node( '/preload/end' ).getVal()[ 0 ];
-            //expect( new Date( timeEnd ) < new Date( timeEndNew ) ).toBe( true );
-            expect( new Date( timeEndNew ) - new Date( timeEnd ) ).toEqual( 1000 );
+            expect( new Date( timeEndNew ) - new Date( timeEnd ) ).toBeGreaterThan( 1000 );
+            expect( new Date( timeEndNew ) - new Date( timeEnd ) ).toBeLessThan( 1050 );
             done();
         }, 1000 );
 
@@ -242,7 +246,7 @@ describe( 'Loading instance values into html input fields functionality', functi
         form = loadForm( 'issue208.xml' );
         form.init();
         form.input.setVal( '/issue208/rep/nodeA', 0, 'yes' );
-        expect( form.view.$.find( '[name="/issue208/rep/nodeA"]' ).eq( 0 ).is( ':checked' ) ).toBe( true );
+        expect( form.view.$.find( '[data-name="/issue208/rep/nodeA"]' ).eq( 0 ).is( ':checked' ) ).toBe( true );
     } );
 
 } );
@@ -251,7 +255,7 @@ describe( 'repeat functionality', function() {
     var form;
 
     //turn jQuery animations off
-    jQuery.fx.off = true;
+    $.fx.off = true;
 
     describe( 'cloning', function() {
         beforeEach( function() {
@@ -283,6 +287,7 @@ describe( 'repeat functionality', function() {
 
         it( 'marks cloned invalid fields as valid', function() {
             var repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]',
+                repeatButton = '.add-repeat-btn',
                 nodeSelector = 'input[name="/thedata/repeatGroup/nodeC"]',
                 $node3 = form.view.$.find( nodeSelector ).eq( 2 ),
                 $node4;
@@ -293,7 +298,7 @@ describe( 'repeat functionality', function() {
             expect( $node3.parent().hasClass( 'invalid-constraint' ) ).toBe( true );
             expect( form.view.$.find( nodeSelector ).eq( 3 ).length ).toEqual( 0 );
 
-            form.view.$.find( repeatSelector ).eq( 2 ).find( 'button.repeat' ).click();
+            form.view.$.find( repeatButton ).click();
 
             $node4 = form.view.$.find( nodeSelector ).eq( 3 );
             expect( form.view.$.find( repeatSelector ).length ).toEqual( 4 );
@@ -334,6 +339,49 @@ describe( 'repeat functionality', function() {
 
     } );
 
+    it( 'ignores the "minimal" appearance when an existing record is loaded (almost same as previous test)', function() {
+        var form;
+        var instanceStr = '<q><PROGRAMME><PROJECT><Partner><INFORMATION><Partner_Name>a</Partner_Name><Camp><P_Camps>a1</P_Camps></Camp><Camp><P_Camps>a2</P_Camps></Camp></INFORMATION></Partner><Partner><INFORMATION><Partner_Name>b</Partner_Name><Camp><P_Camps>b1</P_Camps></Camp><Camp><P_Camps>b2</P_Camps></Camp><Camp><P_Camps>b3</P_Camps></Camp></INFORMATION></Partner></PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>';
+        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+        forms[ 'nested-repeats-nastier' ] = {
+            xml_model: forms[ 'nested-repeats-nasty.xml' ].xml_model
+        };
+        // both repeats get the 'minimal appearance'
+        forms[ 'nested-repeats-nastier' ].html_form = forms[ 'nested-repeats-nasty.xml' ].html_form.replace( "class=\"or-repeat ", "class=\"or-repeat or-appearance-minimal " );
+        form = loadForm( 'nested-repeats-nastier', instanceStr );
+        form.init();
+
+        expect( form.view.$.find( a ).length ).toEqual( 2 );
+        expect( form.view.$.find( a ).hasClass( 'or-appearance-minimal' ) ).toEqual( true );
+        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 2 );
+        expect( form.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 3 );
+    } );
+
+    it( 'uses the "minimal" appearance for an empty form to create 0 repeats', function() {
+        var form;
+        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+        forms[ 'nested-repeats-nastier' ] = {
+            xml_model: forms[ 'nested-repeats-nasty.xml' ].xml_model
+        };
+        // both repeats get the 'minimal appearance'
+        forms[ 'nested-repeats-nastier' ].html_form = forms[ 'nested-repeats-nasty.xml' ].html_form.replace( "class=\"or-repeat ", "class=\"or-repeat or-appearance-minimal " );
+        form = loadForm( 'nested-repeats-nastier' );
+        form.init();
+
+        expect( form.view.$.find( a ).length ).toEqual( 0 );
+    } );
+
+    it( 'In an empty form it creates the first repeat instance automatically (almost same as previous test)', function() {
+        var form = loadForm( 'nested-repeats-nasty.xml' );
+        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+        form.init();
+
+        expect( form.view.$.find( a ).length ).toEqual( 1 );
+        expect( form.view.$.find( a ).hasClass( 'or-appearance-minimal' ) ).toEqual( false );
+        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 1 );
+    } );
 
     it( 'doesn\'t duplicate date widgets in a cloned repeat', function() {
         form = loadForm( 'nested_repeats.xml' );
@@ -346,8 +394,9 @@ describe( 'repeat functionality', function() {
     } );
 
     describe( 'ordinals are set for default repeat instances in the default model upon initialization', function() {
-        var config = require( 'enketo-config' );
-        var dflt = config[ 'repeat ordinals' ];
+        /*
+        var config = require( 'enketo/config' );
+        var dflt = config.repeatOrdinals;
         beforeAll( function() {
             config.repeatOrdinals = true;
         } );
@@ -355,9 +404,10 @@ describe( 'repeat functionality', function() {
         afterAll( function() {
             config.repeatOrdinals = dflt;
         } );
+        */
         // this test is only interested in the model, but adding ordinals to default repeat instances is directed
         // by Form.js
-        // // Very theoretical. Situation will never occur with OC.
+        // Very theoretical. Situation will never occur with OC.
         xit( 'initialize correctly with ordinals if more than one top-level repeat is included in model', function() {
             var f = loadForm( 'nested_repeats.xml' );
             f.init();
@@ -380,6 +430,7 @@ describe( 'repeat functionality', function() {
             var rep = '.or-repeat[name="/dynamic-repeat-count/rep"]';
             var cnt = '[name="/dynamic-repeat-count/count"]';
             var $form;
+            var $model;
             f.init();
             $form = f.view.$;
             $model = f.model.$;
@@ -412,7 +463,7 @@ describe( 'repeat functionality', function() {
             expect( $model.find( 'rep' ).length ).toEqual( 0 );
         } );
 
-        it( 'and works nicely with relevant even if repeat count is 0', function() {
+        it( 'and works nicely with relevant even if repeat count is 0 (with relevant on group)', function() {
             // When repeat count is zero there is no context node to pass to evaluator.
             var f = loadForm( 'repeat-count-relevant.xml' );
             var errors = f.init();
@@ -420,26 +471,117 @@ describe( 'repeat functionality', function() {
             expect( f.view.$.find( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
             expect( f.view.$.find( '.or-group.or-branch[name="/data/rep"]' ).hasClass( 'disabled' ) ).toBe( true );
         } );
+
+        it( 'and works nicely with relevant even if repeat count is 0 (with output in group label)', function() {
+            // When repeat count is zero there is no context node to pass to evaluator.
+            var f = loadForm( 'repeat-count-relevant.xml' );
+            var errors = f.init();
+            expect( errors.length ).toEqual( 0 );
+            expect( f.view.$.find( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
+            f.view.$.find( 'input[name="/data/q1"]' ).val( 2 ).trigger( 'change' );
+            expect( f.view.$.find( '.or-group.or-branch[name="/data/rep"]>h4 .or-output' ).text() ).toEqual( '2' );
+        } );
+
+        it( 'and correctly deals with nested repeats that have a repeat count', function() {
+            var f = loadForm( 'repeat-count-nested-2.xml' );
+            var schools = '[name="/data/repeat_A/schools"]';
+            var a = '.or-repeat[name="/data/repeat_A"]';
+            var b = '.or-repeat[name="/data/repeat_A/repeat_B"]';
+            f.init();
+
+            f.view.$.find( schools ).eq( 1 ).val( '2' ).trigger( 'change' );
+
+            expect( f.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 2 );
+        } );
+    } );
+
+
+    describe( 'creates 0 repeats', function() {
+
+        it( ' if a record is loaded with 0 repeats (simple)', function() {
+            var repeat = '.or-repeat[name="/repeat-required/rep"]';
+            var f = loadForm( 'repeat-required.xml', '<repeat-required><d>b</d><meta><instanceID>a</instanceID></meta></repeat-required>' );
+            f.init();
+            expect( f.view.$.find( repeat ).length ).toEqual( 0 );
+        } );
+
+        it( ' if a record is loaded with 0 nested repeats (simple)', function() {
+            var repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+            var repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+            var f = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
+                '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name></INFORMATION></Partner>' +
+                '</PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>' );
+            f.init();
+            expect( f.view.$.find( repeat1 ).length ).toEqual( 1 );
+            expect( f.view.$.find( repeat2 ).length ).toEqual( 0 );
+        } );
+
+        it( ' if a record is loaded with 0 nested repeats (advanced)', function() {
+            var repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+            var repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+            var f = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
+                '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name></INFORMATION></Partner>' +
+                '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name><Camp><P_Camps/></Camp></INFORMATION></Partner>' +
+                '</PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>' );
+            f.init();
+            expect( f.view.$.find( repeat1 ).length ).toEqual( 2 );
+            expect( f.view.$.find( repeat1 ).eq( 0 ).find( repeat2 ).length ).toEqual( 0 );
+            expect( f.view.$.find( repeat1 ).eq( 1 ).find( repeat2 ).length ).toEqual( 1 );
+        } );
+
+        // This is a VERY special case, because the form contains a template as well as multiple repeat instances
+        xit( ' if a record is loaded with 0 repeats (very advanced)', function() {
+            var repeat = '.or-repeat[name="/repeat-dot/rep.dot"]';
+            var f = loadForm( 'repeat-dot.xml', '<repeat-dot><meta><instanceID>a</instanceID></meta></repeat-dot>' );
+            f.init();
+            expect( f.view.$.find( repeat ).length ).toEqual( 0 );
+        } );
+    } );
+
+    describe( 'initializes date widgets', function() {
+        it( 'in a new repeat instance if the date widget is not relevant by default', function() {
+            var form = loadForm( 'repeat-irrelevant-date.xml' );
+            form.init();
+            form.view.$.find( '.add-repeat-btn' ).click();
+            // make date field in second repeat relevant
+            form.view.$.find( '[name="/repeat/rep/a"]' ).eq( 1 ).val( 'a' ).trigger( 'change' );
+            expect( form.view.$.find( '[name="/repeat/rep/b"]' ).eq( 1 ).closest( '.question' ).find( '.widget' ).length ).toEqual( 1 );
+        } );
     } );
 
 } );
 
 describe( 'calculations', function() {
-    var form = loadForm( 'calcs_in_repeats.xml' );
-    form.init();
 
     it( 'also work inside repeats', function() {
-        form.view.$.find( 'button.repeat' ).click();
+        var form = loadForm( 'calcs_in_repeats.xml' );
+        form.init();
+        form.view.$.find( '.add-repeat-btn' ).click();
         form.view.$.find( '[name="/calcs_in_repeats/rep1/num1"]:eq(0)' ).val( '10' ).trigger( 'change' );
         form.view.$.find( '[name="/calcs_in_repeats/rep1/num1"]:eq(1)' ).val( '20' ).trigger( 'change' );
-        expect( form.model.node( '/calcs_in_repeats/rep1/calc3', 0 ).getVal()[ 0 ] ).toEqual( '200' );
-        expect( form.model.node( '/calcs_in_repeats/rep1/calc3', 1 ).getVal()[ 0 ] ).toEqual( '400' );
+        expect( form.model.node( '/calcs_in_repeats/rep1/grp/calc3', 0 ).getVal()[ 0 ] ).toEqual( '200' );
+        expect( form.model.node( '/calcs_in_repeats/rep1/grp/calc3', 1 ).getVal()[ 0 ] ).toEqual( '400' );
+    } );
+
+    it( 'are not performed if the calculation is not relevant', function() {
+        var form = loadForm( 'calcs_in_repeats.xml' );
+        form.init();
+        form.view.$.find( '.add-repeat-btn' ).click().click();
+
+        form.view.$.find( '[name="/calcs_in_repeats/rep1/num1"]:eq(0)' ).val( '20' ).trigger( 'change' );
+        form.view.$.find( '[name="/calcs_in_repeats/rep1/num1"]:eq(1)' ).val( '5' ).trigger( 'change' );
+        form.view.$.find( '[name="/calcs_in_repeats/rep1/num1"]:eq(2)' ).val( '40' ).trigger( 'change' );
+
+        expect( form.model.node( '/calcs_in_repeats/rep1/grp/calc3', 0 ).getVal()[ 0 ] ).toEqual( '400' );
+        expect( form.model.node( '/calcs_in_repeats/rep1/grp/calc3', 1 ).getVal()[ 0 ] ).toEqual( '' );
+        //sexpect( form.model.node( '/calcs_in_repeats/rep1/grp/calc3', 2 ).getVal()[ 0 ] ).toEqual( '800' );
     } );
 
     it( 'outside a repeat are updated if they are dependent on a repeat node', function() {
         var f = loadForm( 'repeat-count.xml' );
         var cnt = '[name="/dynamic-repeat-count/count"]';
         var $form;
+        var $model;
         f.init();
         $form = f.view.$;
         $model = f.model.$;
@@ -447,6 +589,18 @@ describe( 'calculations', function() {
         $form.find( cnt ).val( 10 ).trigger( 'change' );
         expect( $model.find( 'sum_note' ).text() ).toEqual( '10' );
         expect( $model.find( 'txtsum_note' ).text() ).toEqual( '10' );
+    } );
+
+    // https://github.com/enketo/enketo-core/issues/479
+    it( 'inside a repeat using the position(..) function are updated if the position changes due to repeat removal', function() {
+        var form = loadForm( 'repeat-position.xml' );
+        form.init();
+        form.view.$.find( '.add-repeat-btn' ).click().click().click();
+        form.view.$.find( '.remove' ).eq( 1 ).click();
+        expect( form.model.xml.querySelectorAll( 'pos' )[ 1 ].textContent ).toEqual( '2' );
+        expect( form.view.$.find( '.or-output[data-value="/RepeatGroupTest/P/pos"]' ).eq( 1 ).text() ).toEqual( '2' );
+        expect( form.model.xml.querySelectorAll( 'pos' )[ 2 ].textContent ).toEqual( '3' );
+        expect( form.view.$.find( '.or-output[data-value="/RepeatGroupTest/P/pos"]' ).eq( 2 ).text() ).toEqual( '3' );
     } );
 
 } );
@@ -492,7 +646,7 @@ describe( 'branching functionality', function() {
         var form = loadForm( 'issue208.xml' );
         form.init();
 
-        form.view.$.find( repeatSelector ).eq( 0 ).find( 'button.repeat' ).click();
+        form.view.$.find( '.add-repeat-btn' ).click();
         expect( form.view.$.find( repeatSelector ).length ).toEqual( 2 );
         //check if initial state of 2nd question in 2nd repeat is disabled
         expect( form.view.$.find( repeatSelector ).eq( 1 )
@@ -527,13 +681,20 @@ describe( 'branching functionality', function() {
         var dataO = form.model;
 
         it( 'evaluates a calculated item only when it becomes relevant', function() {
-            //node without relevant attribute:
-            expect( dataO.node( '/calcs/calc2' ).getVal()[ 0 ] ).toEqual( '12' );
-            //node that is irrelevant
+            // node without relevant attribute:
+            expect( dataO.node( '/calcs/calc11' ).getVal()[ 0 ] ).toEqual( '12' );
+            // node that is irrelevant
             expect( dataO.node( '/calcs/calc1' ).getVal()[ 0 ] ).toEqual( '' );
             $node.val( 'yes' ).trigger( 'change' );
-            //node that has become relevant
+            // node that has become relevant
             expect( dataO.node( '/calcs/calc1' ).getVal()[ 0 ] ).toEqual( '3' );
+            // make irrelevant again (was a bug)
+            $node.val( 'no' ).trigger( 'change' );
+            // double-check that calc11 is unaffected (was a bug)
+            expect( dataO.node( '/calcs/calc11' ).getVal()[ 0 ] ).toEqual( '12' );
+            // node that is irrelevant
+            expect( dataO.node( '/calcs/calc1' ).getVal()[ 0 ] ).toEqual( '' );
+
         } );
 
         it( 'empties an already calculated item once it becomes irrelevant', function() {
@@ -544,15 +705,39 @@ describe( 'branching functionality', function() {
         } );
     } );
 
-    describe( 'inside repeats when multiple repeats are present upon loading (issue #507)', function() {
-        var form = loadForm( 'multiple_repeats_relevant.xml' );
-        form.init();
-        var $relNodes = form.view.$.find( '[name="/multiple_repeats_relevant/rep/skipq"]' ).parent( '.or-branch' );
-        it( 'correctly evaluates the relevant logic of each question inside all repeats', function() {
+    describe( 'inside repeats when multiple repeats are present upon loading', function() {
+
+        it( 'correctly evaluates the relevant logic of each question inside all repeats (issue #507)', function() {
+            var form = loadForm( 'multiple_repeats_relevant.xml' );
+            form.init();
+            var $relNodes = form.view.$.find( '[name="/multiple_repeats_relevant/rep/skipq"]' ).parent( '.or-branch' );
             expect( $relNodes.length ).toEqual( 2 );
             //check if both questions with 'relevant' attributes in the 2 repeats are disabled
             expect( $relNodes.eq( 0 ).hasClass( 'disabled' ) ).toBe( true );
             expect( $relNodes.eq( 1 ).hasClass( 'disabled' ) ).toBe( true );
+        } );
+
+        it( 'correctly evaluates the relevant logic of each simple select question inside all repeats (issue #442 core)', function() {
+            var form = loadForm( 'repeat-relevant-select1.xml', '<Enketo_tests><details><fruits>pear</fruits><location></location></details><details><fruits>mango</fruits><location>kisumu</location></details><details><fruits>mango</fruits><location>kisumu</location></details><meta><instanceID>a</instanceID></meta></Enketo_tests>' );
+            form.init();
+            var $relNodes = form.view.$.find( '[data-name="/Enketo_tests/details/location"]' ).closest( '.or-branch' );
+            expect( $relNodes.length ).toEqual( 3 );
+            //check if radiobuttons with 'relevant' attributes in the second and third repeats are initialized and enabled
+            expect( $relNodes.eq( 0 ).hasClass( 'disabled' ) ).toBe( true );
+            expect( $relNodes.eq( 1 ).hasClass( 'pre-init' ) ).toBe( false );
+            expect( $relNodes.eq( 1 ).hasClass( 'disabled' ) ).toBe( false );
+            expect( $relNodes.eq( 2 ).hasClass( 'pre-init' ) ).toBe( false );
+            expect( $relNodes.eq( 2 ).hasClass( 'disabled' ) ).toBe( false );
+        } );
+
+    } );
+
+    // https://github.com/kobotoolbox/enketo-express/issues/846
+    describe( 'inside repeats for a calculation without a form control when no repeats exist', function() {
+        var form = loadForm( 'calcs_in_repeats_2.xml' );
+        var loadErrors = form.init();
+        it( 'does not throw an error', function() {
+            expect( loadErrors.length ).toEqual( 0 );
         } );
     } );
 
@@ -573,11 +758,25 @@ describe( 'branching functionality', function() {
         } );
     } );
 
-    describe( 'handles clearing of values in irrelevant branches', function() {
+    // https://github.com/enketo/enketo-core/issues/444
+    describe( 'in nested repeats with a <select> that has a relevant', function() {
+        // instanceStr is in this case just used to conveniently create 2 parent repeats with each 1 child repeat (<select> with relevant).
+        // The second child repeat in each parent repeat with name 'type_other' is irrelevant.
+        var instanceStr = '<data><region><livestock><type>d</type><type_other/></livestock></region><region><livestock><type>d</type></livestock></region><meta><instanceID>a</instanceID></meta></data>';
+        var form = loadForm( 'nested-repeat-v5.xml', instanceStr );
+        form.init();
+        it( 'initializes all nested repeat questions', function() {
+            expect( form.view.$.find( '.or-branch' ).length ).toEqual( 4 );
+            expect( form.view.$.find( '.or-branch.pre-init' ).length ).toEqual( 0 );
+        } );
+    } );
+
+    describe( 'handles clearing of form control values in irrelevant branches', function() {
         var name = 'relevant-default.xml';
         var one = '/relevant-default/one';
         var two = '/relevant-default/two';
         var three = '/relevant-default/grp/three';
+        var four = '/relevant-default/grp/four';
 
         it( 'by not clearing UPON LOAD', function() {
             var form = loadForm( name );
@@ -644,15 +843,82 @@ describe( 'branching functionality', function() {
             expect( form.model.node( three ).getVal()[ 0 ] ).toEqual( '' );
         } );
 
+        it( 'by not conducting calculations upon load if the calc node is not relevant', function() {
+            var form = loadForm( name );
+            form.init();
+            expect( form.model.node( four ).getVal()[ 0 ] ).toEqual( '' );
+        } );
+
+    } );
+
+
+    describe( 'handles calculated values in irrelevant/relevant branches with default settings', function() {
+        var name = 'calc-in-group-with-relevant.xml';
+        var cond = '/calc-in-group-with-relevant/cond';
+        var groupCalc = '/calc-in-group-with-relevant/grp/groupCalc';
+        var groupReadonlyCalc = '/calc-in-group-with-relevant/grp/groupReadonlyCalc';
+        var readonlyCalc = '/calc-in-group-with-relevant/readonlyCalc';
+        var calc = '/calc-in-group-with-relevant/calc';
+
+        it( 'by not clearing when relevant upon load', function() {
+            var form = loadForm( name );
+            form.init();
+            expect( form.model.node( groupCalc ).getVal()[ 0 ] ).toEqual( '34' );
+            expect( form.model.node( groupReadonlyCalc ).getVal()[ 0 ] ).toEqual( '34' );
+            expect( form.model.node( readonlyCalc ).getVal()[ 0 ] ).toEqual( '34' );
+            expect( form.model.node( calc ).getVal()[ 0 ] ).toEqual( '34' );
+        } );
+
+        it( 'by clearing calculations when parent group of calculation itself becomes irrelevant', function() {
+            var form = loadForm( name );
+            form.init();
+            form.view.$.find( '[name="' + cond + '"]' ).val( 'hide' ).trigger( 'change' );
+            expect( form.model.node( groupCalc ).getVal()[ 0 ] ).toEqual( '' );
+            expect( form.model.node( groupReadonlyCalc ).getVal()[ 0 ] ).toEqual( '' );
+
+            // bonus, questions outside group but also irrelevant
+            expect( form.model.node( readonlyCalc ).getVal()[ 0 ] ).toEqual( '' );
+            expect( form.model.node( calc ).getVal()[ 0 ] ).toEqual( '' );
+        } );
+
+        it( 'by re-populating calculations when parent group of calculation itself becomes relevant', function() {
+            var form = loadForm( name );
+            form.init();
+            // make irrelevant -> clear (see previous test)
+            form.view.$.find( '[name="' + cond + '"]' ).val( 'hide' ).trigger( 'change' );
+            // make relevant again
+            form.view.$.find( '[name="' + cond + '"]' ).val( '' ).trigger( 'change' );
+            expect( form.model.node( groupCalc ).getVal()[ 0 ] ).toEqual( '34' );
+            expect( form.model.node( groupReadonlyCalc ).getVal()[ 0 ] ).toEqual( '34' );
+            // bonus, questions outside group but also irrelevant
+            expect( form.model.node( readonlyCalc ).getVal()[ 0 ] ).toEqual( '34' );
+            expect( form.model.node( calc ).getVal()[ 0 ] ).toEqual( '34' );
+        } );
+
     } );
 
     describe( 'in a cloned repeat with dependencies outside the repeat', function() {
         it( 'initializes the relevants', function() {
             var form = loadForm( 'repeat-child-relevant.xml' );
             form.init();
-            form.view.$.find( '.btn.repeat' ).click();
+            form.view.$.find( '.add-repeat-btn' ).click();
             expect( form.view.$.find( '.or-branch' ).length ).toEqual( 2 );
             expect( form.view.$.find( '.or-branch.pre-init' ).length ).toEqual( 0 );
+        } );
+    } );
+
+    // This (fixed) issue is not related to indexed-repeat function. In native XPath it is the same.
+    describe( 'on a group with an expression that refers to a repeat node value', function() {
+        it( 're-evaluates when the referred node changes', function() {
+            var form = loadForm( 'group-relevant-indexed-repeat.xml' );
+            form.init();
+            expect( form.view.$.find( '[name="/data/LYMPHNODES/LYMNDISS"]' ).closest( '.disabled' ).length ).toEqual( 1 );
+            form.view.$.find( '[name="/data/PROCEDURE/PROC_GRID/PROC"]' ).val( '6' ).trigger( 'change' );
+            expect( form.view.$.find( '[name="/data/LYMPHNODES/LYMNDISS"]' ).closest( '.disabled' ).length ).toEqual( 0 );
+            form.view.$.find( '.add-repeat-btn' ).click();
+            expect( form.view.$.find( '[name="/data/LYMPHNODES/LYMNDISS"]' ).closest( '.disabled' ).length ).toEqual( 0 );
+            form.view.$.find( '[name="/data/PROCEDURE/PROC_GRID/PROC"]' ).val( '1' ).trigger( 'change' );
+            expect( form.view.$.find( '[name="/data/LYMPHNODES/LYMNDISS"]' ).closest( '.disabled' ).length ).toEqual( 1 );
         } );
     } );
 
@@ -661,7 +927,7 @@ describe( 'branching functionality', function() {
 describe( 'obtaining XML string from form without irrelevant nodes', function() {
     it( 'works for calcs that are irrelevant upon load', function() {
         var form = loadForm( 'calcs.xml' );
-        var match = '<calc1';
+        var match = '<calc1/>';
         form.init();
 
         expect( form.getDataStr() ).toMatch( match );
@@ -673,19 +939,21 @@ describe( 'obtaining XML string from form without irrelevant nodes', function() 
     it( 'works for calcs that become irrelevant after load', function() {
         var $node;
         var form = loadForm( 'calcs.xml' );
-        var match = '<calc1';
         form.init();
         $node = form.view.$.find( '[name="/calcs/cond1"]' );
 
         $node.val( 'yes' ).trigger( 'change' );
         expect( form.getDataStr( {
             irrelevant: false
-        } ) ).toMatch( match );
+        } ) ).toMatch( '<calc1>3</calc1>' );
 
         $node.val( 'nope' ).trigger( 'change' );
-        expect( form.getDataStr( {
+
+        var res = form.getDataStr( {
             irrelevant: false
-        } ) ).not.toMatch( match );
+        } );
+        expect( res ).not.toMatch( '<calc1/>' );
+        expect( res ).not.toMatch( '<calc1>' );
     } );
 
     it( 'works for a nested branch where there is an relevant descendant of an irrelevant ancestor', function() {
@@ -699,7 +967,7 @@ describe( 'obtaining XML string from form without irrelevant nodes', function() 
 
     } );
 
-    // This test also checks that no exception occurs when an attempt is made to remove the <c> node 
+    // This test also checks that no exception occurs when an attempt is made to remove the <c> node
     // when it no longer exists because its parent has already been removed.
     it( 'works for a nested branch where there is an irrelevant descendant of an irrelevant ancestor', function() {
         var form = loadForm( 'nested-branches.xml' );
@@ -713,20 +981,57 @@ describe( 'obtaining XML string from form without irrelevant nodes', function() 
 
     } );
 
-
     it( 'works if repeat count is 0', function() {
         // When repeat count is zero there is no context node to pass to evaluator.
         var form = loadForm( 'repeat-count-relevant.xml' );
-        var errors = form.init();
         var getFn = function() {
             return form.getDataStr( {
                 irrelevant: false
             } );
         };
+        form.init();
         expect( getFn ).not.toThrow();
         expect( getFn() ).not.toMatch( '<rep>' );
         expect( getFn() ).toMatch( '<q1/>' );
     } );
+
+    // Issue https://github.com/enketo/enketo-core/issues/443: The incorrect nested repeat nodes are removed.
+    it( 'works for nested repeats where some children are irrelevant', function() {
+        // instanceStr is in this case just used to conveniently create 2 parent repeats with each 2 child repeats and certain values.
+        // The second child repeat in each parent repeat with name 'type_other' is irrelevant.
+        var instanceStr = '<data><region><livestock><type>d</type><type_other/></livestock><livestock><type>other</type><type_other>one</type_other></livestock></region><region><livestock><type>d</type><type_other/></livestock><livestock><type>other</type><type_other>two</type_other></livestock></region><meta><instanceID>a</instanceID></meta></data>';
+        var form = loadForm( 'nested-repeat-v5.xml', instanceStr );
+        form.init();
+
+        // check setup
+        expect( form.getDataStr( {
+            irrelevant: true
+        } ).replace( />\s+</g, '><' ) ).toMatch( '<region><livestock><type>d</type><type_other/></livestock><livestock><type>other</type><type_other>one</type_other></livestock></region><region><livestock><type>d</type><type_other/></livestock><livestock><type>other</type><type_other>two</type_other></livestock></region>' );
+
+        // perform actual tests
+        expect( form.getDataStr( {
+            irrelevant: false
+        } ).replace( />\s+</g, '><' ) ).toMatch( '<region><livestock><type>d</type></livestock><livestock><type>other</type><type_other>one</type_other></livestock></region><region><livestock><type>d</type></livestock><livestock><type>other</type><type_other>two</type_other></livestock></region>' );
+    } );
+
+    // https://github.com/kobotoolbox/enketo-express/issues/824
+    it( 'works for simple "select" (checkbox) questions inside repeats', function() {
+        var form = loadForm( 'repeat-relevant-select.xml' );
+        var repeat = '.or-repeat[name="/data/details"]';
+        var fruit = '[name="/data/details/fruits"]';
+        var location = '[name="/data/details/location"]';
+        form.init();
+        form.view.$.find( '.add-repeat-btn' ).click().click();
+        form.view.$.find( repeat ).eq( 0 ).find( fruit + '[value="pear"]' ).prop( 'checked', true ).trigger( 'change' );
+        form.view.$.find( repeat ).eq( 1 ).find( fruit + '[value="mango"]' ).prop( 'checked', true ).trigger( 'change' );
+        form.view.$.find( repeat ).eq( 2 ).find( fruit + '[value="pear"]' ).prop( 'checked', true ).trigger( 'change' );
+        form.view.$.find( repeat ).eq( 1 ).find( location + '[value="nairobi"]' ).prop( 'checked', true ).trigger( 'change' );
+
+        expect( form.getDataStr( {
+            irrelevant: false
+        } ).replace( />\s+</g, '><' ) ).toMatch( '<details><fruits>pear</fruits></details><details><fruits>mango</fruits><location>nairobi</location></details><details><fruits>pear</fruits></details>' );
+    } );
+
 } );
 
 describe( 'validation', function() {
@@ -735,7 +1040,7 @@ describe( 'validation', function() {
         var form, $numberInput, $numberLabel;
 
         beforeEach( function() {
-            jQuery.fx.off = true; //turn jQuery animations off
+            $.fx.off = true; //turn jQuery animations off
             form = loadForm( 'group_branch.xml' );
             form.init();
             $numberInput = form.view.$.find( '[name="/data/group/nodeB"]' );
@@ -827,6 +1132,83 @@ describe( 'validation', function() {
                 } );
         } );
 
+    } );
+
+    // These tests were a real pain to write because of the need to change a global config property.
+    describe( 'with validateContinuously', function() {
+        var form;
+        var B = '[name="/data/b"]';
+        var C = '[name="/data/c"]';
+        var config = require( 'enketo/config' );
+        var dflt = config.validateContinuously;
+
+        var setValue = function( selector, val ) {
+            return new Promise( function( resolve ) {
+                // violate constraint for c
+                form.view.$.find( selector ).val( val ).trigger( 'change' );
+                setTimeout( function() {
+                    resolve();
+                }, 800 );
+            } );
+        };
+
+        afterAll( function() {
+            // reset to default
+            config.validateContinuously = dflt;
+        } );
+
+
+        it( '=true will immediately re-evaluate a constraint if its dependent value changes', function( done ) {
+            form = loadForm( 'constraint-dependency.xml' );
+            form.init();
+            setValue( C, '12' )
+                .then( function() {
+                    config.validateContinuously = false;
+                    // violate
+                    return setValue( B, 'a' );
+                } )
+                .then( function() {
+                    expect( form.view.$.find( C ).closest( '.question' ).hasClass( 'invalid-constraint' ) ).toEqual( false );
+                    // pass
+                    return setValue( B, 'b' );
+                } )
+                .then( function() {
+                    config.validateContinuously = true;
+                    //violate
+                    return setValue( B, 'a' );
+                } )
+                .then( function() {
+                    expect( form.view.$.find( C ).closest( '.question' ).hasClass( 'invalid-constraint' ) ).toEqual( true );
+                    done();
+                } );
+        } );
+
+        it( '=true, will not immediate validate a brand new repeat but will validate nodes that depend on that repeat', function( done ) {
+            var rep = '[name="/repeat-required/rep"]';
+            var d = '[name="/repeat-required/d"]';
+            form = loadForm( 'repeat-required.xml' );
+            form.init();
+            form.view.$.find( '.add-repeat-btn' ).click();
+
+            // an ugly test, I don't care
+            setTimeout( function() {
+                // new repeat should not show errors
+                expect( form.view.$.find( rep ).eq( 1 ).find( '.invalid-required, .invalid-constraint' ).length ).toEqual( 0 );
+                // we now have two repeats so node d should not be marked as invalid
+                expect( form.view.$.find( d ).closest( '.question' ).is( '.invalid-constraint' ) ).toBe( false );
+
+                form.view.$.find( '.add-repeat-btn' ).click();
+
+                setTimeout( function() {
+                    // new repeat should not show errors
+                    expect( form.view.$.find( rep ).eq( 2 ).find( '.invalid-required, .invalid-constraint' ).length ).toEqual( 0 );
+                    // we now have three repeats so node d should be marked as invalid
+                    expect( form.view.$.find( d ).closest( '.question' ).is( '.invalid-constraint' ) ).toBe( true );
+
+                    done();
+                }, 800 );
+            }, 800 );
+        } );
     } );
 
 } );
@@ -1061,7 +1443,7 @@ describe( 'Itemset functionality', function() {
             sel3Radio = ':not(.itemset-template) > input:radio[data-name="/form/city"]';
 
         beforeEach( function() {
-            jQuery.fx.off = true; //turn jQuery animations off
+            $.fx.off = true; //turn jQuery animations off
             form = loadForm( 'cascading_mixture_itext_noitext.xml' );
             form.init();
 
@@ -1103,9 +1485,11 @@ describe( 'Itemset functionality', function() {
     } );
 
     describe( 'in a cloned repeat with dependencies inside repeat, ', function() {
-        var countrySelector = '[data-name="/new_cascading_selections_inside_repeats/group1/country"]',
-            citySelector = 'label:not(.itemset-template) [data-name="/new_cascading_selections_inside_repeats/group1/city"]',
-            form, $masterRepeat, $clonedRepeat;
+        var countrySelector = '[data-name="/new_cascading_selections_inside_repeats/group1/country"]';
+        var citySelector = 'label:not(.itemset-template) [data-name="/new_cascading_selections_inside_repeats/group1/city"]';
+        var form;
+        var $masterRepeat;
+        var $clonedRepeat;
 
         beforeEach( function() {
             form = loadForm( 'new_cascading_selections_inside_repeats.xml' );
@@ -1114,7 +1498,7 @@ describe( 'Itemset functionality', function() {
             //select usa in master repeat
             $masterRepeat.find( countrySelector + '[value="usa"]' ).prop( 'checked', true ).trigger( 'change' );
             //add repeat
-            $masterRepeat.find( 'button.repeat' ).click();
+            form.view.$.find( '.add-repeat-btn' ).click();
             $clonedRepeat = form.view.$.find( '.or-repeat.clone' );
         } );
 
@@ -1138,10 +1522,28 @@ describe( 'Itemset functionality', function() {
             var form = loadForm( 'nested-repeats-itemset.xml' );
             var selector = '[name="/bug747/name_of_region/name_of_zone/zone"]';
             form.init();
-            form.view.$.find( '[name="/bug747/name_of_region/region"][value="tigray"]' ).prop( 'checked', true ).trigger( 'change' );
-            form.view.$.find( '.or-repeat[name="/bug747/name_of_region/name_of_zone"] .btn.repeat' ).click();
+            form.view.$.find( '[data-name="/bug747/name_of_region/region"][value="tigray"]' ).prop( 'checked', true ).trigger( 'change' );
+            form.view.$.find( '.or-repeat-info[data-name="/bug747/name_of_region/name_of_zone"] .add-repeat-btn' ).click();
             expect( form.view.$.find( selector ).eq( 0 ).find( 'option:not(.itemset-template)' ).text() ).toEqual( 'CentralSouthern' );
             expect( form.view.$.find( selector ).eq( 1 ).find( 'option:not(.itemset-template)' ).text() ).toEqual( 'CentralSouthern' );
+        } );
+    } );
+
+    describe( ' in a cloned repeat with a predicate including current()/../', function() {
+        it( 'works', function() {
+            // This test is added to show that once the makeBugCompliant function has been removed
+            // itemsets with relative predicates still work.
+            var form = loadForm( 'reprelcur1.xml' );
+            form.init();
+            form.view.$.find( '[data-name="/repeat-relative-current/rep/crop"][value="banana"]' ).prop( 'checked', true ).trigger( 'change' );
+            form.view.$.find( '.add-repeat-btn' ).click();
+            form.view.$.find( '[data-name="/repeat-relative-current/rep/crop"][value="beans"]' ).eq( 1 ).prop( 'checked', true ).trigger( 'change' );
+            var sel1 = '.itemset > input[data-name="/repeat-relative-current/rep/sel_a"]';
+            var sel2 = '.itemset > input[data-name="/repeat-relative-current/rep/group/sel_b"]';
+            expect( form.view.$.find( sel1 ).eq( 0 ).val() ).toEqual( 'banana' );
+            expect( form.view.$.find( sel2 ).eq( 0 ).val() ).toEqual( 'banana' );
+            expect( form.view.$.find( sel1 ).eq( 1 ).val() ).toEqual( 'beans' );
+            expect( form.view.$.find( sel2 ).eq( 1 ).val() ).toEqual( 'beans' );
         } );
     } );
 } );
@@ -1149,6 +1551,7 @@ describe( 'Itemset functionality', function() {
 describe( 're-validating inputs and updating user feedback', function() {
     var form = loadForm( 'comment.xml' );
     var $one;
+    var $oneComment;
     form.init();
     $one = form.view.$.find( '[name="/comment/one"]' );
     $oneComment = form.view.$.find( '[name="/comment/one_comment"]' );
@@ -1177,7 +1580,7 @@ describe( 'getting related nodes', function() {
         form.init();
         expect( form.getRelatedNodes( 'data-relevant' ).length ).toEqual( 1 );
     } );
-} )
+} );
 
 describe( 'clearing inputs', function() {
     var $fieldset = $( '<fieldset><input type="number" value="23" /><input type="text" value="abc" /><textarea>abcdef</textarea></fieldset>"' );
@@ -1219,3 +1622,100 @@ describe( 'required enketo-transformer version', function() {
             'You also need to update the value returned by From.getRequiredTransformerVersion() to the new version number.' );
     } );
 } );
+
+describe( 'jr:choice-name', function() {
+
+    it( 'should match when there are spaces in arg strings', function() {
+        // given
+        var form = loadForm( 'jr-choice-name.xml' );
+        form.init();
+
+        expect( form.view.$.find( '[name="/choice-regex/translator"]:checked' ).next().text() ).toEqual( '[Default Value] Area' );
+        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( '[Default Value] Area' );
+
+        // when
+        form.view.$.find( '[name="/choice-regex/input"]' ).val( 'abc' ).trigger( 'change' );
+
+        // then
+        expect( form.view.$.find( '[name="/choice-regex/translator"]:checked' ).next().text() ).toEqual( '[abc] Area' );
+
+        // and
+        // We don't expect the value change to cascade to a label until the choice value itself is changed.
+        // See: https://github.com/enketo/enketo-core/issues/412
+        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( '[Default Value] Area' );
+
+        // when
+        form.view.$.find( '[name="/choice-regex/translator"][value=health_center]' ).click().trigger( 'change' );
+
+        // then
+        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( '[abc] Health Center' );
+    } );
+
+    /** @see https://github.com/enketo/enketo-core/issues/490 */
+    it( 'should handle regression reported in issue #490', function() {
+        // given
+        var form = loadForm( 'jr-choice-name.issue-490.xml' );
+        form.init();
+
+        // then
+        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( 'unspecified' );
+
+        // when
+        form.view.$.find( '[name="/embedded-choice/translator"][value=clinic]' ).click().trigger( 'change' );
+
+        // then
+        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( 'Area' );
+    } );
+} );
+
+describe( 'Form.prototype', function() {
+
+    describe( '#replaceChoiceNameFn()', function() {
+
+        $.each( {
+            'jr:choice-name( /choice-regex/translator, " /choice-regex/translator ")': '"__MOCK_VIEW_VALUE__"',
+            '     jr:choice-name(       /choice-regex/translator     ,  " /choice-regex/translator "   )    ': '     "__MOCK_VIEW_VALUE__"    ',
+            "if(string-length( /embedded-choice/translator ) !=0, jr:choice-name( /embedded-choice/translator ,' /embedded-choice/translator '),'unspecified')": "if(string-length( /embedded-choice/translator ) !=0, \"__MOCK_VIEW_VALUE__\",'unspecified')",
+        }, function( initial, expected ) {
+            it( 'should replace ' + initial + ' with ' + expected, function() {
+                // given
+                var form = mockChoiceNameForm();
+
+                // when
+                var actual = Form.prototype.replaceChoiceNameFn.call( form, initial );
+
+                // then
+                expect( actual ).toEqual( expected );
+            } );
+        } );
+    } );
+} );
+
+function mockChoiceNameForm() {
+    return {
+        model: {
+            evaluate: function() {
+                return '__MOCK_MODEL_VALUE__';
+            },
+        },
+        view: {
+            '$': {
+                find: function() {
+                    return {
+                        length: 1,
+                        prop: function() {
+                            return 'select';
+                        },
+                        find: function() {
+                            return {
+                                text: function() {
+                                    return '__MOCK_VIEW_VALUE__';
+                                },
+                            };
+                        },
+                    };
+                },
+            },
+        },
+    };
+}

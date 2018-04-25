@@ -1,5 +1,5 @@
 // These rules are specific only to this particular widget
-.or-appearance-image-map{
+.or-appearance-image-map {
     img {
         // avoid image flickering caused by initializing widget upon img load event
         visibility: hidden;
@@ -10,26 +10,32 @@
     }
     .image-map {
         svg:not([or-readonly]) {
-            path[id] {
+            path[id],
+            g[id] {
                 &:hover {
-                    opacity: 0.5;
+                    opacity: 0.5 !important;
                 }
             }
         }
     }
 }
+
 // These rules are used in custom SVG widgets as well.
 .image-map {
     svg {
-        width: 100%;
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        width: 100 vmin;
         height: auto;
-        &[or-readonly]{
-            opacity: 0.75;
+        &[or-readonly] {
+            opacity: 0.75 !important;
         }
-        path[id] {
+        path[id],
+        g[id] {
             &[or-selected] {
-                fill: $brand-primary-color;
-                stroke: $brand-primary-color;
+                fill: $brand-primary-color !important;
+                stroke: $brand-primary-color !important;
             }
         }
     }
@@ -38,7 +44,7 @@
         width: 100%;
         text-align: center;
         font-weight: normal;
-        &__tooltip{
+        &__tooltip {
             display: inline-block;
             background: lighten($brand-primary-color, 50%);
             padding: 2px 8px;
@@ -48,5 +54,8 @@
                 padding: 0;
             }
         }
+    }
+    &__error {
+        @extend .or-constraint-msg.active;
     }
 }

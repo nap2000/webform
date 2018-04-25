@@ -1,4 +1,7 @@
-/* global describe, require, beforeAll, afterAll, it */
+/* global describe, require, beforeAll, afterAll, xit, it, expect */
+
+'use strict';
+
 var Model = require( '../../src/js/Form-model' );
 var mockForms1 = require( '../mock/forms' );
 
@@ -54,8 +57,7 @@ describe( 'Instantiating a model', function() {
 } );
 
 describe( 'Data node getter', function() {
-    var i, t =
-        [
+    var i, t = [
             [ '', null, null, 20 ],
             [ '', null, {},
                 20
@@ -178,42 +180,49 @@ describe( 'Data node XML data type', function() {
         [ '-Infinity', 'int', false, '' ],
 
         [ 'val11', 'decimal', false, '' ],
-        [ '2', 'decimal', false ],
-        [ '2.22', 'decimal', false ],
+        [ '2', 'decimal', true ],
+        [ '2.22', 'decimal', true ],
         [ 'NaN', 'decimal', false, '' ],
-        [ 'Infinity', 'decimal', true, '' ],
-        [ '-Infinity', 'decimal', true, '' ],
+        [ 'Infinity', 'decimal', false, '' ],
+        [ '-Infinity', 'decimal', false, '' ],
 
         [ 'val5565ghgyuyuy', 'date', false, '' ], //Chrome turns val5 into a valid date...
         [ '2012-01-01', 'date', true ],
-        [ '2012-12-32', 'date', false, '' ],
+        [ '2012-11-31', 'date', false, '' ],
         // The tests below are dependent on OS time zone of test machine
-        [ 324, 'date', true, '1970-11-21' ],
+        [ 324, 'date', false, '1970-11-21' ],
 
         [ 'val5565ghgyuyua', 'datetime', false, '' ], //Chrome turns val10 into a valid date..
-        [ '2012-01-01T00:00:00-06', 'datetime', true, '2012-01-01T00:00:00-06:00' ],
-        [ '2012-12-32T00:00:00-06', 'datetime', false, '2012-12-32T00:00:00-06:00' ], //?
-        [ '2012-12-31T23:59:59-06', 'datetime', true, '2012-12-31T23:59:59-06:00' ],
+        [ '2012-01-01T00:00:00-06', 'datetime', false, '2012-01-01T00:00:00-06:00' ],
+        [ '2012-01-01T00:00:00-06:00', 'datetime', true ],
+        [ '2012-01-01T00:00:00.123-06:00', 'datetime', true, '2012-01-01T00:00:00.123-06:00' ],
+        [ '2012-12-32T00:00:00-06:00', 'datetime', false, '' ],
+        [ '2012-12-31T23:59:59-06', 'datetime', false, '2012-12-31T23:59:59-06:00' ],
         [ '2012-12-31T23:59:59-06:30', 'datetime', true ],
-        [ '2012-01-01T30:00:00-06', 'datetime', false, '2012-01-01T30:00:00-06:00' ],
+        [ '2012-01-01T30:00:00-06', 'datetime', false, '' ],
         // The tests below are dependent on OS time zone of test machine
-        [ '2012-12-31T23:59:59Z', 'datetime', true, '2012-12-31T16:59:59.000-07:00' ],
-        [ 324, 'datetime', true, '1970-11-20T17:00:00.000-07:00' ],
-        [ '2013-05-31T07:00-02', 'datetime', true, '2013-05-31T07:00-02:00' ], //fails in phantomJSs
+        [ '2012-12-31T23:59:59Z', 'datetime', false, '2012-12-31T23:59:59+00:00' ],
+        [ 324, 'datetime', false, '1970-11-20T17:00:00.000-07:00' ],
+        [ '2013-05-31T07:00-02', 'datetime', false, '2013-05-31T07:00:00-02:00' ],
 
         [ 'a', 'time', false, '' ],
         [ 'aa:bb', 'time', false, '' ],
-        [ '0:0', 'time', true, '00:00' ],
-        [ '00:00', 'time', true ],
-        [ '23:59', 'time', true ],
-        [ '23:59:59', 'time', true ],
+        [ '0:0', 'time', false, '00:00:00.000-07:00' ],
+        [ '00:00:00+03', 'time', false, '00:00:00.000+03:00' ],
+        [ '00:00:00.000+03', 'time', false, '00:00:00.000+03:00' ],
+        [ '00:00', 'time', false, '00:00:00.000-07:00' ],
+        [ '23:59', 'time', false, '23:59:00.000-07:00' ],
+        [ '23:59:59', 'time', false, '23:59:59.000-07:00' ],
+        [ '23:60:59.000-06:00', 'time', false, '' ],
         [ '24:00', 'time', false, '' ],
         [ '00:60', 'time', false, '' ],
+        [ '01:01:01.abcdefg', 'time', false, '' ],
         [ '00:00:60', 'time', false, '' ],
         [ '-01:00', 'time', false, '' ],
         [ '00:-01', 'time', false, '' ],
-        [ '00:00:-01', 'time', false, '' ],
-        [ '13:17:00.000-07', 'time', true ],
+        //[ '00:00:-01', 'time', false, '' ],
+        [ '13:17:00.000-07:00', 'time', true ],
+        [ '01:02:03.123+04:00', 'time', true ],
 
         [ 'val2', 'barcode', true ],
 
@@ -250,7 +259,7 @@ describe( 'Data node XML data type', function() {
             node.setVal( n.value );
             node.validateConstraintAndType( null, n.type )
                 .then( function( result ) {
-                    expect( result ).toEqual( valid );
+                    expect( result ).toEqual( n.valid );
                 } )
                 .then( done )
                 .catch( done );
@@ -273,12 +282,12 @@ describe( 'Data node XML data type', function() {
     }
 
     it( 'returns a null result for a non-existing node', function() {
-        data = getModel( 'thedata.xml' );
+        var data = getModel( 'thedata.xml' );
         expect( data.node( '/thedata/nodeA', 1, null ).setVal( 'val13', null, 'string' ) ).toEqual( null );
     } );
 
     it( 'returns a null result when attempting to set the value of multiple nodes', function() {
-        data = getModel( 'thedata.xml' );
+        var data = getModel( 'thedata.xml' );
         expect( data.node( '/thedata/repeatGroup/nodeC', null, null ).setVal( 'val', null, null ) ).toEqual( null );
     } );
 
@@ -347,6 +356,19 @@ describe( 'Data node remover', function() {
         node.remove();
         expect( node.get().length ).toEqual( 0 );
         expect( data.node( '/thedata/nodeA' ).get().length ).toEqual( 0 );
+    } );
+
+    it( 'can remove nodes with a . in the nodeName', function() {
+        var model = new Model( '<model><instance><data><F27./></data></instance></model>' );
+        var path = '/data/F27.';
+        var node;
+
+        model.init();
+        node = model.node( path );
+
+        expect( node.get().length ).toEqual( 1 );
+        node.remove();
+        expect( model.node( path ).get().length ).toEqual( 0 );
     } );
 } );
 
@@ -452,17 +474,36 @@ describe( 'XPath Evaluator (see github.com/MartijnR/xpathjs_javarosa for compreh
     } );
 } );
 
+// This test makes sure that whatever date strings are returned by the XPath evaluator can be dealt with by the form engine
+describe( 'dates returned by the XPath evaluator ', function() {
+    var model = new Model( '<model><instance><data></data></instance></model>' );
+    model.init();
+    [
+        [ 'date("2018-01-01")', '2018-01-01', 'date' ],
+        [ 'date("2018-01-01")', '2017-12-31T17:00:00.000-07:00', 'datetime' ],
+        [ 'date(decimal-date-time( "2018-01-01" ) + 14)', '2018-01-15', 'date' ],
+        [ 'date(decimal-date-time( "2018-01-01" ) + 14)', '2018-01-14T17:00:00.000-07:00', 'datetime' ],
+        [ 'date("2018-01-01"  + 14)', '2018-01-15', 'date' ],
+        [ 'date("2018-01-01" + 14)', '2018-01-14T17:00:00.000-07:00', 'datetime' ],
+        [ 'date("2018-10-35")', '', 'date' ]
+    ].forEach( function( test ) {
+        it( 'are recognized and converted, if necessary by the type convertor: ' + test[ 0 ], function() {
+            expect( model.types[ test[ 2 ] ].convert( model.evaluate( test[ 0 ], 'string' ) ) ).toEqual( test[ 1 ] );
+        } );
+    } );
+} );
+
 describe( 'functionality to obtain string of the primary XML instance for storage or uploads)', function() {
     it( 'returns primary instance without templates - A', function() {
         var model = new Model( '<model xmlns:jr="http://openrosa.org/javarosa"><instance><data><group jr:template=""><a/></group></data></instance></model>' );
         model.init();
-        expect( model.getStr() ).toEqual( '<data><group><a/></group></data>' );
+        expect( model.getStr() ).toEqual( '<data></data>' );
     } );
 
     it( 'returns primary instance without templates - B', function() {
         var model = new Model( '<model><instance><data><group    template=""><a/></group></data></instance></model>' );
         model.init();
-        expect( model.getStr() ).toEqual( '<data><group><a/></group></data>' );
+        expect( model.getStr() ).toEqual( '<data></data>' );
     } );
 
     it( 'returns primary instance and leaves namespaces intact', function() {
@@ -526,11 +567,16 @@ describe( 'converting absolute paths', function() {
 
 describe( 'converting instance("id") to absolute paths', function() {
     [
-        [ 'instance("a")/path/to/node', '/model/instance[@id="a"]/path/to/node' ]
-
+        [ 'instance("a")/path/to/node', '/model/instance[@id="a"]/path/to/node' ],
+        [ 'instance("a.-_")/path/to/node', '/model/instance[@id="a.-_"]/path/to/node' ],
+        [ 'instance( "a")/path/to/node', '/model/instance[@id="a"]/path/to/node' ],
+        [ 'instance( "a"   )/path/to/node', '/model/instance[@id="a"]/path/to/node' ],
+        [ 'instance(\'a\')/path/to/node', '/model/instance[@id="a"]/path/to/node' ],
+        [ 'instance( \'a\')/path/to/node', '/model/instance[@id="a"]/path/to/node' ],
+        [ 'instance( \'a\'   )/path/to/node', '/model/instance[@id="a"]/path/to/node' ],
     ].forEach( function( test ) {
         it( 'happens correctly', function() {
-            var model = new Model( '<model><instance><root/></instance><instance id="a"/></model>' );
+            var model = new Model( '<model><instance><root/></instance><instance id="a"/><instance id="a.-_"/></model>' );
             var expected = test[ 1 ];
             model.init();
             expect( model.replaceInstanceFn( test[ 0 ] ) ).toEqual( expected );
@@ -678,12 +724,14 @@ describe( 'external instances functionality', function() {
     } );
 } );
 
-describe( 'auto-cloning repeats in empty model', function() {
+describe( 'cloning repeats in empty model', function() {
     require( '../../config' ).repeatOrdinals = false;
     var model = new Model( '<model xmlns:jr="http://openrosa.org/javarosa"><instance><data><rep1 jr:template=""><one/><rep2 jr:template=""><two/>' +
         '<rep3 jr:template=""><three/></rep3></rep2></rep1></data></instance></model>' );
     model.init();
-
+    model.addRepeat( '/data/rep1', 0 );
+    model.addRepeat( '/data/rep1/rep2', 0 );
+    model.addRepeat( '/data/rep1/rep2/rep3', 0 );
     it( 'works for nested repeats', function() {
         expect( model.getStr() ).toEqual( '<data><rep1><one/><rep2><two/><rep3><three/></rep3></rep2></rep1></data>' );
     } );
@@ -728,6 +776,32 @@ describe( 'Using XPath with default namespace', function() {
 
 } );
 
+describe( 'Using XPath with non-default namespaces', function() {
+
+    describe( 'on secondary instances', function() {
+        var SEC_INSTANCE_CONTENT = '<sec xmlns:this="a"><this:b this:at="that">3</this:b></sec>';
+
+        [ {
+            modelStr: '<model><instance><data/></instance><instance id="s">' + SEC_INSTANCE_CONTENT + '</instance></model>'
+        }, {
+            modelStr: '<model><instance><data/></instance><instance id="s" src="something"/></model>',
+            external: [ { id: 's', xmlStr: SEC_INSTANCE_CONTENT } ]
+        } ].forEach( function( testObj ) {
+            var model = new Model( testObj );
+            var type = testObj.external ? 'external' : 'internal';
+            model.init();
+            it( 'works for simple namespaced node retrieval on ' + type + ' instances', function() {
+                expect( model.evaluate( 'instance("s")/sec/this:b', 'string' ) ).toEqual( '3' );
+            } );
+
+            it( 'works for simple namespaced attribute retrieval on ' + type + ' instances', function() {
+                expect( model.evaluate( 'instance("s")/sec/this:b/@this:at', 'string' ) ).toEqual( 'that' );
+            } );
+        } );
+
+    } );
+
+} );
 
 describe( 'Repeat without ordinals', function() {
     var modelStr = '<model><instance><a><rep.dot><b/></rep.dot><rep.dot><b/></rep.dot></a></instance></model>';
@@ -740,7 +814,7 @@ describe( 'Repeat without ordinals', function() {
         //model.extractFakeTemplates( [ '/a/rep.dot' ] );
 
         expect( model.evaluate( '/a/rep.dot', 'nodes' ).length ).toEqual( 2 );
-        model.cloneRepeat( '/a/rep.dot', 0, false );
+        model.addRepeat( '/a/rep.dot', 0, false );
         expect( model.evaluate( '/a/rep.dot', 'nodes' ).length ).toEqual( 3 );
     } );
 
@@ -749,14 +823,14 @@ describe( 'Repeat without ordinals', function() {
         model.init();
 
         expect( model.evaluate( '/a/rep.dot', 'nodes' ).length ).toEqual( 2 );
-        model.cloneRepeat( '/a/rep.dot', 0, false );
+        model.addRepeat( '/a/rep.dot', 0, false );
         expect( model.evaluate( '/a/rep.dot', 'nodes' ).length ).toEqual( 3 );
     } );
 
     it( 'will use the first repeat instance as template and empty the leaf nodes', function() {
         var model = new Model( '<model><instance><data><repeat><n>1</n></repeat></data></instance></model>' );
         model.init();
-        model.cloneRepeat( '/data/repeat', 0, false );
+        model.addRepeat( '/data/repeat', 0, false );
         expect( model.getStr() ).toEqual( '<data><repeat><n>1</n></repeat><repeat><n/></repeat></data>' );
     } );
 
@@ -765,14 +839,14 @@ describe( 'Repeat without ordinals', function() {
         model.init();
         model.node( '/data/repeat', 0 ).remove();
         expect( model.getStr() ).toEqual( '<data></data>' ); // not self-closing because comment was removed with regex replace
-        model.cloneRepeat( '/data/repeat', 0, false );
+        model.addRepeat( '/data/repeat', 0, false );
         expect( model.getStr() ).toEqual( '<data><repeat><n/></repeat></data>' );
     } );
 
 } );
 
 describe( 'Ordinals in repeats', function() {
-    var config = require( 'enketo-config' );
+    var config = require( 'enketo/config' );
     var dflt = config[ 'repeat ordinals' ];
     var wr = '<root xmlns:enk="http://enketo.org/xforms">{{c}}</root>';
     var wrt = '<root xmlns:jr="http://openrosa.org/javarosa" xmlns:enk="http://enketo.org/xforms">{{c}}</root>';
@@ -802,7 +876,7 @@ describe( 'Ordinals in repeats', function() {
             var model = new Model( m1 );
             model.init();
             //model.extractFakeTemplates( paths );
-            model.cloneRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
             expect( model.getStr() ).toEqual( wr.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="2" enk:ordinal="1"><node/></repeat><repeat enk:ordinal="2"><node/></repeat>' ) );
         } );
@@ -811,7 +885,7 @@ describe( 'Ordinals in repeats', function() {
             var model = new Model( m2 );
             model.init();
             //model.extractFakeTemplates( paths );
-            model.cloneRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
             expect( model.getStr() ).toEqual( wr.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="3" enk:ordinal="1"><node/></repeat><repeat enk:ordinal="2"><node/></repeat>' +
                 '<repeat enk:ordinal="3"><node/></repeat>' ) );
@@ -821,9 +895,9 @@ describe( 'Ordinals in repeats', function() {
             var model = new Model( m3 );
             model.init();
             //model.extractFakeTemplates( paths );
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
             expect( model.getStr() ).toEqual( wr.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="2" enk:ordinal="1">' +
                 '<nr enk:last-used-ordinal="3" enk:ordinal="1"><node/></nr><nr enk:ordinal="2"><node/></nr><nr enk:ordinal="3"><node/></nr>' +
@@ -835,9 +909,9 @@ describe( 'Ordinals in repeats', function() {
             var model = new Model( m4 );
             model.init();
             //model.extractFakeTemplates( paths );
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
-            //model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
             expect( model.getStr() ).toEqual( wr.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="2" enk:ordinal="1">' +
                 '<nr enk:last-used-ordinal="3" enk:ordinal="1"><node/></nr><nr enk:ordinal="2"><node/></nr><nr enk:ordinal="3"><node/></nr>' +
@@ -848,10 +922,10 @@ describe( 'Ordinals in repeats', function() {
             var model = new Model( m3 );
             model.init();
             //model.extractFakeTemplates( paths );
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
             model.node( '/root/repeat', 1 ).remove();
             model.node( '/root/repeat/nr', 1 ).remove();
             expect( model.getStr() ).toEqual( wr.replace( '{{c}}',
@@ -864,12 +938,12 @@ describe( 'Ordinals in repeats', function() {
             var model = new Model( m3 );
             model.init();
             //model.extractFakeTemplates( paths );
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
             model.node( '/root/repeat', 1 ).remove();
             model.node( '/root/repeat/nr', 1 ).remove();
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
             expect( model.getStr() ).toEqual( wr.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="3" enk:ordinal="1">' +
                 '<nr enk:last-used-ordinal="3" enk:ordinal="1"><node/></nr><nr enk:ordinal="3"><node/></nr>' +
@@ -887,7 +961,8 @@ describe( 'Ordinals in repeats', function() {
         it( 'get added to newly cloned repeats', function() {
             var model = new Model( m1 );
             model.init();
-            model.cloneRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
             expect( model.getStr() ).toEqual( wrt.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="2" enk:ordinal="1"><node/></repeat><repeat enk:ordinal="2"><node/></repeat>'
             ) );
@@ -896,8 +971,8 @@ describe( 'Ordinals in repeats', function() {
         it( 'get added to newly cloned repeats if multiple instances are present in default model', function() {
             var model = new Model( m2 );
             model.init();
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
             expect( model.getStr() ).toEqual( wrt.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="3" enk:ordinal="1"><node/></repeat><repeat enk:ordinal="2"><node/></repeat>' +
                 '<repeat enk:ordinal="3"><node/></repeat>' ) );
@@ -906,22 +981,24 @@ describe( 'Ordinals in repeats', function() {
         it( 'get added to newly cloned NESTED repeats', function() {
             var model = new Model( m3 );
             model.init();
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 1 );
             expect( model.getStr() ).toEqual( wrt.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="2" enk:ordinal="1">' +
                 '<nr enk:last-used-ordinal="3" enk:ordinal="1"><node/></nr><nr enk:ordinal="2"><node/></nr><nr enk:ordinal="3"><node/></nr>' +
-                '</repeat><repeat enk:ordinal="2"><nr><node/></nr></repeat>' ) );
+                '</repeat><repeat enk:ordinal="2"><nr enk:last-used-ordinal="1" enk:ordinal="1"><node/></nr></repeat>' ) );
         } );
 
         // Very theoretical. Situation will never occur with OC.
         xit( 'get added to newly cloned NESTED repeats if multiple instances of the nested repeat are present in default model', function() {
             var model = new Model( m4 );
             model.init();
-            model.cloneRepeat( '/root/repeat', 0 );
-            //model.cloneRepeat( '/root/repeat/nr', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 1 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 1 );
             expect( model.getStr() ).toEqual( wrt.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="2" enk:ordinal="1">' +
                 '<nr enk:last-used-ordinal="2" enk:ordinal="1"><node/></nr><nr enk:ordinal="2"><node/></nr>' +
@@ -932,38 +1009,43 @@ describe( 'Ordinals in repeats', function() {
         it( 'retains original ordinals when a repeat or NESTED repeat instance in between is removed', function() {
             var model = new Model( m3 );
             model.init();
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 2 );
             model.node( '/root/repeat', 1 ).remove();
             model.node( '/root/repeat/nr', 1 ).remove();
             expect( model.getStr() ).toEqual( wrt.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="3" enk:ordinal="1">' +
                 '<nr enk:last-used-ordinal="3" enk:ordinal="1"><node/></nr><nr enk:ordinal="3"><node/></nr>' +
-                '</repeat><repeat enk:ordinal="3"><nr><node/></nr></repeat>' ) );
+                '</repeat><repeat enk:ordinal="3"><nr enk:last-used-ordinal="1" enk:ordinal="1"><node/></nr></repeat>' ) );
         } );
 
         it( 'continues ordinal numbering when the last repeat or NESTED repeat instance is removed and a new repeat is created', function() {
             var model = new Model( m3 );
             model.init();
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 1 );
             model.node( '/root/repeat', 1 ).remove();
             model.node( '/root/repeat/nr', 1 ).remove();
-            model.cloneRepeat( '/root/repeat', 0 );
-            model.cloneRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat', 0 );
+            model.addRepeat( '/root/repeat/nr', 0 );
+            model.addRepeat( '/root/repeat/nr', 1 );
             expect( model.getStr() ).toEqual( wrt.replace( '{{c}}',
                 '<repeat enk:last-used-ordinal="3" enk:ordinal="1">' +
                 '<nr enk:last-used-ordinal="3" enk:ordinal="1"><node/></nr><nr enk:ordinal="3"><node/></nr>' +
-                '</repeat><repeat enk:ordinal="3"><nr><node/></nr></repeat>' ) );
+                '</repeat><repeat enk:ordinal="3"><nr enk:last-used-ordinal="1" enk:ordinal="1"><node/></nr></repeat>' ) );
         } );
 
     } );
 
 } );
-
-
 
 describe( 'makes Enketo repeat-bug-compliant by injecting positions to correct incorrect XPath expressions', function() {
     var modelStr = '<model><instance><abcabce id="abcabce"><n/><ab><ynab/></ab><a><ynaa>1</ynaa><c/></a><a><ynaa>2</ynaa><c/></a><meta><instanceID/></meta></abcabce></instance></model>';
@@ -1053,6 +1135,10 @@ describe( 'merging an instance into the model', function() {
             [ '<a><r template=""><b>ignore</b></r></a>', '<model><instance><a><r><b/></r><meta/></a></instance></model>', '<model><instance><a><r><b/></r><meta/></a></instance></model>' ],
             [ '<a xmlns:jr="http://someth.ing"><r jr:template=""><b>ignore</b></r></a>', '<model><instance><a><r><b/></r><meta/></a></instance></model>',
                 '<model><instance><a xmlns:jr="http://someth.ing"><r><b/></r><meta/></a></instance></model>'
+            ],
+            // empty group in record
+            [ '<data><age>7</age><details/></data>', '<model><instance><data><age/><details><name>Baby ...</name></details></data></instance></model>',
+                '<model><instance><data><age>7</age><details><name/></details></data></instance></model>'
             ]
         ].forEach( function( test ) {
             var result, expected,

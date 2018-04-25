@@ -6,15 +6,15 @@ var utils = require( './utils' );
 var $ = require( 'jquery' );
 var Promise = require( 'lie' );
 var FormLogicError = require( './Form-logic-error' );
-var config = require( 'enketo-config' );
+var config = require( 'enketo/config' );
 var types = require( './types' );
 var REPEAT_COMMENT_PREFIX = 'repeat:/';
-var INSTANCE = /instance\([\'|\"]([^\/:\s]+)[\'|\"]\)/g;
-var OPENROSA = /(decimal-date-time\(|pow\(|indexed-repeat\(|format-date\(|coalesce\(|join\(|max\(|min\(|random\(|substr\(|int\(|uuid\(|regex\(|now\(|today\(|date\(|if\(|boolean-from-string\(|checklist\(|selected\(|selected-at\(|round\(|area\(|position\([^\)])/;
+var INSTANCE = /instance\(\s*(["'])((?:(?!\1)[A-z0-9.\-_]+))\1\s*\)/g;
+var OPENROSA = /(decimal-date-time\(|pow\(|indexed-repeat\(|format-date\(|coalesce\(|join\(|max\(|min\(|random\(|substr\(|int\(|uuid\(|regex\(|now\(|today\(|date\(|if\(|boolean-from-string\(|checklist\(|selected\(|selected-at\(|round\(|area\(|position\([^)])/;
 var OPENROSA_XFORMS_NS = 'http://openrosa.org/xforms';
 var JAVAROSA_XFORMS_NS = 'http://openrosa.org/javarosa';
 var ENKETO_XFORMS_NS = 'http://enketo.org/xforms';
-require( './plugins' );
+//require( './plugins' );
 require( './extend' );
 var FormModel;
 var Nodeset;
@@ -103,7 +103,7 @@ FormModel.prototype.init = function() {
      *
      * If the regex is later deemed too aggressive, it could target the model, primary instance and primary instance child only, after creating an XML Document.
      */
-    this.data.modelStr = this.data.modelStr.replace( /\s(xmlns\=("|')[^\s\>]+("|'))/g, ' data-$1' );
+    this.data.modelStr = this.data.modelStr.replace( /\s(xmlns=("|')[^\s>]+("|'))/g, ' data-$1' );
 
     if ( !this.options.full ) {
         // Strip all secondary instances from string before parsing
@@ -155,7 +155,6 @@ FormModel.prototype.init = function() {
             } );
 
             this.trimValues();
-            this.cloneAllTemplates();
             this.extractTemplates();
         } catch ( e ) {
             console.error( e );
@@ -204,7 +203,7 @@ FormModel.prototype.createSession = function( id, sessObj ) {
     session = $.parseXML( '<session><context>' +
         fixedProps.map( function( prop ) {
             return '<' + prop + '>' + sessObj[ prop ] + '</' + prop + '>';
-        } ) +
+        } ).join( '' ) +
         '</context></session>' ).documentElement;
 
     // TODO: custom properties could be added to /session/user/data or to /session/data
@@ -316,7 +315,7 @@ FormModel.prototype.mergeXml = function( recordStr ) {
      * A Namespace merge problem occurs when ODK decides to invent a new namespace for a submission
      * that is different from the XForm model namespace... So we just remove this nonsense.
      */
-    recordStr = recordStr.replace( /\s(xmlns\=("|')[^\s\>]+("|'))/g, '' );
+    recordStr = recordStr.replace( /\s(xmlns=("|')[^\s>]+("|'))/g, '' );
     /**
      * Comments aren't merging in document order (which would be impossible also). 
      * This may mess up repeat functionality, so until we actually need
@@ -354,24 +353,25 @@ FormModel.prototype.mergeXml = function( recordStr ) {
      */
     $record.find( '*' ).each( function() {
         var node = this;
-        var repeatPath;
+        var path;
         var repeatIndex = 0;
         var positionedPath;
         var repeatParts;
         try {
-            if ( that.getRepeatIndex( node ) > 0 ) {
-
-                repeatPath = that.getXPath( node, 'instance', false );
+            path = that.getXPath( node, 'instance', false );
+            // If this is a templated repeat (check templates)
+            // or a repeat without templates
+            if ( typeof that.templates[ path ] !== 'undefined' || that.getRepeatIndex( node ) > 0 ) {
                 positionedPath = that.getXPath( node, 'instance', true );
-
                 if ( !that.evaluate( positionedPath, 'node', null, null, true ) ) {
-                    repeatParts = positionedPath.match( /([^\[]+)\[(\d+)\]/g );
-                    // if the positionedPath has two non-0 repeat indices, avoid cloning out of order
-                    if ( repeatParts && repeatParts.length > 1 ) {
+                    repeatParts = positionedPath.match( /([^[]+)\[(\d+)\]\//g );
+                    // If the positionedPath has a non-0 repeat index followed by (at least) 1 node, avoid cloning out of order.
+                    if ( repeatParts && repeatParts.length > 0 ) {
+                        // TODO: Does this work for triple-nested repeats. I don't really care though.
                         // repeatIndex of immediate parent repeat of deepest nested repeat in positionedPath
-                        repeatIndex = repeatParts[ repeatParts.length - 2 ].match( /\[(\d+)\]/ )[ 1 ] - 1;
+                        repeatIndex = repeatParts[ repeatParts.length - 1 ].match( /\[(\d+)\]/ )[ 1 ] - 1;
                     }
-                    that.cloneRepeat( repeatPath, repeatIndex, true );
+                    that.addRepeat( path, repeatIndex, true );
                 }
             }
         } catch ( e ) {
@@ -385,13 +385,23 @@ FormModel.prototype.mergeXml = function( recordStr ) {
      */
     // first find all empty leaf nodes in record
     $record.find( '*' ).filter( function() {
-        var node = this;
-        var val = node.textContent;
-        return node.childNodes.length === 0 && val.trim().length === 0;
+        var recordNode = this;
+        var val = recordNode.textContent;
+        return recordNode.childNodes.length === 0 && val.trim().length === 0;
     } ).each( function() {
         var path = that.getXPath( this, 'instance', true );
-        // find the corresponding node in the model, and set value to empty
-        that.node( path, 0 ).setVal( '' );
+        var instanceNode = that.node( path, 0 ).get()[ 0 ];
+        if ( instanceNode ) {
+            if ( instanceNode.childNodes.length === 0 ) {
+                instanceNode.textContent = '';
+            } else {
+                // If the node in the default instance is a group (empty in record, so appears to be a leaf node
+                // but isn't), empty all true leaf node descendants.
+                that.evaluate( '//*[not(*)]', 'nodes', path, 0, true ).forEach( function( node ) {
+                    node.textContent = '';
+                } );
+            }
+        }
     } );
 
     merger = new MergeXML( {
@@ -415,6 +425,17 @@ FormModel.prototype.mergeXml = function( recordStr ) {
      * into a proper XML document by parsing the XML string instead.
      */
     mergeResultDoc = $.parseXML( merger.Get( 1 ) );
+
+
+    /** 
+     * To properly show 0 repeats, if the form definition contains multiple default instances
+     * and the record contains none, we have to iterate trough the templates object, and
+     * 1. check for each template path, whether the record contained more than 0 of these nodes
+     * 2. remove all nodes on that path if the answer was no.
+     *
+     * Since this requires complex handcoded XForms it is unlikely to ever be needed, so I left this
+     * functionality out.
+     */
 
     // remove the primary instance  childnode from the original model
     this.xml.querySelector( 'instance' ).removeChild( modelInstanceChildEl );
@@ -576,27 +597,27 @@ FormModel.prototype.getRepeatCommentEl = function( repeatPath, repeatSeriesIndex
 };
 
 /**
- * Clones a <repeat>able instance node in a particular series of a repeat.
+ * Adds a <repeat>able instance node in a particular series of a repeat.
  *
  * @param  {string} repeatPath absolute path of a repeat 
  * @param  {number} repeatSeriesIndex    index of the repeat series that gets a new repeat (this is always 0 for non-nested repeats)
  * @param  {boolean} merge   whether this operation is part of a merge operation (won't send dataupdate event, clears all values and 
  *                           will not add ordinal attributes as these should be provided in the record)
  */
-FormModel.prototype.cloneRepeat = function( repeatPath, repeatSeriesIndex, merge ) {
+FormModel.prototype.addRepeat = function( repeatPath, repeatSeriesIndex, merge ) {
     var $insertAfterNode;
     var $templateClone;
     var repeatSeries;
-    var $template;
+    var template;
     var that = this;
 
     if ( !this.templates[ repeatPath ] ) {
         // This allows the model itself without requiring the controller to cal call .extractFakeTemplates()
-        // to extract non-jr:templates by assuming that cloneRepeat would only called for a repeat.
+        // to extract non-jr:templates by assuming that addRepeat would only called for a repeat.
         this.extractFakeTemplates( [ repeatPath ] );
     }
 
-    $template = this.templates[ repeatPath ];
+    template = this.templates[ repeatPath ];
     repeatSeries = this.getRepeatSeries( repeatPath, repeatSeriesIndex );
     $insertAfterNode = ( repeatSeries.length ) ? $( repeatSeries[ repeatSeries.length - 1 ] ) : $( this.getRepeatCommentEl( repeatPath, repeatSeriesIndex ) );
 
@@ -610,8 +631,8 @@ FormModel.prototype.cloneRepeat = function( repeatPath, repeatSeriesIndex, merge
     /**
      * If templatenodes and insertAfterNode(s) have been identified 
      */
-    if ( $template[ 0 ] && $insertAfterNode.length === 1 ) {
-        $templateClone = $template.clone()
+    if ( template && $insertAfterNode.length === 1 ) {
+        $templateClone = $( template ).clone()
             .insertAfter( $insertAfterNode );
 
         this.removeOrdinalAttributes( $templateClone[ 0 ] );
@@ -672,20 +693,28 @@ FormModel.prototype.removeOrdinalAttributes = function( el ) {
  * @return {<Element>}                Array of all repeat elements in a series.
  */
 FormModel.prototype.getRepeatSeries = function( repeatPath, repeatSeriesIndex ) {
+    var pathSegments;
+    var nodeName;
+    var checkEl;
     var repeatCommentEl = this.getRepeatCommentEl( repeatPath, repeatSeriesIndex );
-    var pathSegments = repeatCommentEl.textContent.substr( REPEAT_COMMENT_PREFIX.length ).split( '/' );
-    var nodeName = pathSegments[ pathSegments.length - 1 ];
     var result = [];
-    var checkEl = repeatCommentEl.nextSibling;
 
-    // then add all subsequent repeats
-    while ( checkEl ) {
-        // Ignore any sibling text and comment nodes (e.g. whitespace with a newline character)
-        // also deal with repeats that have non-repeat siblings in between them, event though that would be a bug.
-        if ( checkEl.nodeName && checkEl.nodeName === nodeName ) {
-            result.push( checkEl );
+    // RepeatCommentEl is null if the requested repeatseries is a nested repeat and its ancestor repeat
+    // has 0 instances.
+    if ( repeatCommentEl ) {
+        pathSegments = repeatCommentEl.textContent.substr( REPEAT_COMMENT_PREFIX.length ).split( '/' );
+        nodeName = pathSegments[ pathSegments.length - 1 ];
+        checkEl = repeatCommentEl.nextSibling;
+
+        // then add all subsequent repeats
+        while ( checkEl ) {
+            // Ignore any sibling text and comment nodes (e.g. whitespace with a newline character)
+            // also deal with repeats that have non-repeat siblings in between them, event though that would be a bug.
+            if ( checkEl.nodeName && checkEl.nodeName === nodeName ) {
+                result.push( checkEl );
+            }
+            checkEl = checkEl.nextSibling;
         }
-        checkEl = checkEl.nextSibling;
     }
 
     return result;
@@ -807,7 +836,7 @@ FormModel.prototype.addTemplate = function( repeatPath, repeat, empty ) {
             } ).text( '' );
         }
         // Add to templates object.
-        this.templates[ repeatPath ] = $clone;
+        this.templates[ repeatPath ] = $clone[ 0 ];
     }
 };
 
@@ -821,35 +850,6 @@ FormModel.prototype.getTemplateNodes = function() {
 };
 
 /**
- * Initialization function that creates <repeat>able data nodes with the defaults from the template if no repeats have been created yet.
- * Strictly speaking creating the first repeat automatically is not "according to the spec" as the user should be asked first whether it
- * has any data for this question.
- * However, it seems usually always better to assume at least one 'repeat' (= 1 question). It doesn't make use of the Nodeset subclass (CHANGE?)
- *
- * See also: In JavaRosa, the documentation on the jr:template attribute.
- */
-FormModel.prototype.cloneAllTemplates = function() {
-    var jrPrefix = this.getNamespacePrefix( JAVAROSA_XFORMS_NS );
-    var that = this;
-
-    // for now we support both the official namespaced template and the hacked non-namespaced template attributes
-    this.getTemplateNodes().forEach( function( templateEl ) {
-        var nodeName = templateEl.nodeName;
-        var selector = that.getXPath( templateEl, 'instance' );
-        var ancestorTemplateNodes = that.evaluate( 'ancestor::' + nodeName + '[@template] | ancestor::' + nodeName + '[@' + jrPrefix + ':template]', 'nodes', selector, 0, true );
-        if ( ancestorTemplateNodes.length === 0 && $( templateEl ).siblings( nodeName.replace( /\./g, '\\.' ) ).length === 0 ) {
-            $( templateEl ).clone().insertAfter( $( templateEl ) )
-                // for backwards compatibility
-                .find( '*' ).addBack().removeAttr( 'template' )
-                // just to be sure, but could be omitted
-                .removeAttr( jrPrefix + ':template' )
-                // the proper way of doing this
-                .get( 0 ).removeAttributeNS( JAVAROSA_XFORMS_NS, 'template' );
-        }
-    } );
-};
-
-/**
  * Obtains a cleaned up string of the data instance
  *
  * @return {string}           XML string
@@ -857,9 +857,9 @@ FormModel.prototype.cloneAllTemplates = function() {
 FormModel.prototype.getStr = function() {
     var dataStr = ( new XMLSerializer() ).serializeToString( this.xml.querySelector( 'instance > *' ) || this.xml.documentElement, 'text/xml' );
     // restore default namespaces
-    dataStr = dataStr.replace( /\s(data-)(xmlns\=("|')[^\s\>]+("|'))/g, ' $2' );
+    dataStr = dataStr.replace( /\s(data-)(xmlns=("|')[^\s>]+("|'))/g, ' $2' );
     // remove repeat comments
-    dataStr = dataStr.replace( new RegExp( '<!--' + REPEAT_COMMENT_PREFIX + '\/[^>]+-->', 'g' ), '' );
+    dataStr = dataStr.replace( new RegExp( '<!--' + REPEAT_COMMENT_PREFIX + '\\/[^>]+-->', 'g' ), '' );
     // If not IE, strip duplicate namespace declarations. IE doesn't manage to add a namespace declaration to the root element.
     if ( navigator.userAgent.indexOf( 'Trident/' ) === -1 ) {
         dataStr = this.removeDuplicateEnketoNsDeclarations( dataStr );
@@ -870,7 +870,7 @@ FormModel.prototype.getStr = function() {
 FormModel.prototype.removeDuplicateEnketoNsDeclarations = function( xmlStr ) {
     var i = 0;
     var declarationExp = new RegExp( '( xmlns:' + this.getNamespacePrefix( ENKETO_XFORMS_NS ) + '="' + ENKETO_XFORMS_NS + '")', 'g' );
-    return xmlStr.replace( declarationExp, function( match, p1 ) {
+    return xmlStr.replace( declarationExp, function( match ) {
         i++;
         if ( i > 1 ) {
             return '';
@@ -881,7 +881,8 @@ FormModel.prototype.removeDuplicateEnketoNsDeclarations = function( xmlStr ) {
 };
 
 /**
- * There is a huge bug in JavaRosa that has resulted in the usage of incorrect formulae on nodes inside repeat nodes.
+ * There is a huge historic issue (stemming from JavaRosa) that has resulted in the usage of incorrect formulae 
+ * on nodes inside repeat nodes.
  * Those formulae use absolute paths when relative paths should have been used. See more here:
  * http://opendatakit.github.io/odk-xform-spec/#a-big-deviation-with-xforms
  *
@@ -894,8 +895,9 @@ FormModel.prototype.removeDuplicateEnketoNsDeclarations = function( xmlStr ) {
  * E.g. '/data/rep_a/node_a' could become '/data/rep_a[2]/node_a' if the context is inside
  * the second rep_a repeat.
  *
- * This function should be removed as soon as JavaRosa (or maybe just pyxform) fixes the way those formulae
- * are created (or evaluated).
+ * This function should be removed when we can reasonbly expect not many 'old XForms' to be in use any more.
+ * 
+ * Already it should leave proper XPaths untouched.
  *
  * @param  {string} expr        the XPath expression
  * @param  {string} selector    of the (context) node on which expression is evaluated
@@ -938,21 +940,21 @@ FormModel.prototype.setNamespaces = function() {
      * Passing through all nodes would be very slow with an XForms model that contains lots of nodes such as large secondary instances. 
      * (The namespace XPath axis is not support in native browser XPath evaluators unfortunately).
      * 
-     * For now it has therefore been restricted to only look at the top-level node in the primary instance.
+     * For now it has therefore been restricted to only look at the top-level node in the primary instance and in the secondary instances.
      * We can always expand that later.
      */
-    var start = this.hasInstance ? '/model/instance[1]' : '';
-    var node = this.evaluate( start + '/*', 'node', null, null, true );
+    var start = this.hasInstance ? '/model/instance' : '';
+    var nodes = this.evaluate( start + '/*', 'nodes', null, null, true );
     var that = this;
     var prefix;
 
-    if ( node ) {
+    nodes.forEach( function( node ) {
         if ( node.hasAttributes() ) {
             for ( var i = 0; i < node.attributes.length; i++ ) {
                 var attribute = node.attributes[ i ];
 
                 if ( attribute.name.indexOf( 'xmlns:' ) === 0 ) {
-                    this.namespaces[ attribute.name.substring( 6 ) ] = attribute.value;
+                    that.namespaces[ attribute.name.substring( 6 ) ] = attribute.value;
                 }
             }
         }
@@ -972,7 +974,8 @@ FormModel.prototype.setNamespaces = function() {
                 }
             }
         } );
-    }
+    } );
+
 };
 
 FormModel.prototype.getNamespacePrefix = function( namespace ) {
@@ -1009,16 +1012,16 @@ FormModel.prototype.shiftRoot = function( expr ) {
         // Encode all string literals in order to exclude them, without creating a monsterly regex
         expr = expr.replace( LITERALS, function( m, p1, p2, p3, p4 ) {
             var encoded = typeof p1 !== 'undefined' ? encodeURIComponent( p1 ) : encodeURIComponent( p3 );
-            var quote = p2 ? p2 : p4;
+            var quote = p2 || p4;
             return quote + encoded + quote;
         } );
         // Insert /model/instance[1]
-        expr = expr.replace( /^(\/(?!model\/)[^\/][^\/\s,"']*\/)/g, '/model/instance[1]$1' );
-        expr = expr.replace( /([^a-zA-Z0-9\.\]\)\/\*_-])(\/(?!model\/)[^\/][^\/\s,"']*\/)/g, '$1/model/instance[1]$2' );
+        expr = expr.replace( /^(\/(?!model\/)[^/][^/\s,"']*\/)/g, '/model/instance[1]$1' );
+        expr = expr.replace( /([^a-zA-Z0-9.\])/*_-])(\/(?!model\/)[^/][^/\s,"']*\/)/g, '$1/model/instance[1]$2' );
         // Decode string literals
         expr = expr.replace( LITERALS, function( m, p1, p2, p3, p4 ) {
             var decoded = typeof p1 !== 'undefined' ? decodeURIComponent( p1 ) : decodeURIComponent( p3 );
-            var quote = p2 ? p2 : p4;
+            var quote = p2 || p4;
             return quote + decoded + quote;
         } );
     }
@@ -1038,7 +1041,7 @@ FormModel.prototype.replaceInstanceFn = function( expr ) {
     var that = this;
 
     // TODO: would be more consistent to use utls.parseFunctionFromExpression() and utils.stripQuotes
-    return expr.replace( INSTANCE, function( match, id ) {
+    return expr.replace( INSTANCE, function( match, quote, id ) {
         prefix = '/model/instance[@id="' + id + '"]';
         // check if referred instance exists in model
         if ( that.evaluate( prefix, 'nodes', null, null, true ).length ) {
@@ -1184,7 +1187,7 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
 FormModel.prototype.evaluate = function( expr, resTypeStr, selector, index, tryNative ) {
     var j, context, doc, resTypeNum, resultTypes, result, $collection, response, repeats, cacheKey, original, cacheable;
 
-    // console.debug( 'evaluating expr: ' + expr + ' with context selector: ' + selector + ', 0-based index: ' +
+    //console.debug( 'evaluating expr: ' + expr + ' with context selector: ' + selector + ', 0-based index: ' +
     //    index + ' and result type: ' + resTypeStr );
     original = expr;
     tryNative = tryNative || false;
@@ -1193,7 +1196,6 @@ FormModel.prototype.evaluate = function( expr, resTypeStr, selector, index, tryN
     doc = this.xml;
     repeats = null;
 
-    // path corrections for repeated nodes: http://opendatakit.github.io/odk-xform-spec/#a-big-deviation-with-xforms
     if ( selector ) {
         $collection = this.node( selector ).get();
         repeats = $collection.length;
@@ -1217,12 +1219,12 @@ FormModel.prototype.evaluate = function( expr, resTypeStr, selector, index, tryN
 
     // if no cached conversion exists
     if ( !this.convertedExpressions[ cacheKey ] ) {
-        expr = expr;
         expr = expr.trim();
         expr = this.replaceInstanceFn( expr );
-        expr = this.replaceCurrentFn( expr, selector );
+        expr = this.replaceCurrentFn( expr, this.getXPath( context, 'instance', true ) );
         // shiftRoot should come after replaceCurrentFn
         expr = this.shiftRoot( expr );
+        // path corrections for repeated nodes: http://opendatakit.github.io/odk-xform-spec/#a-big-deviation-with-xforms
         if ( repeats && repeats > 1 ) {
             expr = this.makeBugCompliant( expr, selector, index );
         }
@@ -1457,7 +1459,7 @@ Nodeset.prototype.getVal = function() {
     return vals;
 };
 
-// if repeats have not been cloned yet, they are not considered a repeat by this function
+// If repeats have not been cloned yet, they are not considered a repeat by this function
 Nodeset.prototype.getClosestRepeat = function() {
     var el = this.get().get( 0 );
     var nodeName = el.nodeName;
@@ -1478,42 +1480,48 @@ Nodeset.prototype.getClosestRepeat = function() {
  */
 Nodeset.prototype.remove = function() {
     var $dataNode;
-    var allRemovedNodeNames;
-    var $this;
+    var nodeName;
     var repeatPath;
     var repeatIndex;
     var removalEventData;
+    var nextNode;
 
     $dataNode = this.get();
 
     if ( $dataNode.length > 0 ) {
 
-        allRemovedNodeNames = [ $dataNode.prop( 'nodeName' ) ];
-
-        $dataNode.find( '*' ).each( function() {
-            $this = $( this );
-            allRemovedNodeNames.push( $this.prop( 'nodeName' ) );
-        } );
-
+        nodeName = $dataNode.prop( 'nodeName' );
         repeatPath = this.model.getXPath( $dataNode.get( 0 ), 'instance' );
         repeatIndex = this.model.determineIndex( $dataNode );
         removalEventData = this.model.getRemovalEventData( $dataNode.get( 0 ) );
 
         if ( !this.model.templates[ repeatPath ] ) {
-            // This allows the model itself without requiring the controller to cal call .extractFakeTemplates()
+            // This allows the model itself without requiring the controller to call .extractFakeTemplates()
             // to extract non-jr:templates by assuming that node.remove() would only called for a repeat.
             this.model.extractFakeTemplates( [ repeatPath ] );
         }
-
+        // warning: jQuery.next() to be avoided to support dots in the nodename
+        nextNode = $dataNode.get( 0 ).nextSibling;
         $dataNode.remove();
         this.nodes = null;
 
         // For internal use
         this.model.$events.trigger( 'dataupdate', {
-            nodes: allRemovedNodeNames,
+            nodes: null,
             repeatPath: repeatPath,
             repeatIndex: repeatIndex
         } );
+
+        // For all next sibling repeats to update formulas that use e.g. position(..)
+        // For internal use
+        while ( nextNode && nextNode.nodeName == nodeName ) {
+            nextNode = nextNode.nextSibling;
+            this.model.$events.trigger( 'dataupdate', {
+                nodes: null,
+                repeatPath: repeatPath,
+                repeatIndex: repeatIndex++
+            } );
+        }
 
         // For external use, if required with custom data.
         this.model.$events.trigger( 'removed', removalEventData );
@@ -1616,10 +1624,10 @@ Nodeset.prototype.validateRequired = function( expr ) {
 };
 
 // Placeholder function meant to be overwritten
-FormModel.prototype.getUpdateEventData = function( node, type ) {};
+FormModel.prototype.getUpdateEventData = function( /*node, type*/) {};
 
 // Placeholder function meant to be overwritten
-FormModel.prototype.getRemovalEventData = function( node ) {};
+FormModel.prototype.getRemovalEventData = function( /* node */) {};
 
 // Expose types to facilitate extending with custom types
 FormModel.prototype.types = types;

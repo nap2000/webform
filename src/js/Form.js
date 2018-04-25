@@ -4,8 +4,8 @@ var FormModel = require( './Form-model' );
 var $ = require( 'jquery' );
 var Promise = require( 'lie' );
 var utils = require( './utils' );
-var t = require( 'translator' ).t;
-var config = require( 'enketo-config' );
+var t = require( 'enketo/translator' ).t;
+var config = require( 'enketo/config' );
 var inputHelper = require( './input' );
 var repeatModule = require( './repeat' );
 var pageModule = require( './page' );
@@ -17,6 +17,7 @@ var languageModule = require( './language' );
 var preloadModule = require( './preload' );
 var outputModule = require( './output' );
 var calculationModule = require( './calculation' );
+var maskModule = require( './mask' );
 require( './plugins' );
 require( './extend' );
 
@@ -36,6 +37,7 @@ function Form( formSelector, data, options ) {
     var $form = $( formSelector );
 
     this.$nonRepeats = {};
+    this.$all = {};
     this.options = typeof options !== 'object' ? {} : options;
     if ( typeof this.options.clearIrrelevantImmediately === 'undefined' ) {
         this.options.clearIrrelevantImmediately = true;
@@ -109,6 +111,9 @@ Form.prototype = {
     },
 };
 
+/**
+ * Returns a module and adds the form property to it.
+ */
 Form.prototype.addModule = function( module ) {
     return Object.create( module, {
         form: {
@@ -153,6 +158,7 @@ Form.prototype.init = function() {
     this.output = this.addModule( outputModule );
     this.itemset = this.addModule( itemsetModule );
     this.calc = this.addModule( calculationModule );
+    this.mask = this.addModule( maskModule );
 
     try {
         this.preloads.init();
@@ -171,10 +177,10 @@ Form.prototype.init = function() {
         // before itemset.update
         this.langs.init();
 
-        // after repeats.init so that template contain role="page" when applicable
+        // before repeats.init so that template contains role="page" when applicable
         this.pages.init();
 
-        // after radio button data-name setting
+        // after radio button data-name setting (now done in XLST)
         this.repeats.init();
 
         // after repeats.init
@@ -204,13 +210,16 @@ Form.prototype.init = function() {
         // update field calculations again to make sure that dependent
         // field values are calculated
         this.calc.update();
+
+        // after branch.update to make sure page-relevancy has already been determined
+        this.pages.init();
+
+        this.mask.init();
+
         this.editStatus = false;
 
-        if ( this.options.goTo === true && location.hash ) {
-            // if goTo fails (not found), it will return false
-            if ( !this.goTo( this.getGoToTarget( location.hash ) ) ) {
-                loadErrors.push( 'Failed to find question "' + location.hash.substring( 1 ) + '" in form. Is it a valid path?' );
-            }
+        if ( this.options.printRelevantOnly !== false ) {
+            this.view.$.addClass( 'print-relevant-only' );
         }
 
         setTimeout( function() {
@@ -229,13 +238,22 @@ Form.prototype.init = function() {
     return loadErrors;
 };
 
+Form.prototype.goTo = function( xpath ) {
+    var errors = [];
+    if ( !this.goToTarget( this.getGoToTarget( xpath ) ) ) {
+        errors.push( t( 'alert.gotonotfound.msg', {
+            path: location.hash.substring( 1 )
+        } ) );
+    }
+    return errors;
+};
+
 /**
  * Obtains a string of primary instance.
  * 
  * @param  {!{include: boolean}=} include optional object items to exclude if false
  * @return {string}        XML string of primary instance
  */
-
 Form.prototype.getDataStr = function( include ) {
     include = ( typeof include !== 'object' || include === null ) ? {} : include;
     // By default everything is included
@@ -274,11 +292,14 @@ Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, selector, index
     var name;
     var $input;
     var label = '';
-    var matches = expr.match( /jr:choice-name\(([^,]+),\s?'(.*?)'\)/ );
+    var matches = expr.match( new RegExp( 'jr:choice-name\\(([^,]+),\\s*(?:' +
+        '"([^"]*)"|' +
+        '\'([^\']*)\'' +
+        ')\\s*\\)' ) );
 
     if ( matches ) {
         value = this.model.evaluate( matches[ 1 ], resTypeStr, selector, index, tryNative );
-        name = matches[ 2 ].trim();
+        name = ( matches[ 2 ] || matches[ 3 ] || '' ).trim();
         $input = this.view.$.find( '[name="' + name + '"]' );
 
         if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'select' ) {
@@ -340,25 +361,35 @@ Form.prototype.setAllVals = function( $group, groupIndex ) {
  */
 Form.prototype.getRelatedNodes = function( attr, filter, updated ) {     // smap add repeatCountOnly (performance)
     var $collection;
-    var $repeat = null;
+    var $repeatControls = null;
+    var $controls;
     var selector = [];
     var that = this;
-    var radioCheckNames = [];
 
     updated = updated || {};
     filter = filter || '';
 
-    // The collection of non-repeat inputs is cached (unchangeable)
+    // The collection of non-repeat inputs, calculations and groups is cached (unchangeable)
     if ( !this.$nonRepeats[ attr ] ) {
-        this.$nonRepeats[ attr ] = this.view.$.find( filter + '[' + attr + ']' )
-            .parentsUntil( '.or', '.calculation, .question' ).filter( function() {
+        $controls = this.view.$.find( ':not(.or-repeat-info)[' + attr + ']' )
+            .filter( function() {
                 return $( this ).closest( '.or-repeat' ).length === 0;
             } );
+        this.$nonRepeats[ attr ] = this.filterRadioCheckSiblings( $controls );
     }
 
     // If the updated node is inside a repeat (and there are multiple repeats present)
     if ( typeof updated.repeatPath !== 'undefined' && updated.repeatIndex >= 0 ) {
-        $repeat = this.view.$.find( '.or-repeat[name="' + updated.repeatPath + '"]' ).eq( updated.repeatIndex );
+        $controls = this.view.$.find( '.or-repeat[name="' + updated.repeatPath + '"]' ).eq( updated.repeatIndex )
+            .find( '[' + attr + ']' );
+        $repeatControls = this.filterRadioCheckSiblings( $controls );
+    }
+
+    // If a new repeat was created, update the cached collection of all form controls with that attribute
+    if ( !this.$all[ attr ] ) {
+        this.$all[ attr ] = this.filterRadioCheckSiblings( this.view.$.find( '[' + attr + ']' ) );
+    } else if ( updated.cloned && $repeatControls ) {
+        this.$all[ attr ] = this.$all[ attr ].add( $repeatControls );
     }
 
     /**
@@ -368,18 +399,16 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {     // smap
      * repeats such as with /path/to/repeat[3]/node, /path/to/repeat[position() = 3]/node or indexed-repeat(/path/to/repeat/node, /path/to/repeat, 3).
      * We accept that for now.
      **/
-    if ( $repeat && $repeat.length ) {      // smap add length
-        // the non-repeat fields have to be added too, e.g. to update a calculated item with count(to/repeat/node) at the top level
-        $collection = this.$nonRepeats[ attr ]
-            .add( $repeat );
+    if ( $repeatControls ) {		 // smap at one point I had added && $repeat.length, in upstream repeat was changed to repeatControls
+        // The non-repeat fields have to be added too, e.g. to update a calculated item with count(to/repeat/node) at the top level
+        $collection = this.$nonRepeats[ attr ].add( $repeatControls );
     } else {
-        $collection = this.view.$;
+        $collection = this.$all[ attr ];
     }
 
-    // add selectors based on specific changed nodes
     // Add selectors based on specific changed nodes
     if ( !updated.nodes || updated.nodes.length === 0 ) {
-        selector = selector.concat( [ filter + '[' + attr + ']' ] );
+        selector = selector.concat( [ filter ] );
     } else {
         updated.nodes.forEach( function( node ) {
             selector = selector.concat( that.getQuerySelectorsForLogic( filter, attr, node ) );
@@ -388,27 +417,28 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {     // smap
         selector = selector.concat( that.getQuerySelectorsForLogic( filter, attr, '*' ) );
     }
 
-    // TODO: exclude descendents of disabled elements? .find( ':not(:disabled) span.active' )
-    return $collection.find( selector.join() )
-        .filter( function() {
-            var radioCheckName = this.dataset.name;
-            // Filter out duplicate radiobuttons and checkboxes
-            if ( radioCheckName ) {
-                if ( radioCheckNames.indexOf( radioCheckName ) !== -1 ) {
-                    return false;
-                }
-                radioCheckNames.push( radioCheckName );
-            }
+    var selectorStr = selector.join( ', ' );
 
-            // start smap - if repeatCountOnly is passed filter out nodes that are not related to counts
-            //if(gRepeatOnly) {
-            //    if(!this.name || this.name.lastIndexOf('_count') < 0) {
-            //        return false;
-            //    }
-            //}
-            // end smap
-            return true;
-        } );
+    $collection = selectorStr ? $collection.filter( selectorStr ) : $collection;
+
+    // TODO: exclude descendents of disabled elements? .find( ':not(:disabled) span.active' )
+    return $collection;
+};
+
+Form.prototype.filterRadioCheckSiblings = function( $controls ) {
+    var wrappers = [];
+    return $controls.filter( function() {
+        // TODO: can this be further performance-optimized?
+        var wrapper = this.type === 'radio' || this.type === 'checkbox' ? $( this.parentNode ).parent( '.option-wrapper' )[ 0 ] : null;
+        // Filter out duplicate radiobuttons and checkboxes
+        if ( wrapper ) {
+            if ( wrappers.indexOf( wrapper ) !== -1 ) {
+                return false;
+            }
+            wrappers.push( wrapper );
+        }
+        return true;
+    } );
 };
 
 /**
@@ -450,7 +480,9 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function() {
     var modelClone = new FormModel( this.model.getStr() );
     modelClone.init();
 
-    this.getRelatedNodes( 'data-relevant' ).each( function() {
+    // Since we are removing nodes, we need to go in reverse order to make sure 
+    // the indices are still correct!
+    this.getRelatedNodes( 'data-relevant' ).reverse().each( function() {
         var $node = $( this );
         var relevant = that.input.getRelevant( $node );
         var index = that.input.getIndex( $node );
@@ -507,12 +539,26 @@ Form.prototype.grosslyViolateStandardComplianceByIgnoringCertainCalcs = function
 Form.prototype.validationUpdate = function( updated ) {
     var $nodes;
     var that = this;
+    var upd;
 
     if ( config.validateContinuously === true ) {
-        updated = updated || {};
+        upd = updated || {};
+        if ( updated.cloned ) {
+            /*
+             * We don't want requireds and constraints of questions in a newly created
+             * repeat to be evaluated immediately after the repeat is created.
+             * However, we do want constraints and requireds outside the repeat that
+             * depend on e.g. the count() of repeats to be re-evaluated.
+             * To achieve this we use a dirty trick and convert the "cloned" updated object
+             * to a regular "node" updated object.
+             */
+            upd = {
+                nodes: updated.repeatPath.split( '/' ).reverse().slice( 0, 1 )
+            };
+        }
 
-        $nodes = this.getRelatedNodes( 'data-constraint', '', updated )
-            .add( this.getRelatedNodes( 'data-required', '', updated ) );
+        $nodes = this.getRelatedNodes( 'data-constraint', '', upd )
+            .add( this.getRelatedNodes( 'data-required', '', upd ) );
 
         $nodes.each( function() {
             that.validateInput( $( this ) );
@@ -523,28 +569,23 @@ Form.prototype.validationUpdate = function( updated ) {
 Form.prototype.setEventHandlers = function() {
     var that = this;
 
-    //first prevent default submission, e.g. when text field is filled in and Enter key is pressed
+    // Prevent default submission, e.g. when text field is filled in and Enter key is pressed
     this.view.$.attr( 'onsubmit', 'return false;' );
 
     /*
-     * workaround for Chrome to clear invalid values right away
-     * issue: https://code.google.com/p/chromium/issues/detail?can=2&start=0&num=100&q=&colspec=ID%20Pri%20M%20Iteration%20ReleaseBlock%20Cr%20Status%20Owner%20Summary%20OS%20Modified&groupby=&sort=&id=178437)
-     * a workaround was chosen instead of replacing the change event listener to a blur event listener
-     * because I'm guessing that Google will bring back the old behaviour.
-     */
-    this.view.$.on( 'blur', 'input:not([type="text"], [type="radio"], [type="checkbox"])', function() {
-        var $input = $( this );
-        if ( typeof $input.prop( 'validity' ).badInput !== 'undefined' && $input.prop( 'validity' ).badInput ) {
-            $input.val( '' );
-        }
-    } );
-
-    /*
-     * The .file namespace is used in the filepicker to avoid an infinite loop. 
      * The listener below catches both change and change.file events.
+     * The .file namespace is used in the filepicker to avoid an infinite loop. 
+     * 
+     * Fields with the "ignore" class are dynamically added to the DOM in a widget and are supposed to be handled
+     * by the widget itself, e.g. the search field in a geopoint widget. They should be ignored by the main engine.
+     *
+     * Readonly fields are not excluded because of this scenario:
+     * 1. readonly field has a calculation
+     * 2. readonly field becomes irrelevant (e.g. parent group with relevant)
+     * 3. this clears value in view, which should propagate to model via 'change' event
      */
     this.view.$.on( 'change.file',
-        'input:not([readonly]):not(.ignore), select:not([readonly]):not(.ignore), textarea:not([readonly]):not(.ignore)',
+        'input:not(.ignore), select:not(.ignore), textarea:not(.ignore)',
         function() {
             var requiredExpr;
             var $input = $( this );
@@ -563,9 +604,14 @@ Form.prototype.setEventHandlers = function() {
             if ( n.enabled && n.inputType !== 'hidden' && n.required ) {
                 requiredExpr = n.required;
             }
-            // set file input values to the actual name of file (without c://fakepath or anything like that)
+            // set file input values to the uniqified actual name of file (without c://fakepath or anything like that)
             if ( n.val.length > 0 && n.inputType === 'file' && $input[ 0 ].files[ 0 ] && $input[ 0 ].files[ 0 ].size > 0 ) {
                 n.val = utils.getFilename( $input[ 0 ].files[ 0 ], $input[ 0 ].dataset.filenamePostfix );
+            }
+            if ( n.val.length > 0 && n.inputType === 'drawing' ) {
+                n.val = utils.getFilename( {
+                    name: n.val
+                }, $input[ 0 ].dataset.filenamePostfix );
             }
 
             that.model.node( n.path, n.index ).setVal( n.val, n.constraint, n.xmlType, requiredExpr, true );
@@ -620,10 +666,14 @@ Form.prototype.setEventHandlers = function() {
     this.view.$.on( 'changelanguage', function() {
         that.output.update();
     } );
+
+    this.view.$.find( '.or-group > h4' ).on( 'click', function() {
+        $( this ).closest( '.or-group' ).toggleClass( 'or-appearance-compact' );
+    } );
 };
 
 Form.prototype.setValid = function( $node, type ) {
-    var classes = ( type ) ? 'invalid-' + type : 'invalid-constraint invalid-required';
+    var classes = ( type ) ? 'invalid-' + type : 'invalid-constraint invalid-required invalid-relevant';
     this.input.getWrapNodes( $node ).removeClass( classes );
 };
 
@@ -661,9 +711,9 @@ Form.prototype.isValid = function( $node ) {
     var $question;
     if ( $node ) {
         $question = this.input.getWrapNodes( $node );
-        return !$question.hasClass( 'invalid-required' ) && !$question.hasClass( 'invalid-constraint' );
+        return !$question.hasClass( 'invalid-required' ) && !$question.hasClass( 'invalid-constraint' ) && !$question.hasClass( 'invalid-relevant' );
     }
-    return this.view.$.find( '.invalid-required, .invalid-constraint' ).length === 0;
+    return this.view.$.find( '.invalid-required, .invalid-constraint, .invalid-relevant' ).length === 0;
 };
 
 Form.prototype.clearIrrelevant = function() {
@@ -722,16 +772,16 @@ Form.prototype.validateContent = function( $container ) {
     return Promise.all( validations )
         .then( function() {
             $firstError = $container
-                .find( '.invalid-required, .invalid-constraint' )
-                .addBack( '.invalid-required, .invalid-constraint' )
+                .find( '.invalid-required, .invalid-constraint, .invalid-relevant' )
+                .addBack( '.invalid-required, .invalid-constraint, .invalid-relevant' )
                 .eq( 0 );
 
             if ( $firstError.length > 0 ) {
-                that.goTo( $firstError[ 0 ] );
+                that.goToTarget( $firstError[ 0 ] );
             }
             return $firstError.length === 0;
         } )
-        .catch( function( e ) {
+        .catch( function() {
             // fail whole-form validation if any of the question
             // validations threw.
             return false;
@@ -846,20 +896,18 @@ Form.prototype.updateRequiredVisibility = function( n ) {
 };
 
 
-Form.prototype.getGoToTarget = function( hash ) {
-    var path;
+Form.prototype.getGoToTarget = function( path ) {
     var hits;
     var modelNode;
     var target;
     var intermediateTarget;
     var selector = '';
-    var repeatRegEx = /([^\[]+)\[(\d+)\]([^\[]*$)?/g;
+    var repeatRegEx = /([^[]+)\[(\d+)\]([^[]*$)?/g;
 
-    if ( !hash ) {
+    if ( !path ) {
         return;
     }
 
-    path = hash.substr( 1 );
     modelNode = this.model.node( path ).get().get( 0 );
 
     if ( !modelNode ) {
@@ -891,20 +939,19 @@ Form.prototype.getGoToTarget = function( hash ) {
     return target ? this.input.getWrapNodes( $( target ) ).get( 0 ) : target;
 };
 
-
 /**
  * Scrolls to a HTML Element, flips to the page it is on and focuses on the nearest form control.
  * 
  * @param  {HTMLElement} target A HTML element to scroll to
  */
-Form.prototype.goTo = function( target ) {
+Form.prototype.goToTarget = function( target ) {
     if ( target ) {
         if ( this.pages.active ) {
             // Flip to page
             this.pages.flipToPageContaining( $( target ) );
         }
-        // check if the nearest question or group is hidden after page flip (e.g. by being irrelevant)
-        if ( $( target ).closest( '.question, .or-group, .or-group-data' ).is( ':hidden' ) ) {
+        // check if the nearest question or group is irrelevant after page flip
+        if ( $( target ).closest( '.or-branch.disabled' ).length ) {
             // It is up to the apps to decide what to do with this event.
             $( target ).trigger( 'gotohidden.enketo' );
         }
@@ -923,10 +970,10 @@ Form.prototype.goTo = function( target ) {
  * Static method to obtain required enketo-transform version direct from class.
  */
 Form.getRequiredTransformerVersion = function() {
-    console.warn( 'Form.getRequiredTransformerVersion() is deprecated, use Form.requiredTransformerVersion' );
+    console.deprecate( 'Form.getRequiredTransformerVersion()', 'Form.requiredTransformerVersion' );
     return Form.requiredTransformerVersion;
 };
-Form.requiredTransformerVersion = '1.17.2';
+Form.requiredTransformerVersion = '1.25.2';
 
 module.exports = Form;
 
@@ -935,97 +982,97 @@ module.exports = Form;
  * @deprecated
  */
 Form.prototype.getInstanceID = function() {
-    console.warn( 'form.getInstanceID() is deprecated, use form.instanceID instead' );
+    console.deprecate( 'form.getInstanceID()', 'form.instanceID' );
     return this.instanceID;
 };
 /**
  * @deprecated
  */
 Form.prototype.getDeprecatedID = function() {
-    console.warn( 'form.getDeprecatedID() is deprecated, use form.deprecatedID instead' );
+    console.deprecate( 'form.getDeprecatedID()', 'form.deprecatedID' );
     return this.deprecatedID;
 };
 /**
  * @deprecated
  */
 Form.prototype.getInstanceName = function() {
-    console.warn( 'form.getModel() is deprecated, use form.instanceName instead' );
+    console.deprecate( 'form.getModel()', 'form.instanceName' );
     return this.instanceName;
 };
 /**
  * @deprecated
  */
 Form.prototype.getVersion = function() {
-    console.warn( 'form.getVersion() is deprecated, use form.version instead' );
+    console.deprecate( 'form.getVersion()', 'form.version' );
     return this.version;
 };
 /**
  * @deprecated
  */
 Form.prototype.getEncryptionKey = function() {
-    console.warn( 'form.getEncryptionKey() is deprecated, use form.encryptionKey instead' );
+    console.deprecate( 'form.getEncryptionKey()', 'form.encryptionKey' );
     return this.encryptionKey;
 };
 /**
  * @deprecated
  */
 Form.prototype.getAction = function() {
-    console.warn( 'form.getAction() is deprecated, use form.action instead' );
+    console.deprecate( 'form.getAction()', 'form.action' );
     return this.action;
 };
 /**
  * @deprecated
  */
 Form.prototype.getMethod = function() {
-    console.warn( 'form.getMethod() is deprecated, use form.method instead' );
+    console.deprecate( 'form.getMethod()', 'form.method ' );
     return this.method;
 };
 /**
  * @deprecated
  */
 Form.prototype.getModel = function() {
-    console.warn( 'form.getModel() is deprecated, use form.model instead' );
+    console.deprecate( 'form.getModel()', 'form.model' );
     return this.model;
 };
 /**
  * @deprecated
  */
 Form.prototype.getView = function() {
-    console.warn( 'form.getView() is deprecated, use form.view instead' );
+    console.deprecate( 'form.getView()', 'form.view' );
     return this.view;
 };
 /**
  * @deprecated
  */
 Form.prototype.getRecordName = function() {
-    console.warn( 'form.getRecordName() is deprecated, use form.recordName instead' );
+    console.deprecate( 'form.getRecordName()', 'form.recordName' );
     return this.recordName;
 };
 /**
  * @deprecated
  */
 Form.prototype.setRecordName = function( name ) {
-    console.warn( 'form.setRecordName() is deprecated, use form.recordName="val" instead' );
+    console.deprecate( 'form.setRecordName()', 'form.recordName="val"' );
     this.recordName = name;
 };
 /**
  * @deprecated
  */
 Form.prototype.setEditStatus = function( status ) {
-    console.warn( 'form.setEditStatus() is deprecated, use form.editStatus="val" instead' );
+    console.deprecate( 'form.setEditStatus()', 'form.editStatus="val"' );
     this.editStatus = status;
 };
 /**
  * @deprecated
  */
 Form.prototype.getEditStatus = function() {
-    console.warn( 'form.getEditStatus() is deprecated, use form.editStatus instead' );
+    console.deprecate( 'form.getEditStatus()', 'form.editStatus' );
     return this.editStatus;
 };
 /**
  * @deprecated
  */
 Form.prototype.getSurveyName = function() {
-    console.warn( 'form.getSurveyName() is deprecated, use form.editStatus instead' );
+    console.deprecate( 'form.getSurveyName()', 'form.editStatus' );
     return this.surveyName;
 };

@@ -11,11 +11,11 @@ var pluginName = 'distresspicker';
  *
  * @constructor
  * @param {Element} element Element to apply widget to.
- * @param {(boolean|{touch: boolean})} options options
+ * @param {} options options
  * @param {*=} event     event
  */
 
-function Distresspicker( element, options, event ) {
+function Distresspicker( element, options /*, event*/ ) {
     this.namespace = pluginName;
     Widget.call( this, element, options );
     this._init();
@@ -55,7 +55,6 @@ Distresspicker.prototype._getProps = function() {
     var type = this.element.attributes[ 'data-type-xml' ].value;
 
     return {
-        touch: this.options.touch,
         readonly: this.element.readOnly,
         step: type === 'decimal' ? 0.1 : 1,
     };

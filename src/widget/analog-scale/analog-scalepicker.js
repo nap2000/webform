@@ -2,6 +2,7 @@
 var Widget = require( '../../js/Widget' );
 var $ = require( 'jquery' );
 var pluginName = 'analogscalepicker';
+var support = require( '../../js/support' );
 
 require( 'bootstrap-slider-basic' );
 
@@ -63,13 +64,13 @@ Analogscalepicker.prototype._init = function() {
 
 Analogscalepicker.prototype._getProps = function( $question ) {
     var appearances = $question.attr( 'class' ).split( ' ' )
-        .map( function( appearance, index ) {
+        .map( function( appearance ) {
             return appearance.substring( 14 );
         } );
     var type = this.element.attributes[ 'data-type-xml' ].value;
 
     return {
-        touch: this.options.touch,
+        touch: support.touch,
         readonly: this.element.readOnly,
         step: type === 'decimal' ? 0.1 : 1,
         orientation: appearances.indexOf( 'horizontal' ) !== -1 ? 'horizontal' : 'vertical'

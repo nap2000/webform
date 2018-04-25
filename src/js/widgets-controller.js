@@ -10,9 +10,8 @@ var _instantiate;
 var _setLangChangeListener;
 var _setOptionChangeListener;
 var _setValChangeListener;
-var support = require( './support' );
 var $ = require( 'jquery' );
-var widgets = require( 'widgets' ).filter( function( widget ) {
+var widgets = require( 'enketo/widgets' ).filter( function( widget ) {
     return widget.selector;
 } );
 
@@ -25,7 +24,7 @@ var widgets = require( 'widgets' ).filter( function( widget ) {
 
 init = function( $group, opts ) {
     if ( !this.form ) {
-        throw new Error( 'Widgets module not correclty instantiated with form property.' );
+        throw new Error( 'Widgets module not correctly instantiated with form property.' );
     }
     $form = this.form.view.$;
     $group = $group || $form;
@@ -88,7 +87,18 @@ disable = function( $group ) {
  * @return {jQuery}          a jQuery collection
  */
 _getElements = function( $group, selector ) {
-    return ( selector ) ? ( selector === 'form' ? $form : $group.find( selector ) ) : $();
+    if ( selector ) {
+        if ( selector === 'form' ) {
+            return $form;
+        }
+        // e.g. if the widget selector starts at .question level (e.g. ".or-appearance-draw input")
+        if ( $group.is( '.question' ) ) {
+            return $group.find( 'input:not(.ignore), select:not(.ignore), textarea:not(.ignore)' ).filter( selector );
+        }
+        return $group.find( selector );
+    }
+
+    return $();
 };
 
 /**
@@ -100,7 +110,6 @@ _getElements = function( $group, selector ) {
 _instantiate = function( widget, $group ) {
     var $elements;
     widget.options = widget.options || {};
-    widget.options.touch = support.touch;
 
     if ( !widget.name ) {
         return console.error( 'widget doesn\'t have a name' );
