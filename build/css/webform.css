@@ -218,6 +218,7 @@ summary {
     width: 150px;
     position: static;
     min-height: 32px;
+    white-space: normal;
 }
 .form-footer .main-controls .btn progress {
     margin: 0;

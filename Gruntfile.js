@@ -64,6 +64,10 @@ module.exports = function( grunt ) {
                     livereload: true,
                 }
             },
+	    language: {
+                files: [ 'app/views/**/*.pug', 'app/controllers/**/*.js', 'app/models/**/*.js', 'public/js/src/**/*.js' ],
+                tasks: [ 'shell:translation', 'i18next' ]
+            },
             js: {
                 files: [ 'config.json', '*.js', 'src/**/*.js' ],
                 tasks: [ 'browserify' ],
@@ -124,6 +128,18 @@ module.exports = function( grunt ) {
                 extDot: 'last'
             }
         },
+        i18next: {
+            locales: {
+                cwd: 'locales/',
+                expand: true,
+                src: [ '*/' ],
+                include: [ '**/translation.json', '**/translation-additions.json' ],
+                rename( dest, src ) {
+                    return `${dest + src}translation-combined.json`;
+                },
+                dest: 'locales/'
+            }
+        },
         browserify: {
             standalone: {
                 files: {
@@ -181,6 +197,6 @@ module.exports = function( grunt ) {
     grunt.registerTask( 'test', [ 'jsbeautifier:test', 'eslint', 'compile', 'transforms', 'karma:headless', 'style' ] );
     grunt.registerTask( 'style', [ 'sass' ] );
     grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );
-    grunt.registerTask( 'develop', [ 'style', 'browserify' ] );
+    grunt.registerTask( 'develop', [ 'style', 'i18next', 'browserify' ] );
     grunt.registerTask( 'default', [ 'style', 'compile' ] );
 };

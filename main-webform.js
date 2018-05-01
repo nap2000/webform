@@ -16,16 +16,32 @@ var modelStr;
 var fileStore = require( './webform/file-storage' );
 var recordStore = require('./webform/store');
 var controller = require('./webform/controller-webform');
+var translator = require( 'enketo/translator' );
+var t = translator.t;
 
 window.enketo = controller;             // Make controller global so it can be called by cordova app
 
 if(typeof surveyData !== "undefined") {
-    controller.init( 'form.or:eq(0)', {
-        recordStore: recordStore,
-        fileStore: fileStore,
-        submitInterval: 300 * 1000
-    } );
+    translator.init().then (function() {
+
+        // Apply translations
+        $(".lang").each(function() {
+            var $this = $(this);
+            var code = $this.data("lang");
+            if(code) {
+                $this.html(t(code));
+            }
+        });
+
+        // Start form
+        controller.init('form.or:eq(0)', {
+            recordStore: recordStore,
+            fileStore: fileStore,
+            submitInterval: 300 * 1000
+        });
+    });
 }
+
 
 
 

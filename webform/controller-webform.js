@@ -27,6 +27,8 @@ if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeo
 define(function (require, exports, module) {
     "use strict";
 
+    var translator = require( 'enketo/translator' );
+    var t = translator.t;
     var Form = require('../src/js/Form');
     var FormModel = require('../src/js/Form-model');
     var gui = require('./gui');
@@ -772,7 +774,7 @@ define(function (require, exports, module) {
                     } else if (getDraftStatus()) {
                         setDraftStatus(false);
                         $button.btnBusyState(false);
-                        $button.text("Submit");
+                        $button.text(t( 'formfooter.submit.btn' ));
                         gui.alert('Your browser does not support saving media files');
                     } else {
                         form.validate();
@@ -796,7 +798,7 @@ define(function (require, exports, module) {
                         } else if (getDraftStatus()) {
                             setDraftStatus(false);
                             $button.btnBusyState(false);
-                            $button.text("Submit");
+                            $button.text(t( 'formfooter.submit.btn' ));
                             gui.alert('Your browser does not support saving media files');
                         } else {
                             form.validate();
@@ -812,7 +814,7 @@ define(function (require, exports, module) {
 
 
         $('.form-footer [name="draft"]').on('change', function () {
-            var text = ( $(this).prop('checked') ) ? "Save Draft" : "Submit";
+            var text = ( $(this).prop('checked') ) ? t( 'formfooter.savedraft.btn' ) : t( 'formfooter.submit.btn' );  // submit
             $('#submit-form').text(text);
         });
 
