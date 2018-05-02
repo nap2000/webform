@@ -32,6 +32,7 @@ define(function (require, exports, module) {
     var $ = require( 'jquery' );
     var plugin = require('./plugin');
     var printForm = require('../src/js/print');
+    var t = require( 'enketo/translator' ).t;
 
     var nav, pages, updateStatus, feedbackBar,
         supportLink = '<a href="mailto:' + settings[ 'supportEmail' ] + '">' + settings[ 'supportEmail' ] + '</a>';
@@ -397,19 +398,19 @@ define(function (require, exports, module) {
             msg = texts.msg;
         }
 
-        msg = msg || 'Please confirm action';
-        heading = texts.heading || 'Are you sure?';
+        msg = msg || t('confirm.default.msg');;
+        heading = texts.heading || t('confirm.default.heading');
         errorMsg = texts.errorMsg || '';
-        dialogName = texts.dialog || 'confirm';
+        dialogName = texts.dialog || t('confirm.default.posButton');
         values = values || {};
         choices = choices || {};
-        choices.posButton = choices.posButton || 'Confirm';
-        choices.negButton = choices.negButton || 'Cancel';
+        choices.posButton = choices.posButton || t('confirm.default.posButton');
+        choices.negButton = choices.negButton || t('confirm.default.negButton');
         choices.posAction = choices.posAction || function() {};
         choices.negAction = choices.negAction || function() {};
         choices.beforeAction = choices.beforeAction || function() {};
 
-        $dialog = $( '#dialog-' + dialogName );
+        $dialog = $( '#dialog-confirm');
 
         //write content into confirmation dialog
         $dialog.find( '.modal-header h3' ).text( heading );

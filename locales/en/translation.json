@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Unsaved Record Found",
-            "msg": "Enketo has found an unsaved record. Would you like to load this record or discard it?",
+            "msg": "Webform has found an unsaved record. Would you like to load this record or discard it?",
             "negButton": "Discard",
             "posButton": "Load Record"
         },
@@ -139,7 +139,7 @@
             "heading": "PANIC!",
             "msg": [
                 "This will remove all your queued data and all your forms from the browser storage. Data will be lost forever. Use this only as a last resort if the browser storage seems corrupt.",
-                "Close all other Enketo browser tabs first.",
+                "Close all other Webform browser tabs first.",
                 "The page will reload. If you see an error you may have to repeat this action.",
                 "Are you sure you want to do this?"
             ],
@@ -265,7 +265,7 @@
     },
     "here": "here",
     "home": {
-        "msg": "__appTitle__ is running! Please access Enketo forms from your __serverName__ installation."
+        "msg": "__appTitle__ is running! Please access Webform forms from your __serverName__ installation."
     },
     "imagemap": {
         "svgNotFound": "SVG image could not be found"
@@ -303,7 +303,7 @@
             "heading": "Modern Browsers",
             "ie": {
                 "heading": "Why no love for those evil outdated versions of Internet Explorer?",
-                "msg": "We understand that some people, especially those working for large bureaucracies, do not have access to the latest and greatest browsers. Since we know how great the web could be with the right tools, we have great empathy for users in that unfortunate situation. Normally, we would try to provide workarounds to support some populair outdated browsers. However, the reason Enketo exists is the availability of some very fancy cutting-edge technologies. Unfortunately, users of older browsers are therefore out of luck."
+                "msg": "We understand that some people, especially those working for large bureaucracies, do not have access to the latest and greatest browsers. Since we know how great the web could be with the right tools, we have great empathy for users in that unfortunate situation. Normally, we would try to provide workarounds to support some populair outdated browsers. However, the reason Webform exists is the availability of some very fancy cutting-edge technologies. Unfortunately, users of older browsers are therefore out of luck."
             },
             "msg1": "Ouch! Sorry, you were probably sent here because your browser is outdated or perhaps it has its key features disabled by using 'private browsing' mode.",
             "msg2": "If you are using an outdated browser, we recommend upgrading to a recent version of one of the following excellent modern browsers:"
@@ -356,7 +356,7 @@
         "http408": "Data server timed out.",
         "http413": "Data is too large.",
         "http4xx": "Unknown submission problem on data server.",
-        "http500": "The data server for your form or the Enketo server is down. Please try again later or contact __supportEmail__.",
+        "http500": "The data server for your form or the Webform server is down. Please try again later or contact __supportEmail__.",
         "http504": "Could not establish connection with data server."
     },
     "version": "version:",

@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Un registro sin grabar encontrado ",
-            "msg": "Enketo ha encontrado un registro sin guardar. ¿Quiere cargar este registro o descartarlo?",
+            "msg": "Webform ha encontrado un registro sin guardar. ¿Quiere cargar este registro o descartarlo?",
             "negButton": "Descartar",
             "posButton": "Cargar registro"
         },
@@ -139,7 +139,7 @@
             "heading": "! Pánico ¡",
             "msg": [
                 "Esto eliminará toda la información almacenada y todos los formularios de la memoria del navegador. Los datos se perderán. Use esto como última opción si la memoria del navegador parece corrupta.",
-                "Cerrar primero todas las otras pestañas de Enketo.",
+                "Cerrar primero todas las otras pestañas de Webform.",
                 "Se va a recargar la página. Si ve algún error puede repetir esta operación.",
                 "¿ Está seguro ?"
             ],
@@ -265,7 +265,7 @@
     },
     "here": "aquí",
     "home": {
-        "msg": "__appTitle__ en ejecución! Por favor aceda a Enketo forms desde su instalación en  __serverName__."
+        "msg": "__appTitle__ en ejecución! Por favor aceda a Webform forms desde su instalación en  __serverName__."
     },
     "imagemap": {
         "svgNotFound": "No se pudo encontrar la imagen SVG"
@@ -302,9 +302,9 @@
             "heading": "Navegadores modernos",
             "ie": {
                 "heading": "¿ Porqué ese poco cariño por esas endiabladamente malignas versiones de Internet Explorer ? ",
-                "msg": "Entendemos que algunas personas, especialmente aquellas que trabajan en grandes empresas o instituciones no tienen acceso a los últimos y mejores navegadores. Como sabemos como de estupenda puede ser la web con las herramientas correctas, tenemos empatía por los usuarios en esta situación. Normalmente intentaríamos buscar la manera de dar soporte a ciertos  navegadores populares. Sin embargo la razón por la que Enketo existe es por la disponibilidad de algunas tecnologías de última hora. Desafortunadamente, los usuarios de navegadores antiguos no van a tener la suerte de poder usar Enketo."
+                "msg": "Entendemos que algunas personas, especialmente aquellas que trabajan en grandes empresas o instituciones no tienen acceso a los últimos y mejores navegadores. Como sabemos como de estupenda puede ser la web con las herramientas correctas, tenemos empatía por los usuarios en esta situación. Normalmente intentaríamos buscar la manera de dar soporte a ciertos  navegadores populares. Sin embargo la razón por la que Webform existe es por la disponibilidad de algunas tecnologías de última hora. Desafortunadamente, los usuarios de navegadores antiguos no van a tener la suerte de poder usar Webform."
             },
-            "msg1": "Ay! Lo sentimos pero seguramente usted ha llegado aquí porque su navegador no está actualizado o bien es una versión antigua o quizás tiene algunas características clave para Enketo deshabilitadas porque está usando el modo de navegación de incógnito.",
+            "msg1": "Ay! Lo sentimos pero seguramente usted ha llegado aquí porque su navegador no está actualizado o bien es una versión antigua o quizás tiene algunas características clave para Webform deshabilitadas porque está usando el modo de navegación de incógnito.",
             "msg2": "Si está utilizando un navegador antiguo le recomendamos que se actualize a una versión reciente de los siguientes excelentes navegadores modernos:"
         },
         "offline": {
@@ -355,7 +355,7 @@
         "http408": "Servidor de datos no responde.",
         "http413": "Demasiados datos",
         "http4xx": "Error sin especificar al enviar datos al servidor.",
-        "http500": "El servidor de datos para su formulario o el servidor de Enketo están apagados o no son accesibles. Por favor pruebe de nuevo o contacte con __supportEmail__ .",
+        "http500": "El servidor de datos para su formulario o el servidor de Webform están apagados o no son accesibles. Por favor pruebe de nuevo o contacte con __supportEmail__ .",
         "http504": "No puede establecer conexión con el servidor de datos."
     },
     "version": "versión:",

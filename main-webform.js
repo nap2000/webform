@@ -24,6 +24,13 @@ window.enketo = controller;             // Make controller global so it can be c
 if(typeof surveyData !== "undefined") {
     translator.init().then (function() {
 
+        // Start form
+        controller.init('form.or:eq(0)', {
+            recordStore: recordStore,
+            fileStore: fileStore,
+            submitInterval: 300 * 1000
+        });
+
         // Apply translations
         $(".lang").each(function() {
             var $this = $(this);
@@ -33,12 +40,6 @@ if(typeof surveyData !== "undefined") {
             }
         });
 
-        // Start form
-        controller.init('form.or:eq(0)', {
-            recordStore: recordStore,
-            fileStore: fileStore,
-            submitInterval: 300 * 1000
-        });
     });
 }
 
