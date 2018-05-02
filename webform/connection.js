@@ -29,6 +29,8 @@ define( function( require, exports, module ) {
     var gui = require('./gui');
     var store = require('./store');
     var $ = require( 'jquery' );
+    var translator = require( 'enketo/translator' );
+    var t = translator.t;
 
     "use strict";
     var oRosaHelper, progress, maxSubmissionSize,
@@ -496,9 +498,9 @@ define( function( require, exports, module ) {
                     msg = ( typeof uploadResult.win[ i ].msg !== 'undefined' ) ? msg + ( uploadResult.win[ i ].msg ) + ' ' : '';
                 }
             }
-            waswere = ( names.length > 1 ) ? ' were' : ' was';
+            waswere = ( names.length > 1 ) ? 'alert.queuesubmissionsuccess.msg_plural' : 'alert.queuesubmissionsuccess.msg';
             namesStr = names.join( ', ' );
-            gui.feedback( namesStr.substring( 0, namesStr.length ) + waswere + ' successfully uploaded!' );
+            gui.feedback( t( 'alert.queuesubmissionsuccess.msg', { count: names.length, recordNames: namesStr } ));
             _setOnlineStatus( true );
         }
 

@@ -129,20 +129,21 @@ define(function (require, exports, module) {
         startEditData = form.getDataStr(true, true);
 
         if (store) {
+            var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
             $('.side-slider').append(
-                '<h3>Queue</h3>' +
-                '<p>Records are stored inside your browser until they have been uploaded ' +
-                '(even if you turn off your computer or go offline).</p>' +
+                '<h3 class="lang" data-lang="record-list.title">queue</h3>' +
+                '<p class="lang" data-lang="record-list.msg1">Records are stored</p>' +
                 '<progress class="upload-progress"></progress>' +
                 '<ul class="record-list"></ul>' +
                 '<div class="button-bar">' +
                 //'<button class="btn btn-default export-records">Export</button>' +
-                '<button class="btn btn-primary upload-records">Upload</button>' +		// remove pull-right while export is disabled
-                '<button class="btn btn-default delete-records pull-right">Delete</button>' +
+                '<button class="btn btn-primary upload-records lang" data-lang="record-list.upload" ' +
+                    'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
+                '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
+                    'style="' + btnstyle + '">Delete</button>' +
                 '</div>' +
-                '<p>Queued records, except those marked as <em>draft</em> ( <span class="glyphicon glyphicon-pencil"></span> ), ' +
-                'are uploaded <strong>automatically</strong>, in the background, every 5 minutes when the web page is open ' +
-                'and an Internet connection is available. To force an upload in between automatic attempts, click Upload.</p>');
+                '<p class="lang" data-lang="record-list.msg2-nodraft" >Queued records</p>' +
+                '<p class="lang" data-lang="record-list.msg3" >Foce Upload</p>');
             //trigger fake save event to update formlist in slider
             $form.trigger('save', JSON.stringify(store.getRecordList()));
         }
@@ -297,12 +298,12 @@ define(function (require, exports, module) {
             texts = {
                 dialog: 'save',
                 msg: '',
-                heading: 'Save as a Draft',
+                heading: t('formfooter.savedraft.label'),
                 errorMsg: error
             };
             choices = {
-                posButton: 'Save & Close',
-                negButton: 'Cancel',
+                posButton: t('confirm.save.posButton'),
+                negButton: t('confirm.default.negButton'),
                 posAction: function (values) {
                     // if the record is new or
                     // if the record was previously loaded from storage and saved under the same name
@@ -346,10 +347,10 @@ define(function (require, exports, module) {
             $form.trigger('save', JSON.stringify(store.getRecordList()));
 
             if (draft) {
-                gui.feedback('Record stored as draft.', 3);
+                gui.feedback(t('alert.recordsavesuccess.draftmsg'), 3);
             } else {
                 //try to send the record immediately
-                gui.feedback('Record queued for submission.', 3);
+                gui.feedback(t('alert.recordsavesuccess.finalmsg'), 3);
                 submitOneForced(recordName, record, media);
             }
         } else if (saveResult === 'require' || saveResult === 'existing' || saveResult === 'forbidden') {
@@ -854,7 +855,7 @@ define(function (require, exports, module) {
         });
 
         $(document).on('click', '.delete-records:not(:disabled)', function () {
-            var message = 'Are you sure you want to delete all the unsent results?',
+            var message = t('confirm.deleteall.msg'),
                 choices = {
                     posAction: function () {
                         emptyQueue();
@@ -966,7 +967,7 @@ define(function (require, exports, module) {
                 $li.attr('data-draft', draft);
             });
         } else if ($list.find('.no-records').length === 0) {
-            $list.append('<li class="no-records">no records queued</li>');
+            $list.append('<li class="no-records">' + t("record-list.norecords") + '</li>');
         }
     }
 
