@@ -359,7 +359,7 @@ Form.prototype.setAllVals = function( $group, groupIndex ) {
  * @param  {{nodes:Array<string>=, repeatPath: string=, repeatIndex: number=}=} updated The object containing info on updated data nodes
  * @return {jQuery}           A jQuery collection of elements
  */
-Form.prototype.getRelatedNodes = function( attr, filter, updated ) {     // smap add repeatCountOnly (performance)
+Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
     var $collection;
     var $repeatControls = null;
     var $controls;
@@ -399,7 +399,7 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {     // smap
      * repeats such as with /path/to/repeat[3]/node, /path/to/repeat[position() = 3]/node or indexed-repeat(/path/to/repeat/node, /path/to/repeat, 3).
      * We accept that for now.
      **/
-    if ( $repeatControls ) {		 // smap at one point I had added && $repeat.length, in upstream repeat was changed to repeatControls
+    if ( $repeatControls ) {
         // The non-repeat fields have to be added too, e.g. to update a calculated item with count(to/repeat/node) at the top level
         $collection = this.$nonRepeats[ attr ].add( $repeatControls );
     } else {
