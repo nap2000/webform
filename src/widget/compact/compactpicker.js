@@ -35,6 +35,9 @@ CompactPicker.prototype._init = function() {
             $optionLabel.css( 'display', 'none' );
         }
     } );
+    $( this.element ).find( '.itemset-template' ).each( function() {        // smap hide the itemset template
+        $( this ).css( 'display', 'none' );
+    });
 };
 
 $.fn[ pluginName ] = function( options, event ) {
