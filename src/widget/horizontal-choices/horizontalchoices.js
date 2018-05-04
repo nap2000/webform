@@ -35,7 +35,8 @@ HorizontalChoices.prototype.constructor = HorizontalChoices;
 HorizontalChoices.prototype._init = function() {
     $( this.element ).find( '.option-wrapper' ).each( function() {
         var $wrapper = $( this ),
-            $options = $wrapper.find( 'label' );
+            //$options = $wrapper.find( 'label' );    // smap
+            $options = $wrapper.find( 'label' ).not( '.itemset-template' );      // smap exclude template
 
         if ( ( $options.length % 3 ) === 2 ) {
             $wrapper.append( '<label class="filler"></label>' );

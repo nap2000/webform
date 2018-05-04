@@ -161,7 +161,7 @@ _setLangChangeListener = function( widget, $els ) {
  * @param {jQuery}         $els   The jQuery collection of elements that the widget has been instantiated on.
  */
 _setOptionChangeListener = function( widget, $els ) {
-    if ( $els.length > 0 && widget.list ) {
+    if ( $els.length > 0 && ( widget.list || widget.options ) ) {   // smap add options
         $els.on( 'changeoption', function() {
             // update (itemselect) picker on which event was triggered because the options changed
             $( this )[ widget.name ]( 'update' );
