@@ -1588,7 +1588,7 @@ Nodeset.prototype.validateConstraintAndType = function( expr, xmlDataType ) {
 
     value = that.getVal()[ 0 ];
 
-    if ( value && value.toString() === '' ) {       // smap add check for undefined value
+    if ( value.toString() === '' ) {
         return Promise.resolve( true );
     }
 
