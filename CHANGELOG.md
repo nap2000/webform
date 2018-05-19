@@ -4,9 +4,39 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 [Unreleased]
+---------------------
+##### Fixed
+- Appearance "horizontal" enlarges the last option if the remainder of the options modulo 3 is 1.
+
+[4.51.3] - 2018-05-02
+---------------------
+##### Fixed
+- When a record is loaded with an empty value for a node that has a default value in the XForm, all secondary instance values are emptied. 
+
+[4.51.2] - 2018-05-01
+---------------------
+##### Changed
+- Added a hook for Enketo Validate to add custom XPath functions.
+
+[4.51.1] - 2018-04-27
+---------------------
+##### Changed
+- Hide disabled reset button in draw widget.
+
+##### Fixed
+- Comment icon overlaps long label in simple select/select1 questions.
+- Pasted incorrect date value converts to today's date.
+
+[4.51.0] - 2018-04-25
 ----------------------
+##### Added
+- Decimal-time() support.
+- Distance() support.
+
 ##### Fixed
 - In Safari, readonly checkboxes and radiobuttons can still be manipulated and WILL modify the record, even if the UI doesn't update.
+- Decimal-date-time() not spec-compliant at all.
+- Filepicker and drawing widgets have functional reset button when they are readonly.
 
 [4.50.0] - 2018-04-22 
 ----------------------
