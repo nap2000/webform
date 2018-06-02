@@ -40,6 +40,12 @@ if(typeof surveyData !== "undefined") {
             }
         });
 
+        // Apply markdown
+        //$(".question-label, .option-label").each(function() {
+        //    var $this = $(this);
+        //    $this.html(markdown_convert($this.html()));
+        //});
+
     });
 }
 
