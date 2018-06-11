@@ -42,119 +42,127 @@ define(function (require, exports, module) {
     function init(selector, options) {
         var loadErrors, purpose, originalUrl, recordName;
 
-        /*
-         * Add check prior to the user leaving the screen
-         */
-        window.onbeforeunload = function () {
-            if (hasChanged()) {
-                return "You have unsaved changes. Are you sure you want to leave?";
+        $('article').hide();   // start loader
+        $('.loader').show();
+
+        setTimeout( function() {
+            /*
+  * Add check prior to the user leaving the screen
+  */
+            window.onbeforeunload = function () {
+                if (hasChanged()) {
+                    return "You have unsaved changes. Are you sure you want to leave?";
+                }
+            };
+
+            //formSelector = selector;
+            originalSurveyData = {};
+            originalSurveyData.modelStr = surveyData.modelStr;
+
+            options = options || {};
+            fileManager = options.fileStore;
+            store = options.recordStore || null;
+
+            // Rename instanceStrToEdit to instanceStr as used by Enketo Core
+            surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
+            surveyData.instanceStr = surveyData.instanceStrToEdit || null;
+
+            // Open an existing record if we need to
+            if (fileManager.isSupported()) {
+                var recordName = store.getRecord("draft");	// Draft identifies the name of a draft record that is being opened
+                if (recordName) {
+
+                    var record = store.getRecord(recordName);
+                    surveyData.instanceStrToEdit = record.data;
+                    surveyData.instanceStr = record.data;
+                    surveyData.instanceStrToEditId = record.instanceStrToEditId;
+                    surveyData.assignmentId = record.assignmentId;
+                    surveyData.key = record.accessKey;
+                    surveyData.submitted = false;
+
+                    // Set the global instanceID of the restored form so that filePicker can find media
+                    var model = new FormModel(record.data);
+                    model.init();
+                    window.gLoadedInstanceID = model.getInstanceID();
+
+                    // Delete the draft key
+                    store.removeRecord("draft");
+                } else {
+                    window.gLoadedInstanceID = undefined;
+                }
             }
-        };
 
-        //formSelector = selector;
-        originalSurveyData = {};
-        originalSurveyData.modelStr = surveyData.modelStr;
 
-        options = options || {};
-        fileManager = options.fileStore;
-        store = options.recordStore || null;
+            // Initialise network connection
+            connection.init(true, store);
 
-        // Rename instanceStrToEdit to instanceStr as used by Enketo Core
-        surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
-        surveyData.instanceStr = surveyData.instanceStrToEdit || null;
+            /*
+             * Initialise file manager if it is supported in this browser
+             * The fileSystems API is used to store images prior to upload when operating offline
+             */
+            if (fileManager.isSupported()) {
+                fileManager.init();
+                if (!store || store.getRecordList().length === 0) {
+                    fileManager.deleteAllAttachments();
+                }
+            }
+            // Create the form
+            formSelector = 'form.or:eq(0)';
+            form = new Form(formSelector, surveyData);
+            var loadErrors = form.init();
 
-        // Open an existing record if we need to
-        if (fileManager.isSupported()) {
-            var recordName = store.getRecord("draft");	// Draft identifies the name of a draft record that is being opened
             if (recordName) {
-
-                var record = store.getRecord(recordName);
-                surveyData.instanceStrToEdit = record.data;
-                surveyData.instanceStr = record.data;
-                surveyData.instanceStrToEditId = record.instanceStrToEditId;
-                surveyData.assignmentId = record.assignmentId;
-                surveyData.key = record.accessKey;
-                surveyData.submitted = false;
-
-                // Set the global instanceID of the restored form so that filePicker can find media
-                var model = new FormModel(record.data);
-                model.init();
-                window.gLoadedInstanceID = model.getInstanceID();
-
-                // Delete the draft key
-                store.removeRecord("draft");
-            } else {
-                window.gLoadedInstanceID = undefined;
+                form.setRecordName(recordName);
             }
-        }
 
-
-        // Initialise network connection
-        connection.init(true, store);
-
-        /*
-         * Initialise file manager if it is supported in this browser
-         * The fileSystems API is used to store images prior to upload when operating offline
-         */
-        if (fileManager.isSupported()) {
-            fileManager.init();
-            if (!store || store.getRecordList().length === 0) {
-                fileManager.deleteAllAttachments();
+            if (loadErrors.length > 0) {
+                purpose = ( surveyData.instanceStr ) ? 'to edit data' : 'for data entry';
+                gui.showLoadErrors(loadErrors,
+                    'It is recommended <strong>not to use this form</strong> ' +
+                    purpose + ' until this is resolved.');
             }
-        }
 
-        // Create the form
-        formSelector = 'form.or:eq(0)';
-        form = new Form(formSelector, surveyData);
-        var loadErrors = form.init();
+            $('.loader').hide();
+            $('article').show();       // end loader
 
-        if (recordName) {
-            form.setRecordName(recordName);
-        }
+            $form = form.getView().$;
+            $formprogress = $('.form-progress');
 
-        if (loadErrors.length > 0) {
-            purpose = ( surveyData.instanceStr ) ? 'to edit data' : 'for data entry';
-            gui.showLoadErrors(loadErrors,
-                'It is recommended <strong>not to use this form</strong> ' +
-                purpose + ' until this is resolved.');
-        }
+            setEventHandlers();
+            setSubmitLogic();
 
-        $form = form.getView().$;
-        $formprogress = $('.form-progress');
+            // Save current data so we can check if there have been changes
+            startEditData = form.getDataStr(true, true);
 
-        setEventHandlers();
-        setSubmitLogic();
-
-        // Save current data so we can check if there have been changes
-        startEditData = form.getDataStr(true, true);
-
-        if (store) {
-            var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
-            $('.side-slider').append(
-                '<h3 class="lang" data-lang="record-list.title">queue</h3>' +
-                '<p class="lang" data-lang="record-list.msg1">Records are stored</p>' +
-                '<progress class="upload-progress"></progress>' +
-                '<ul class="record-list"></ul>' +
-                '<div class="button-bar">' +
-                //'<button class="btn btn-default export-records">Export</button>' +
-                '<button class="btn btn-primary upload-records lang" data-lang="record-list.upload" ' +
+            if (store) {
+                var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
+                $('.side-slider').append(
+                    '<h3 class="lang" data-lang="record-list.title">queue</h3>' +
+                    '<p class="lang" data-lang="record-list.msg1">Records are stored</p>' +
+                    '<progress class="upload-progress"></progress>' +
+                    '<ul class="record-list"></ul>' +
+                    '<div class="button-bar">' +
+                    //'<button class="btn btn-default export-records">Export</button>' +
+                    '<button class="btn btn-primary upload-records lang" data-lang="record-list.upload" ' +
                     'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
-                '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
+                    '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
                     'style="' + btnstyle + '">Delete</button>' +
-                '</div>' +
-                '<p class="lang" data-lang="record-list.msg2-nodraft" >Queued records</p>' +
-                '<p class="lang" data-lang="record-list.msg3" >Foce Upload</p>');
-            //trigger fake save event to update formlist in slider
-            $form.trigger('save', JSON.stringify(store.getRecordList()));
-        }
-        if (options.submitInterval) {
-            window.setInterval(function () {
-                submitQueue();
-            }, options.submitInterval);
-            window.setTimeout(function () {
-                submitQueue();
-            }, 5 * 1000);
-        }
+                    '</div>' +
+                    '<p class="lang" data-lang="record-list.msg2-nodraft" >Queued records</p>' +
+                    '<p class="lang" data-lang="record-list.msg3" >Foce Upload</p>');
+                //trigger fake save event to update formlist in slider
+                $form.trigger('save', JSON.stringify(store.getRecordList()));
+            }
+            if (options.submitInterval) {
+                window.setInterval(function () {
+                    submitQueue();
+                }, options.submitInterval);
+                window.setTimeout(function () {
+                    submitQueue();
+                }, 5 * 1000);
+            }
+        }, 0 );
+
     }
 
     /**

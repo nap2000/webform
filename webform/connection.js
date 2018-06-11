@@ -272,12 +272,16 @@ define( function( require, exports, module ) {
             } );
  
         } else {
+            /*
+             * Closing of the window not suppoted in the browser if the script did not open the window
+             *
         	if ( autoClose ) {
         		 gui.alert( 'This form will now be closed!', 'Submission Successful!', 'success' );
                  setTimeout( function() {
                      window.open( '', '_self' ).close();
                  }, 3500 );
         	}
+        	*/
         }
     }
     
