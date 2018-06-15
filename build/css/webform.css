@@ -92,7 +92,7 @@ body {
     left: 50%;
     margin: 30px 0 0 -100px;
     width: 200px;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 23px;
     text-align: center;
 }
@@ -309,6 +309,15 @@ summary {
     .form-footer .enketo-power {
         position: absolute;
         bottom: -90px;
+        right: 5px;
+        width: auto;
+    }
+}
+
+@media screen and (max-width: 719px) {
+    .enketo-power {
+        position: absolute;
+        bottom: -40px;
         right: 5px;
         width: auto;
     }
