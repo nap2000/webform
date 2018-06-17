@@ -220,13 +220,19 @@ define( function( require, exports, module ) {
         // smap make sure the complete function is set (override complete past from calling program)
         callbacks.complete = function( jqXHR, response ) {
         	$( document ).trigger( 'submissioncomplete' );
+        	var responseMsg;
+        	var preamble = '{"status": "error","message": ';
+        	if(jqXHR.responseText.indexOf(preamble) == 0) {
+        	    responseMsg = jqXHR.responseText.substring(preamble.length + 1, jqXHR.responseText.length - 2);
+            }
         	_processOpenRosaResponse( jqXHR.status,
         			props = {
-	                name: record.name,
-	                instanceID: record.instanceID,
-	                batches: record.batches,
-	                batchIndex: record.batchIndex,
-	                forced: record.forced
+	                    name: record.name,
+	                    instanceID: record.instanceID,
+	                    batches: record.batches,
+	                    batchIndex: record.batchIndex,
+	                    forced: record.forced,
+                        response: responseMsg
 	            } );
         	 var autoCloseVal = autoClose && (jqXHR.status == 201);
              _uploadOne(undefined, autoCloseVal);
@@ -399,7 +405,7 @@ define( function( require, exports, module ) {
                 },
                 400: {
                     success: false,
-                    msg: "Data server did not accept data. " + contactAdmin
+                    msg: props.response
                 },
                 401: {
                     success: false,
