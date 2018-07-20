@@ -35,6 +35,7 @@ body {
 .or-appearance-no-print,
 .notification,
 .paper #submit-form,
+.side-slider-toggle.handle.open,
 h4::before {
   display: none !important; }
 
