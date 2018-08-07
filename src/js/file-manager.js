@@ -8,7 +8,6 @@
  * types.
  */
 
-var Promise = require( 'lie' );
 var $ = require( 'jquery' );
 var utils = require( './utils' );
 var fileManager = {};
@@ -137,34 +136,34 @@ fileManager.getCurrentFiles = function() {
         var canvas = null;
         var $media = $( this );                                             // smap
         var $preview = $media.parent().find(".file-preview").find("img");   // smap
-            if ( this.type === 'file' ) {
-                file = this.files[0];
-            } else if ( this.value ) {
-                canvas = $(this).closest('.question')[0].querySelector('.draw-widget canvas');
-                if (canvas) {
-                    // TODO: In the future, we could simply do canvas.toBlob() insteadU
-                    file = utils.dataUriToBlobSync(canvas.toDataURL());
-                    file.name = this.value;
-                }
+        if ( this.type === 'file' ) {
+            file = this.files[ 0 ]; // Why doesn't this fail for empty file inputs?
+        } else if ( this.value ) {
+            canvas = $( this ).closest( '.question' )[ 0 ].querySelector( '.draw-widget canvas' );
+            if ( canvas ) {
+                // TODO: In the future, we could simply do canvas.toBlob() instead
+                file = utils.dataUriToBlobSync( canvas.toDataURL() );
+                file.name = this.value;
             }
+        }
 
-            if ( file && file.name ) {
-                // Correct file names by adding a unique-ish postfix
-                // First create a clone, because the name property is immutable
-                // TODO: in the future, when browser support increase we can invoke
-                // the File constructor to do this.
-                newFilename = utils.getFilename( file, this.dataset.filenamePostfix );
-                file = new Blob( [ file ], {
-                    type: file.type
-                } );
+        if ( file && file.name ) {
+            // Correct file names by adding a unique-ish postfix
+            // First create a clone, because the name property is immutable
+            // TODO: in the future, when browser support increase we can invoke
+            // the File constructor to do this.
+            newFilename = utils.getFilename( file, this.dataset.filenamePostfix );
+            file = new Blob( [ file ], {
+                type: file.type
+            } );
 
-                file.name = newFilename;
-                file.dataUrl = $preview.attr("src");                         // smap
+            file.name = newFilename;
+            file.dataUrl = $preview.attr("src");                         // smap
 
-                files.push( file );
-            }
-        } );
-        return files;
+            files.push( file );
+        }
+    } );
+    return files;
 };
 
 /**

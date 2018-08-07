@@ -19,11 +19,12 @@ module.exports = [
     require( '../widget/file/filepicker' ),
     require( '../widget/draw/draw-widget' ),
     require( '../widget/select-likert/likertitem' ),
-    require( '../widget/distress/distresspicker' ),
     require( '../widget/horizontal-choices/horizontalchoices' ),
     require( '../widget/analog-scale/analog-scalepicker' ),
     require( '../widget/big-image/image-viewer' ),
     require( '../widget/comment/commentwidget' ),
     require( '../widget/image-map/image-map' ),
-
+    require( '../widget/range/range-widget' ),
+    require( '../widget/rank/rank-widget' ),
+    require( '../widget/url/url-widget' ),
 ];

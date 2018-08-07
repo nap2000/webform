@@ -235,9 +235,7 @@ $media-margin: 10px;
     border-top: none;
 }
 
-// The only remaining difference between .question and .note.
-// All other differences are triggered by the readonly attribute on an input/select/textarea.
-.question:not(.note) {
+.question:not(.readonly) {
     font-weight: bold;
 }
 
@@ -269,13 +267,10 @@ $media-margin: 10px;
     }
 }
 
-.note {
-    // Not very consistent to only do this for simple HTML inputs and not
-    // for geo/select/distress etc. It would have been better if we had
-    // always shown the input field except if appearance 'label' was used (and pyxform added this to notes)
-    // Unfortunately, this might now be too late as it would not be appreciated by existing users.
-    input[readonly]:not([type=radio]):not([type=checkbox]):not(.widget),
-    textarea[readonly] {
+.question.readonly {
+    input[readonly].empty,
+    select[readonly].empty,
+    textarea[readonly].empty {
         display: none;
     }
 
@@ -285,8 +280,7 @@ $media-margin: 10px;
 }
 
 label,
-legend,
-.note {
+legend {
     font-size: $font-size-base;
 }
 
@@ -446,6 +440,7 @@ input[type=month],
 input[type=time],
 input[type=datetime],
 input[type=number],
+input[type=range],
 textarea,
 select,
 .widget {

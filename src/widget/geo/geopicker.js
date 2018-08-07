@@ -4,9 +4,9 @@ var $ = require( 'jquery' );
 var Widget = require( '../../js/Widget' );
 var config = require( 'enketo/config' );
 var L = require( 'leaflet' );
-var Promise = require( 'lie' );
 var t = require( 'enketo/translator' ).t;
 var support = require( '../../js/support' );
+var types = require( '../../js/types' );
 var dialog = require( 'enketo/dialog' );
 var googleMapsScriptRequest;
 var pluginName = 'geopicker';
@@ -32,6 +32,10 @@ var iconMultiActive = L.divIcon( {
     iconSize: 16,
     className: 'enketo-geopoint-circle-marker-active'
 } );
+
+// Leaflet extensions. 
+require( 'leaflet-draw' );
+require( 'leaflet.gridlayer.googlemutant' );
 
 /**
  * Geotrace widget Class
@@ -184,9 +188,12 @@ Geopicker.prototype._init = function() {
             that._updateInputs( [] );
         } else {
             dialog.confirm( t( 'geopicker.removePoint' ) )
-                .then( function() {
-                    that._removePoint();
-                } );
+                .then( function( confirmed ) {
+                    if ( confirmed ) {
+                        that._removePoint();
+                    }
+                } )
+                .catch( function() {} );
         }
     } );
 
@@ -335,7 +342,7 @@ Geopicker.prototype._getProps = function() {
  * Adds a point button in the point navigation bar
  */
 Geopicker.prototype._addPointBtn = function() {
-    this.$points.find( '.addpoint' ).before( '<a href="#" class="point"> </a>' );
+    this.$points.find( '.addpoint' ).before( '<a href="#" class="point" aria-label="point"> </a>' );
 };
 
 /**
@@ -378,7 +385,7 @@ Geopicker.prototype._addDomElements = function() {
         '<label class="geo long">' + lngTxt + '<input class="ignore" name="long" type="number" step="0.000001" min="-180" max="180"/></label>' +
         '<label class="geo alt">' + altTxt + '<input class="ignore" name="alt" type="number" step="0.1" /></label>' +
         '<label class="geo acc">' + accTxt + '<input class="ignore" name="acc" type="number" step="0.1" /></label>' +
-        '<button type="button" class="btn-icon-only btn-remove"><span class="icon icon-trash"> </span></button>' +
+        '<button type="button" class="btn-icon-only btn-remove" aria-label="remove"><span class="icon icon-trash"> </span></button>' +
         '</div>' +
         '</div>'
     );
@@ -397,7 +404,7 @@ Geopicker.prototype._addDomElements = function() {
         this.$widget.find( '.search-bar' ).removeClass( 'no-map' ).after( map );
         this.$map = this.$widget.find( '.map-canvas' );
         // add the hide/show inputs button
-        this.$map.parent().append( '<button type="button" class="toggle-input-visibility-btn"> </button>' );
+        this.$map.parent().append( '<button type="button" class="toggle-input-visibility-btn" aria-label="toggle input"> </button>' );
     } else {
         this.$map = $();
     }
@@ -497,19 +504,7 @@ Geopicker.prototype._updateValue = function() {
  * @return {Boolean}          [description]
  */
 Geopicker.prototype._isValidGeopoint = function( geopoint ) {
-    var coords;
-
-    if ( !geopoint ) {
-        return false;
-    }
-
-    coords = geopoint.toString().split( ' ' );
-    return (
-        ( coords[ 0 ] !== '' && coords[ 0 ] >= -90 && coords[ 0 ] <= 90 ) &&
-        ( coords[ 1 ] !== '' && coords[ 1 ] >= -180 && coords[ 1 ] <= 180 ) &&
-        ( typeof coords[ 2 ] === 'undefined' || !isNaN( coords[ 2 ] ) ) &&
-        ( typeof coords[ 3 ] === 'undefined' || ( !isNaN( coords[ 3 ] ) && coords[ 3 ] >= 0 ) )
-    );
+    return geopoint ? types.geopoint.validate( geopoint ) : false;
 };
 
 /**
@@ -525,19 +520,25 @@ Geopicker.prototype._isValidLatLngList = function( latLngs ) {
     } );
 };
 
+
+Geopicker.prototype._cleanLatLng = function( latLng ) {
+    if ( Array.isArray( latLng ) ) {
+        return [ latLng[ 0 ], latLng[ 1 ] ];
+    }
+    return latLng;
+};
+
 /**
  * Validates an individual latlng Array or Object
  * @param  {(Array.<number|string>|{lat: number, long:number})}  latLng latLng object or array
  * @return {Boolean}        Whether latLng is valid or not
  */
 Geopicker.prototype._isValidLatLng = function( latLng ) {
-    var lat;
-    var lng;
+    var lat = ( typeof latLng[ 0 ] === 'number' ) ? latLng[ 0 ] : ( typeof latLng.lat === 'number' ) ? latLng.lat : null;
+    var lng = ( typeof latLng[ 1 ] === 'number' ) ? latLng[ 1 ] : ( typeof latLng.lng === 'number' ) ? latLng.lng : null;
 
-    lat = ( typeof latLng[ 0 ] === 'number' ) ? latLng[ 0 ] : ( typeof latLng.lat === 'number' ) ? latLng.lat : null;
-    lng = ( typeof latLng[ 1 ] === 'number' ) ? latLng[ 1 ] : ( typeof latLng.lng === 'number' ) ? latLng.lng : null;
-
-    return ( lat !== null && lng !== null && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 );
+    // This conversion seems backwards, but it is helpful to have only one place where geopoints are validated.
+    return types.geopoint.validate( [ lat, lng ].join( ' ' ) );
 };
 
 /**
@@ -838,11 +839,12 @@ Geopicker.prototype._getLeafletTileLayer = function( map, index ) {
  */
 Geopicker.prototype._getGoogleTileLayer = function( map, index ) {
     var options = this._getTileOptions( map, index );
-    var type = map.tiles.substring( 7 );
+    // valid values for type are 'roadmap', 'satellite', 'terrain' and 'hybrid'
+    options.type = map.tiles.substring( 7 ).toLowerCase();
 
     return this._loadGoogleMapsScript()
         .then( function() {
-            return new L.Google( type, options );
+            return L.gridLayer.googleMutant( options );
         } );
 };
 
@@ -942,8 +944,8 @@ Geopicker.prototype._updateMarkers = function() {
     this.points.forEach( function( latLng, index ) {
         var icon = that.props.type === 'geopoint' ? iconSingle : ( index === that.currentIndex ? iconMultiActive : iconMulti );
         if ( that._isValidLatLng( latLng ) ) {
-            coords.push( latLng );
-            markers.push( L.marker( latLng, {
+            coords.push( that._cleanLatLng( latLng ) );
+            markers.push( L.marker( that._cleanLatLng( latLng ), {
                 icon: icon,
                 clickable: !that.props.readonly,
                 draggable: !that.props.readonly,
@@ -1025,6 +1027,10 @@ Geopicker.prototype._updatePolyline = function() {
 
     polylinePoints = ( this.points[ this.points.length - 1 ].join( '' ) !== '' ) ? this.points : this.points.slice( 0, this.points.length - 1 );
 
+    polylinePoints = polylinePoints.map( function( point ) {
+        return that._cleanLatLng( point );
+    } );
+
     if ( !this.polyline ) {
         this.polyline = L.polyline( polylinePoints, {
             color: 'red'
@@ -1047,6 +1053,7 @@ Geopicker.prototype._updatePolyline = function() {
  */
 Geopicker.prototype._updatePolygon = function() {
     var polygonPoints;
+    var that = this;
 
     if ( this.props.type === 'geopoint' || this.props.type === 'geotrace' ) {
         return;
@@ -1054,6 +1061,10 @@ Geopicker.prototype._updatePolygon = function() {
 
     // console.log( 'updating polygon' );
     polygonPoints = ( this.points[ this.points.length - 1 ].join( '' ) !== '' ) ? this.points : this.points.slice( 0, this.points.length - 1 );
+
+    polygonPoints = polygonPoints.map( function( point ) {
+        return that._cleanLatLng( point );
+    } );
 
     if ( !this.polygon ) {
         // console.log( 'creating new polygon' );
@@ -1079,8 +1090,11 @@ Geopicker.prototype._updateArea = function( points ) {
     var readableArea;
 
     if ( points.length > 2 ) {
-        area = L.GeometryUtil.geodesicArea( points );
-        readableArea = L.GeometryUtil.readableArea( area );
+        var latLngs = points.map( function( point ) {
+            return { lat: point[ 0 ], lng: point[ 1 ] };
+        } );
+        area = L.GeometryUtil.geodesicArea( latLngs );
+        readableArea = L.GeometryUtil.readableArea( area, true );
 
         L.popup( {
                 className: 'enketo-area-popup'
@@ -1231,6 +1245,7 @@ Geopicker.prototype.updatedPolylineWouldIntersect = function( latLng, index ) {
     var polylinePoints;
     var polylineToTest;
     var intersects;
+    var that = this;
 
     if ( this.points < 3 ) {
         return false;
@@ -1252,6 +1267,10 @@ Geopicker.prototype.updatedPolylineWouldIntersect = function( latLng, index ) {
         polylinePoints[ 0 ][ 1 ] === polylinePoints[ polylinePoints.length - 1 ][ 1 ] ) {
         polylinePoints = polylinePoints.slice( 0, polylinePoints.length - 1 );
     }
+
+    polylinePoints = polylinePoints.map( function( point ) {
+        return that._cleanLatLng( point );
+    } );
 
     // create polyline
     polylineToTest = L.polyline( polylinePoints, {
@@ -1344,340 +1363,6 @@ $.fn[ pluginName ] = function( options, event ) {
             console.log( 'Failed to initialise geopicker for ' + this + ': ' + e );
         }
     } );
-};
-
-// extend Leaflet
-// From https://github.com/Leaflet/Leaflet.draw/blob/master/src/ext/GeometryUtil.js
-L.GeometryUtil = L.extend( L.GeometryUtil || {}, {
-    // Ported from the OpenLayers implementation. See https://github.com/openlayers/openlayers/blob/master/lib/OpenLayers/Geometry/LinearRing.js#L270
-    geodesicArea: function( latLngs ) {
-        var EARTH_RADIUS = 6378100,
-            pointsCount = latLngs.length,
-            area = 0.0,
-            d2r = L.LatLng.DEG_TO_RAD, // Math.PI / 180
-            p1, p2;
-
-        if ( pointsCount > 2 ) {
-            for ( var i = 0; i < pointsCount; i++ ) {
-                p1 = {
-                    lat: latLngs[ i ][ 0 ],
-                    lng: latLngs[ i ][ 1 ]
-                };
-                p2 = {
-                    lat: latLngs[ ( i + 1 ) % pointsCount ][ 0 ],
-                    lng: latLngs[ ( i + 1 ) % pointsCount ][ 1 ]
-                };
-
-                area += ( ( p2.lng - p1.lng ) * d2r ) *
-                    ( 2 + Math.sin( p1.lat * d2r ) + Math.sin( p2.lat * d2r ) );
-            }
-            area = area * EARTH_RADIUS * EARTH_RADIUS / 2.0;
-        }
-
-        return Math.abs( area );
-    },
-
-    readableArea: function( area ) {
-        var areaStr;
-
-        if ( area >= 10000 ) {
-            areaStr = ( area * 0.0001 ).toFixed( 2 ) + ' ha';
-        } else {
-            areaStr = area.toFixed( 0 ) + ' m&sup2;';
-        }
-
-        return areaStr;
-    }
-} );
-// From  https://github.com/Leaflet/Leaflet.draw/blob/master/src/ext/Polyline.Intersect.js
-L.Polyline.include( {
-    // Check to see if this polyline has any linesegments that intersect.
-    // NOTE: does not support detecting intersection for degenerate cases.
-    intersects: function() {
-        var points = this._originalPoints,
-            len = points ? points.length : 0,
-            i, p, p1;
-
-        if ( this._tooFewPointsForIntersection() ) {
-            return false;
-        }
-
-        for ( i = len - 1; i >= 3; i-- ) {
-            p = points[ i - 1 ];
-            p1 = points[ i ];
-
-
-            if ( this._lineSegmentsIntersectsRange( p, p1, i - 2 ) ) {
-                return true;
-            }
-        }
-        return false;
-    },
-
-    // Polylines with 2 sides can only intersect in cases where points are collinear (we don't support detecting these).
-    // Cannot have intersection when < 3 line segments (< 4 points)
-    _tooFewPointsForIntersection: function( extraPoints ) {
-        var points = this._originalPoints,
-            len = points ? points.length : 0;
-        // Increment length by extraPoints if present
-        len += extraPoints || 0;
-
-        return !this._originalPoints || len <= 3;
-    },
-
-    // Checks a line segment intersections with any line segments before its predecessor.
-    // Don't need to check the predecessor as will never intersect.
-    _lineSegmentsIntersectsRange: function( p, p1, maxIndex, minIndex ) {
-        var points = this._originalPoints,
-            p2, p3;
-
-        minIndex = minIndex || 0;
-
-        // Check all previous line segments (beside the immediately previous) for intersections
-        for ( var j = maxIndex; j > minIndex; j-- ) {
-            p2 = points[ j - 1 ];
-            p3 = points[ j ];
-
-            if ( L.LineUtil.segmentsIntersect( p, p1, p2, p3 ) ) {
-                // console.debug( 'intersection found between', p, p1, p2, p3 );
-                return true;
-            }
-        }
-
-        return false;
-    }
-} );
-L.Util.extend( L.LineUtil, {
-    // Checks to see if two line segments intersect. Does not handle degenerate cases.
-    // http://compgeom.cs.uiuc.edu/~jeffe/teaching/373/notes/x06-sweepline.pdf
-    segmentsIntersect: function( /*Point*/ p, /*Point*/ p1, /*Point*/ p2, /*Point*/ p3 ) {
-        return this._checkCounterclockwise( p, p2, p3 ) !==
-            this._checkCounterclockwise( p1, p2, p3 ) &&
-            this._checkCounterclockwise( p, p1, p2 ) !==
-            this._checkCounterclockwise( p, p1, p3 );
-    },
-
-    // check to see if points are in counterclockwise order
-    _checkCounterclockwise: function( /*Point*/ p, /*Point*/ p1, /*Point*/ p2 ) {
-        return ( p2.y - p.y ) * ( p1.x - p.x ) > ( p1.y - p.y ) * ( p2.x - p.x );
-    }
-} );
-
-
-/*
- * Google layer using Google Maps API
- * from https://github.com/shramov/leaflet-plugins/blob/master/layer/tile/Google.js
- */
-
-/* global google: true */
-
-L.Google = L.Class.extend( {
-    includes: L.Mixin.Events,
-
-    options: {
-        minZoom: 0,
-        maxZoom: 18,
-        tileSize: 256,
-        subdomains: 'abc',
-        errorTileUrl: '',
-        attribution: '',
-        opacity: 1,
-        continuousWorld: false,
-        noWrap: false,
-        mapOptions: {
-            backgroundColor: '#dddddd'
-        }
-    },
-
-    // Possible types: SATELLITE, ROADMAP, HYBRID, TERRAIN
-    initialize: function( type, options ) {
-        L.Util.setOptions( this, options );
-
-        this._ready = google.maps.Map !== undefined;
-        if ( !this._ready ) {
-            L.Google.asyncWait.push( this );
-        }
-
-        this._type = type || 'SATELLITE';
-    },
-
-    onAdd: function( map, insertAtTheBottom ) {
-        this._map = map;
-        this._insertAtTheBottom = insertAtTheBottom;
-
-        // create a container div for tiles
-        this._initContainer();
-        this._initMapObject();
-
-        // set up events
-        map.on( 'viewreset', this._resetCallback, this );
-
-        this._limitedUpdate = L.Util.limitExecByInterval( this._update, 150, this );
-        map.on( 'move', this._update, this );
-
-        map.on( 'zoomanim', this._handleZoomAnim, this );
-
-        //20px instead of 1em to avoid a slight overlap with google's attribution
-        map._controlCorners.bottomright.style.marginBottom = '20px';
-
-        this._reset();
-        this._update();
-    },
-
-    onRemove: function( map ) {
-        map._container.removeChild( this._container );
-
-        map.off( 'viewreset', this._resetCallback, this );
-
-        map.off( 'move', this._update, this );
-
-        map.off( 'zoomanim', this._handleZoomAnim, this );
-
-        map._controlCorners.bottomright.style.marginBottom = '0em';
-    },
-
-    getAttribution: function() {
-        return this.options.attribution;
-    },
-
-    setOpacity: function( opacity ) {
-        this.options.opacity = opacity;
-        if ( opacity < 1 ) {
-            L.DomUtil.setOpacity( this._container, opacity );
-        }
-    },
-
-    setElementSize: function( e, size ) {
-        e.style.width = size.x + 'px';
-        e.style.height = size.y + 'px';
-    },
-
-    _initContainer: function() {
-        var tilePane = this._map._container,
-            first = tilePane.firstChild;
-
-        if ( !this._container ) {
-            this._container = L.DomUtil.create( 'div', 'leaflet-google-layer leaflet-top leaflet-left' );
-            this._container.id = '_GMapContainer_' + L.Util.stamp( this );
-            this._container.style.zIndex = 'auto';
-        }
-
-        tilePane.insertBefore( this._container, first );
-
-        this.setOpacity( this.options.opacity );
-        this.setElementSize( this._container, this._map.getSize() );
-    },
-
-    _initMapObject: function() {
-        if ( !this._ready ) {
-            return;
-        }
-        this._google_center = new google.maps.LatLng( 0, 0 );
-        var map = new google.maps.Map( this._container, {
-            center: this._google_center,
-            zoom: 0,
-            tilt: 0,
-            mapTypeId: google.maps.MapTypeId[ this._type ],
-            disableDefaultUI: true,
-            keyboardShortcuts: false,
-            draggable: false,
-            disableDoubleClickZoom: true,
-            scrollwheel: false,
-            streetViewControl: false,
-            styles: this.options.mapOptions.styles,
-            backgroundColor: this.options.mapOptions.backgroundColor
-        } );
-
-        var _this = this;
-        this._reposition = google.maps.event.addListenerOnce( map, 'center_changed',
-            function() {
-                _this.onReposition();
-            } );
-        this._google = map;
-
-        google.maps.event.addListenerOnce( map, 'idle',
-            function() {
-                _this._checkZoomLevels();
-            } );
-        //Reporting that map-object was initialized.
-        this.fire( 'MapObjectInitialized', {
-            mapObject: map
-        } );
-    },
-
-    _checkZoomLevels: function() {
-        //setting the zoom level on the Google map may result in a different zoom level than the one requested
-        //(it won't go beyond the level for which they have data).
-        // verify and make sure the zoom levels on both Leaflet and Google maps are consistent
-        if ( this._google.getZoom() !== this._map.getZoom() ) {
-            //zoom levels are out of sync. Set the leaflet zoom level to match the google one
-            this._map.setZoom( this._google.getZoom() );
-        }
-    },
-
-    _resetCallback: function( e ) {
-        this._reset( e.hard );
-    },
-
-    _reset: function() {
-        this._initContainer();
-    },
-
-    _update: function() {
-        if ( !this._google ) {
-            return;
-        }
-        this._resize();
-
-        var center = this._map.getCenter();
-        var _center = new google.maps.LatLng( center.lat, center.lng );
-
-        this._google.setCenter( _center );
-        this._google.setZoom( Math.round( this._map.getZoom() ) );
-
-        this._checkZoomLevels();
-    },
-
-    _resize: function() {
-        var size = this._map.getSize();
-        if ( this._container.style.width === size.x &&
-            this._container.style.height === size.y ) {
-            return;
-        }
-        this.setElementSize( this._container, size );
-        this.onReposition();
-    },
-
-
-    _handleZoomAnim: function( e ) {
-        var center = e.center;
-        var _center = new google.maps.LatLng( center.lat, center.lng );
-
-        this._google.setCenter( _center );
-        this._google.setZoom( Math.round( e.zoom ) );
-    },
-
-
-    onReposition: function() {
-        if ( !this._google ) {
-            return;
-        }
-        google.maps.event.trigger( this._google, 'resize' );
-    }
-} );
-
-L.Google.asyncWait = [];
-L.Google.asyncInitialize = function() {
-    var i;
-    for ( i = 0; i < L.Google.asyncWait.length; i++ ) {
-        var o = L.Google.asyncWait[ i ];
-        o._ready = true;
-        if ( o._container ) {
-            o._initMapObject();
-            o._update();
-        }
-    }
-    L.Google.asyncWait = [];
 };
 
 module.exports = {

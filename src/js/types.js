@@ -1,8 +1,12 @@
 'use strict';
 
 var utils = require( './utils' );
+var format = require( './format' );
 var types = {
     'string': {
+        convert: function( x ) {
+            return x.replace( /^\s+$/, '' );
+        },
         //max length of type string is 255 chars.Convert( truncate ) silently ?
         validate: function() {
             return true;
@@ -61,18 +65,20 @@ var types = {
             return false;
         },
         convert: function( x ) {
-            var date;
-
             if ( utils.isNumber( x ) ) {
                 // The XPath expression "2012-01-01" + 2 returns a number of days in XPath.
-                date = new Date( x * 24 * 60 * 60 * 1000 );
+                var date = new Date( x * 24 * 60 * 60 * 1000 );
+                return date.toString() === 'Invalid Date' ?
+                    '' : date.getFullYear().toString().pad( 4 ) + '-' + ( date.getMonth() + 1 ).toString().pad( 2 ) + '-' + date.getDate().toString().pad( 2 );
             } else {
-                // for both dates and datetimes
-                date = this.validate( x ) ? new Date( x ) : 'Invalid Date';
+                // For both dates and datetimes
+                // If it's a datetime, we can quite safely assume it's in the local timezone, and therefore we can simply chop off
+                // the time component.
+                if ( /[0-9]T[0-9]/.test( x ) ) {
+                    x = x.split( 'T' )[ 0 ];
+                }
+                return this.validate( x ) ? x : '';
             }
-
-            return date.toString() === 'Invalid Date' ?
-                '' : date.getUTCFullYear().toString().pad( 4 ) + '-' + ( date.getUTCMonth() + 1 ).toString().pad( 2 ) + '-' + date.getUTCDate().toString().pad( 2 );
         }
     },
     'datetime': {
@@ -175,6 +181,21 @@ var types = {
             x = o.hours + ':' + o.minutes + ':' + o.seconds + ( o.milliseconds ? '.' + o.milliseconds : '' ) + offset;
 
             return this.validate( x, requireMillis ) ? x : '';
+        },
+        // converts "11:30 AM", and "11:30 ", and "11:30 上午" to: "11:30"
+        // converts "11:30 PM", and "11:30 下午" to: "23:30"
+        convertMeridian: function( x ) {
+            x = x.trim();
+            if ( format.time.hasMeridian( x ) ) {
+                var parts = x.split( ' ' );
+                var timeParts = parts[ 0 ].split( ':' );
+                if ( parts.length > 0 ) {
+                    // This will only work for latin numbers but that should be fine because that's what the widget supports.
+                    timeParts[ 0 ] = parts[ 1 ] === format.time.pmNotation ? Number( timeParts[ 0 ] ) + 12 : timeParts[ 0 ];
+                    x = timeParts.join( ':' );
+                }
+            }
+            return x;
         }
     },
     'barcode': {
@@ -185,8 +206,11 @@ var types = {
     'geopoint': {
         validate: function( x ) {
             var coords = x.toString().trim().split( ' ' );
+            // Note that longitudes from -180 to 180 are problematic when recording points close to the international
+            // dateline. They are therefore set from -360  to 360 (circumventing Earth twice, I think) which is 
+            // an arbitrary limit. https://github.com/kobotoolbox/enketo-express/issues/1033
             return ( coords[ 0 ] !== '' && coords[ 0 ] >= -90 && coords[ 0 ] <= 90 ) &&
-                ( coords[ 1 ] !== '' && coords[ 1 ] >= -180 && coords[ 1 ] <= 180 ) &&
+                ( coords[ 1 ] !== '' && coords[ 1 ] >= -360 && coords[ 1 ] <= 360 ) &&
                 ( typeof coords[ 2 ] === 'undefined' || !isNaN( coords[ 2 ] ) ) &&
                 ( typeof coords[ 3 ] === 'undefined' || ( !isNaN( coords[ 3 ] ) && coords[ 3 ] >= 0 ) );
         },

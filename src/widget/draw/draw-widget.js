@@ -9,7 +9,6 @@ var SignaturePad = require( 'signature_pad' );
 var t = require( 'enketo/translator' ).t;
 var dialog = require( 'enketo/dialog' );
 var utils = require( '../../js/utils' );
-var Promise = require( 'lie' );
 
 /**
  * SignaturePad.prototype.fromDataURL is asynchronous and does not return a 
@@ -105,7 +104,8 @@ DrawWidget.prototype._init = function() {
     this.$widget = this._getMarkup();
     canvas = this.$widget[ 0 ].querySelector( '.draw-widget__body__canvas' );
 
-    $( this.element ).after( this.$widget );
+    $( this.element ).after( this.$widget )
+        .closest( '.question' ).addClass( 'or-' + this.props.type + '-initialized' );
 
     this._handleResize( canvas );
     this._resizeCanvas( canvas );
@@ -132,7 +132,7 @@ DrawWidget.prototype._init = function() {
     this.initialize
         .then( function() {
             that.$widget
-                .find( '.draw-widget__btn-reset' ).on( 'click', that._reset.bind( that ) )
+                .find( '.btn-reset' ).on( 'click', that._reset.bind( that ) )
                 .end().find( '.draw-widget__colorpicker' )
                 .on( 'click', '.current', function() {
                     $( this ).parent().toggleClass( 'reveal' );
@@ -301,13 +301,12 @@ DrawWidget.prototype._getMarkup = function() {
         '<button type="button" class="hide-canvas-btn btn btn-default"><span class="icon icon-arrow-left"> </span></button>' : '';
     var $widget = $( '<div class="widget draw-widget">' +
         '<div class="draw-widget__body">' + fullscreenBtns + load +
-        '<canvas class="draw-widget__body__canvas noSwipe disabled" tabindex="1"></canvas>' +
+        '<canvas class="draw-widget__body__canvas noSwipe disabled" tabindex="0"></canvas>' +
         '<div class="draw-widget__colorpicker"></div>' +
-        ( this.props.type === 'signature' ? '' : '<button class="btn-icon-only draw-widget__undo" type=button><i class="icon icon-undo"> </i></button>' ) +
+        ( this.props.type === 'signature' ? '' : '<button class="btn-icon-only draw-widget__undo" aria-label="undo" type=button><i class="icon icon-undo"> </i></button>' ) +
         '</div>' +
         '<div class="draw-widget__footer">' +
-        '<button type="button" class="btn-icon-only draw-widget__btn-reset" ><i class="icon icon-refresh"> </i></button>' +
-        '<a class="btn-icon-only btn-download" download href=""><i class="icon icon-download"> </i></a>' +
+        this.resetButtonHtml + this.downloadButtonHtml +
         '<div class="draw-widget__feedback"></div>' +
         '</div>' +
         '</div>' );
@@ -341,7 +340,10 @@ DrawWidget.prototype._reset = function() {
         var item = this.props.type === 'signature' ?
             t( 'drawwidget.signature' ) : ( this.props.type === 'drawing' ? t( 'drawwidget.drawing' ) : t( 'drawwidget.annotation' ) );
         dialog.confirm( t( 'filepicker.resetWarning', { item: item } ) )
-            .then( function() {
+            .then( function( confirmed ) {
+                if ( !confirmed ) {
+                    return;
+                }
                 that.pad.clear();
                 that.cache = null;
                 // Only upon reset is loadedFileName removed, so that "undo" will work
@@ -389,11 +391,8 @@ DrawWidget.prototype._updateDownloadLink = function( url ) {
     if ( url && url.indexOf( 'data:' ) === 0 ) {
         url = URL.createObjectURL( utils.dataUriToBlobSync( url ) );
     }
-
-    this.$widget.find( '.btn-download' ).attr( {
-        'href': url || '',
-        'download': url ? utils.getFilename( { name: this.element.value }, this.element.dataset.filenamePostfix ) : ''
-    } );
+    var fileName = url ? utils.getFilename( { name: this.element.value }, this.element.dataset.filenamePostfix ) : '';
+    utils.updateDownloadLink( this.$widget.find( '.btn-download' )[ 0 ], url, fileName );
 };
 
 DrawWidget.prototype._handleResize = function( canvas ) {
@@ -426,7 +425,7 @@ DrawWidget.prototype.disable = function() {
             that.pad.off();
             canvas.classList.add( 'disabled' );
             that.$widget
-                .find( '.draw-widget__btn-reset' )
+                .find( '.btn-reset' )
                 .prop( 'disabled', true );
         } );
 };
@@ -443,7 +442,7 @@ DrawWidget.prototype.enable = function() {
                 that.pad.on();
                 canvas.classList.remove( 'disabled' );
                 that.$widget
-                    .find( '.draw-widget__btn-reset' )
+                    .find( '.btn-reset' )
                     .prop( 'disabled', false );
             }
             // https://github.com/enketo/enketo-core/issues/450

@@ -2,22 +2,24 @@
 
 var FormModel = require( './Form-model' );
 var $ = require( 'jquery' );
-var Promise = require( 'lie' );
 var utils = require( './utils' );
 var t = require( 'enketo/translator' ).t;
 var config = require( 'enketo/config' );
 var inputHelper = require( './input' );
 var repeatModule = require( './repeat' );
 var pageModule = require( './page' );
-var branchModule = require( './branch' );
+var relevantModule = require( './relevant' );
 var itemsetModule = require( './itemset' );
 var progressModule = require( './progress' );
 var widgetModule = require( './widgets-controller' );
 var languageModule = require( './language' );
 var preloadModule = require( './preload' );
 var outputModule = require( './output' );
-var calculationModule = require( './calculation' );
+var calculationModule = require( './calculate' );
+var requiredModule = require( './required' );
 var maskModule = require( './mask' );
+var readonlyModule = require( './readonly' );
+var FormLogicError = require( './Form-logic-error' );
 require( './plugins' );
 require( './extend' );
 
@@ -63,9 +65,10 @@ Form.prototype = {
         return [
             this.calc.update.bind( this.calc ),
             this.repeats.countUpdate.bind( this.repeats ),
-            this.branch.update.bind( this.branch ),
+            this.relevant.update.bind( this.relevant ),
             this.output.update.bind( this.output ),
             this.itemset.update.bind( this.itemset ),
+            this.required.update.bind( this.required ),
             this.validationUpdate
         ].concat( this.evaluationCascadeAdditions );
     },
@@ -152,13 +155,15 @@ Form.prototype.init = function() {
     this.progress = this.addModule( progressModule );
     this.widgets = this.addModule( widgetModule );
     this.preloads = this.addModule( preloadModule );
-    this.branch = this.addModule( branchModule );
+    this.relevant = this.addModule( relevantModule );
     this.repeats = this.addModule( repeatModule );
     this.input = this.addModule( inputHelper );
     this.output = this.addModule( outputModule );
     this.itemset = this.addModule( itemsetModule );
     this.calc = this.addModule( calculationModule );
+    this.required = this.addModule( requiredModule );
     this.mask = this.addModule( maskModule );
+    this.readonly = this.addModule( readonlyModule );
 
     try {
         this.preloads.init();
@@ -189,6 +194,8 @@ Form.prototype.init = function() {
         // after repeats.init
         this.setAllVals();
 
+        this.readonly.update(); // after setAllVals();
+
         // after setAllVals, after repeats.init
 
         this.options.input = this.input;
@@ -197,8 +204,8 @@ Form.prototype.init = function() {
         this.options.formClasses = utils.toArray( this.view.html.classList );
         this.widgetsInitialized = this.widgets.init( null, this.options );
 
-        // after widgets.init(), and repeats.init()
-        this.branch.update();
+        // after widgets.init(), and after repeats.init(), and after pages.init()
+        this.relevant.update();
 
         // after repeats.init()
         this.output.update();
@@ -211,8 +218,7 @@ Form.prototype.init = function() {
         // field values are calculated
         this.calc.update();
 
-        // after branch.update to make sure page-relevancy has already been determined
-        this.pages.init();
+        this.required.update();
 
         this.mask.init();
 
@@ -288,29 +294,31 @@ Form.prototype.resetView = function() {
  * @return {[type]}            [description]
  */
 Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, selector, index, tryNative ) {
-    var value;
-    var name;
-    var $input;
-    var label = '';
-    var matches = expr.match( new RegExp( 'jr:choice-name\\(([^,]+),\\s*(?:' +
-        '"([^"]*)"|' +
-        '\'([^\']*)\'' +
-        ')\\s*\\)' ) );
+    var that = this;
+    var choiceNames = utils.parseFunctionFromExpression( expr, 'jr:choice-name' );
 
-    if ( matches ) {
-        value = this.model.evaluate( matches[ 1 ], resTypeStr, selector, index, tryNative );
-        name = ( matches[ 2 ] || matches[ 3 ] || '' ).trim();
-        $input = this.view.$.find( '[name="' + name + '"]' );
+    choiceNames.forEach( function( choiceName ) {
+        var params = choiceName[ 1 ];
 
-        if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'select' ) {
-            label = $input.find( '[value="' + value + '"]' ).text();
-        } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'input' ) {
-            label = $input.filter( function() {
-                return $( this ).attr( 'value' ) === value;
-            } ).siblings( '.option-label.active' ).text();
+        if ( params.length === 2 ) {
+            var label = '';
+            var value = that.model.evaluate( params[ 0 ], resTypeStr, selector, index, tryNative );
+            var name = utils.stripQuotes( params[ 1 ] ).trim();
+            var $input = that.view.$.find( '[name="' + name + '"]' );
+
+            if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'select' ) {
+                label = $input.find( '[value="' + value + '"]' ).text();
+            } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'input' ) {
+                label = $input.filter( function() {
+                    return $( this ).attr( 'value' ) === value;
+                } ).siblings( '.option-label.active' ).text();
+            }
+            expr = expr.replace( choiceName[ 0 ], '"' + label + '"' );
+        } else {
+            throw new FormLogicError( 'jr:choice-name function has incorrect number of parameters: ' + choiceName[ 0 ] );
         }
-        return expr.replace( matches[ 0 ], '"' + label + '"' );
-    }
+
+    } );
     return expr;
 };
 
@@ -320,9 +328,6 @@ Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, selector, index
  *  we cycle through the HTML form elements and check for each form element whether data is available.
  */
 Form.prototype.setAllVals = function( $group, groupIndex ) {
-    var index;
-    var name;
-    var value;
     var that = this;
     var selector = ( $group && $group.attr( 'name' ) ) ? $group.attr( 'name' ) : null;
 
@@ -333,12 +338,11 @@ Form.prototype.setAllVals = function( $group, groupIndex ) {
         // only return non-empty leafnodes
         return $node.children().length === 0 && $node.text();
     } ).each( function() {
-        var $node = $( this );
-
         try {
-            value = $node.text();
-            name = that.model.getXPath( $node.get( 0 ), 'instance' );
-            index = that.model.node( name ).get().index( this );
+            var $node = $( this );
+            var value = $node.text();
+            var name = that.model.getXPath( $node.get( 0 ), 'instance' );
+            var index = that.model.node( name ).get().index( this );
             that.input.setVal( name, index, value );
         } catch ( e ) {
             console.error( e );
@@ -386,9 +390,12 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
     }
 
     // If a new repeat was created, update the cached collection of all form controls with that attribute
-    if ( !this.$all[ attr ] ) {
+    // If a repeat was deleted ( update.repeatPath && !updated.cloned), rebuild cache
+    if ( !this.$all[ attr ] || ( updated.repeatPath && !updated.cloned ) ) {
+        // (re)build the cache
         this.$all[ attr ] = this.filterRadioCheckSiblings( this.view.$.find( '[' + attr + ']' ) );
     } else if ( updated.cloned && $repeatControls ) {
+        // update the cache
         this.$all[ attr ] = this.$all[ attr ].add( $repeatControls );
     }
 
@@ -470,7 +477,7 @@ Form.prototype.getQuerySelectorsForLogic = function( filter, attr, nodeName ) {
  * that evaluates to false.
  *
  * Though this function may be slow it is slow when it doesn't matter much (upon saving). The
- * alternative is to add some logic to branch.update to mark irrelevant nodes in the model
+ * alternative is to add some logic to relevant.update to mark irrelevant nodes in the model
  * but that would slow down form loading and form traversal when it does matter.
  * 
  * @return {string} [description]
@@ -490,7 +497,7 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function() {
         var context;
 
         /* 
-         * Copied from branch.js:
+         * Copied from relevant.js:
          * 
          * If the relevant is placed on a group and that group contains repeats with the same name,
          * but currently has 0 repeats, the context will not be available.
@@ -504,8 +511,8 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function() {
         /*
          * If performance becomes an issue, some opportunities are:
          * - check if ancestor is relevant
-         * - use cache of branch.update
-         * - check for repeatClones to avoid calculating index (as in branch.update)
+         * - use cache of relevant.update
+         * - check for repeatClones to avoid calculating index (as in relevant.update)
          */
         if ( context && !that.model.evaluate( relevant, 'boolean', context, index ) ) {
             modelClone.node( context, index ).remove();
@@ -652,7 +659,7 @@ Form.prototype.setEventHandlers = function() {
         }
         $('#main').trigger('zmrepeat');         // smap
 
-        // Initialize calculations, branch, itemset, output inside that repeat. 
+        // Initialize calculations, relevant, itemset, required, output inside that repeat. 
         that.evaluationCascade.forEach( function( fn ) {
             fn.call( that, updated );
         } );
@@ -668,7 +675,8 @@ Form.prototype.setEventHandlers = function() {
     } );
 
     this.view.$.find( '.or-group > h4' ).on( 'click', function() {
-        $( this ).closest( '.or-group' ).toggleClass( 'or-appearance-compact' );
+        // The resize trigger is to make sure canvas widgets start working.
+        $( this ).closest( '.or-group' ).toggleClass( 'or-appearance-compact' ).trigger( 'resize' );
     } );
 };
 
@@ -717,7 +725,7 @@ Form.prototype.isValid = function( $node ) {
 };
 
 Form.prototype.clearIrrelevant = function() {
-    this.branch.update( null, true );
+    this.relevant.update( null, true );
 };
 
 /**
@@ -739,11 +747,11 @@ Form.prototype.validateAll = function() {
             return valid;
         } );
 };
+
 /**
  * Alias of validateAll
  */
 Form.prototype.validate = Form.prototype.validateAll;
-
 
 /**
  * Validates all enabled input fields in the supplied container, after first resetting everything as valid.
@@ -850,24 +858,18 @@ Form.prototype.validateInput = function( $input ) {
             if ( n.inputType !== 'hidden' ) {
                 // Check current UI state
                 n.$q = that.input.getWrapNodes( $input );
-                n.$required = n.$q.find( '.required' );
                 previouslyInvalid = n.$q.hasClass( 'invalid-required' ) || n.$q.hasClass( 'invalid-constraint' );
 
                 // Update UI
                 if ( result.requiredValid === false ) {
                     that.setValid( $input, 'constraint' );
                     that.setInvalid( $input, 'required' );
-                    n.$required.removeClass( 'hide' );
+                } else if ( result.constraintValid === false ) {
+                    that.setValid( $input, 'required' );
+                    that.setInvalid( $input, 'constraint' );
                 } else {
-                    that.updateRequiredVisibility( n );
-
-                    if ( result.constraintValid === false ) {
-                        that.setValid( $input, 'required' );
-                        that.setInvalid( $input, 'constraint' );
-                    } else {
-                        that.setValid( $input, 'constraint' );
-                        that.setValid( $input, 'required' );
-                    }
+                    that.setValid( $input, 'constraint' );
+                    that.setValid( $input, 'required' );
                 }
             }
             // Send invalidated event
@@ -882,19 +884,6 @@ Form.prototype.validateInput = function( $input ) {
             throw e;
         } );
 };
-
-/**
- * Extracted as separate function for the purpose of overriding it in custom apps.
- * @param  {{$required: jQuery collection, path: string, ind: number, required: string}} n [description]
- */
-Form.prototype.updateRequiredVisibility = function( n ) {
-    // Show/hide the asterisk of dynamic required expressions
-    // This is only 'realtime' with `validateContinuously: true`
-    if ( n.required ) {
-        n.$required.toggleClass( 'hide', !this.model.node( n.path, n.ind ).isRequired( n.required ) );
-    }
-};
-
 
 Form.prototype.getGoToTarget = function( path ) {
     var hits;
@@ -973,7 +962,7 @@ Form.getRequiredTransformerVersion = function() {
     console.deprecate( 'Form.getRequiredTransformerVersion()', 'Form.requiredTransformerVersion' );
     return Form.requiredTransformerVersion;
 };
-Form.requiredTransformerVersion = '1.25.2';
+Form.requiredTransformerVersion = '1.28.3';
 
 module.exports = Form;
 

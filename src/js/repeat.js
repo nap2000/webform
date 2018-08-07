@@ -138,7 +138,8 @@ module.exports = {
             repeatSeriesIndex = this.form.view.$.find( '.or-repeat-info[data-name="' + repeatPath + '"]' ).index( repeatInfo );
             repeatSeriesInModel = this.form.model.getRepeatSeries( repeatPath, repeatSeriesIndex );
             if ( repeatSeriesInModel.length === 0 ) {
-                this.add( repeatInfo );
+                // explicitly provide a count, so that byCountUpdate is passed to the addrepeat event
+                this.add( repeatInfo, 1 );
             }
             $repeatInfo.siblings( '.or-repeat' )
                 .find( '.or-repeat-info:not([data-repeat-count])' )
@@ -258,12 +259,13 @@ module.exports = {
         for ( i = 0; i < count; i++ ) {
             // Fix names of radio button groups
             $clone.find( '.option-wrapper' ).each( this.fixRadioNames );
+            $clone.find( 'datalist' ).each( this.fixDatalistIds );
             // Insert the clone
             $clone.insertBefore( repeatInfo );
 
             if ( $clone.prev( '.or-repeat' ).length ) {
                 // Also add the clone class for all 2+ numbers as this is
-                // use for performance optimization in several places.
+                // used for performance optimization in several places.
                 $clone.addClass( 'clone' );
             }
             // Update the variable containing the view repeats in the current series.
@@ -329,6 +331,11 @@ module.exports = {
     fixRadioNames: function( index, element ) {
         $( element ).find( 'input[type="radio"]' )
             .attr( 'name', Math.floor( ( Math.random() * 10000000 ) + 1 ) );
+    },
+    fixDatalistIds: function( index, element ) {
+        var newId = element.id + Math.floor( ( Math.random() * 10000000 ) + 1 );
+        element.parentNode.querySelector( 'input[list="' + element.id + '"]' ).setAttribute( 'list', newId );
+        element.id = newId;
     },
     toggleButtons: function( repeatInfo ) {
         $( repeatInfo )

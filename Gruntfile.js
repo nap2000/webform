@@ -1,4 +1,4 @@
-/* global Promise */
+/* global Buffer */
 /**
  * When using enketo-core in your own app, you'd want to replace
  * this build file with one of your own in your project root.
@@ -107,7 +107,7 @@ module.exports = function( grunt ) {
                         file: url
                     } );
                 },
-                // Temporary workaround for SVG tickmarks in checkboxes in Firefox. 
+                // Temporary workaround for SVG tickmarks in checkboxes in Firefox.
                 // See https://github.com/enketo/enketo-core/issues/439
                 functions: {
                     'base64-url($mimeType, $data)': function( mimeType, data ) {
@@ -174,7 +174,8 @@ module.exports = function( grunt ) {
         var xformsPaths = grunt.file.expand( {}, 'test/forms/*.xml' );
         var transformer = require( 'enketo-transformer' );
 
-        xformsPaths.reduce( function( prevPromise, filePath ) {
+        xformsPaths
+            .reduce( function( prevPromise, filePath ) {
                 return prevPromise.then( function() {
                     var xformStr = grunt.file.read( filePath );
                     grunt.log.writeln( 'Transforming ' + filePath + '...' );
@@ -193,7 +194,7 @@ module.exports = function( grunt ) {
             } );
     } );
 
-    grunt.registerTask( 'compile', [ 'browserify', 'uglify' ] );
+    grunt.registerTask( 'compile', [ 'browserify' ] );
     grunt.registerTask( 'test', [ 'jsbeautifier:test', 'eslint', 'compile', 'transforms', 'karma:headless', 'style' ] );
     grunt.registerTask( 'style', [ 'sass' ] );
     grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );

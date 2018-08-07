@@ -1,20 +1,9 @@
-/* global describe, require, it, xit, beforeEach, expect, spyOn, beforeAll, afterAll*/
-
 'use strict';
 
 var Form = require( '../../src/js/Form' );
 var $ = require( 'jquery' );
-var Promise = require( 'lie' );
+var loadForm = require( '../helpers/loadForm' );
 var forms = require( '../mock/forms' );
-
-var loadForm = function( filename, editStr, options, session ) {
-    var strings = forms[ filename ];
-    return new Form( strings.html_form, {
-        modelStr: strings.xml_model,
-        instanceStr: editStr,
-        session: session || {}
-    }, options );
-};
 
 describe( 'Output functionality ', function() {
     // These tests were orginally meant for modilabs/enketo issue #141. However, they passed when they were
@@ -31,6 +20,16 @@ describe( 'Output functionality ', function() {
 
     it( 'tested upon initialization: node uuid__', function() {
         expect( form.view.$.find( '[data-value="/random/uuid__"]' ).text().length ).toEqual( 36 );
+    } );
+} );
+
+describe( 'Output functionality inside branches that irrelevan upon load', function() {
+    var form = loadForm( 'output-irrelevant.xml' );
+    form.init();
+
+    it( 'is evaluated after the branch becomes relevant', function() {
+        form.view.$.find( 'input[name="/data/consent"]' ).val( 'yes' ).trigger( 'change' );
+        expect( form.view.$.find( '.or-output' ).text() ).toEqual( 'mr' );
     } );
 } );
 
@@ -247,306 +246,6 @@ describe( 'Loading instance values into html input fields functionality', functi
         form.init();
         form.input.setVal( '/issue208/rep/nodeA', 0, 'yes' );
         expect( form.view.$.find( '[data-name="/issue208/rep/nodeA"]' ).eq( 0 ).is( ':checked' ) ).toBe( true );
-    } );
-
-} );
-
-describe( 'repeat functionality', function() {
-    var form;
-
-    //turn jQuery animations off
-    $.fx.off = true;
-
-    describe( 'cloning', function() {
-        beforeEach( function() {
-            form = loadForm( 'thedata.xml' ); //new Form(forms2.formStr1, forms2.dataStr1);
-            form.init();
-        } );
-
-        it( 'removes the correct instance and HTML node when the ' - ' button is clicked (issue 170)', function() {
-            var repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]',
-                nodePath = '/thedata/repeatGroup/nodeC',
-                nodeSelector = 'input[name="' + nodePath + '"]',
-                formH = form.view,
-                data = form.model,
-                index = 2;
-
-            expect( formH.$.find( repeatSelector ).eq( index ).length ).toEqual( 1 );
-            expect( formH.$.find( repeatSelector ).eq( index ).find( 'button.remove' ).length ).toEqual( 1 );
-            expect( formH.$.find( nodeSelector ).eq( index ).val() ).toEqual( 'c3' );
-            expect( data.node( nodePath, index ).getVal()[ 0 ] ).toEqual( 'c3' );
-
-            formH.$.find( repeatSelector ).eq( index ).find( 'button.remove' ).click();
-            expect( data.node( nodePath, index ).getVal()[ 0 ] ).toEqual( undefined );
-            //check if it removed the correct data node
-            expect( data.node( nodePath, index - 1 ).getVal()[ 0 ] ).toEqual( 'c2' );
-            //check if it removed the correct html node
-            expect( formH.$.find( repeatSelector ).eq( index ).length ).toEqual( 0 );
-            expect( formH.$.find( nodeSelector ).eq( index - 1 ).val() ).toEqual( 'c2' );
-        } );
-
-        it( 'marks cloned invalid fields as valid', function() {
-            var repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]',
-                repeatButton = '.add-repeat-btn',
-                nodeSelector = 'input[name="/thedata/repeatGroup/nodeC"]',
-                $node3 = form.view.$.find( nodeSelector ).eq( 2 ),
-                $node4;
-
-            form.setInvalid( $node3 );
-
-            expect( form.view.$.find( repeatSelector ).length ).toEqual( 3 );
-            expect( $node3.parent().hasClass( 'invalid-constraint' ) ).toBe( true );
-            expect( form.view.$.find( nodeSelector ).eq( 3 ).length ).toEqual( 0 );
-
-            form.view.$.find( repeatButton ).click();
-
-            $node4 = form.view.$.find( nodeSelector ).eq( 3 );
-            expect( form.view.$.find( repeatSelector ).length ).toEqual( 4 );
-            expect( $node4.length ).toEqual( 1 );
-            expect( $node4.parent().hasClass( 'invalid-constraint' ) ).toBe( false );
-        } );
-    } );
-
-    it( 'clones a repeat view element on load when repeat has dot in nodeName and has multiple instances in XForm', function() {
-        form = loadForm( 'repeat-dot.xml' );
-        form.init();
-        expect( form.view.$.find( 'input[name="/repeat-dot/rep.dot/a"]' ).length ).toEqual( 2 );
-    } );
-
-    it( 'clones nested repeats if they are present in the instance upon initialization (issue #359) ', function() {
-        //note that this form contains multiple repeats in the instance
-        form = loadForm( 'nested_repeats.xml' );
-        form.init();
-        var $1stLevelTargetRepeat = form.view.$.find( '.or-repeat[name="/nested_repeats/kids/kids_details"]' );
-        var $2ndLevelTargetRepeats1 = $1stLevelTargetRepeat.eq( 0 ).find( '.or-repeat[name="/nested_repeats/kids/kids_details/immunization_info"]' );
-        var $2ndLevelTargetRepeats2 = $1stLevelTargetRepeat.eq( 1 ).find( '.or-repeat[name="/nested_repeats/kids/kids_details/immunization_info"]' );
-        expect( $1stLevelTargetRepeat.length ).toEqual( 2 );
-        expect( $2ndLevelTargetRepeats1.length ).toEqual( 2 );
-        expect( $2ndLevelTargetRepeats2.length ).toEqual( 3 );
-    } );
-
-    //https://github.com/kobotoolbox/enketo-express/issues/754
-    it( 'shows the correct number of nested repeats in the view if a record is loaded', function() {
-        var instanceStr = '<q><PROGRAMME><PROJECT><Partner><INFORMATION><Partner_Name>a</Partner_Name><Camp><P_Camps>a1</P_Camps></Camp><Camp><P_Camps>a2</P_Camps></Camp></INFORMATION></Partner><Partner><INFORMATION><Partner_Name>b</Partner_Name><Camp><P_Camps>b1</P_Camps></Camp><Camp><P_Camps>b2</P_Camps></Camp><Camp><P_Camps>b3</P_Camps></Camp></INFORMATION></Partner></PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>';
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-        form = loadForm( 'nested-repeats-nasty.xml', instanceStr );
-        form.init();
-
-        expect( form.view.$.find( a ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 3 );
-
-    } );
-
-    it( 'ignores the "minimal" appearance when an existing record is loaded (almost same as previous test)', function() {
-        var form;
-        var instanceStr = '<q><PROGRAMME><PROJECT><Partner><INFORMATION><Partner_Name>a</Partner_Name><Camp><P_Camps>a1</P_Camps></Camp><Camp><P_Camps>a2</P_Camps></Camp></INFORMATION></Partner><Partner><INFORMATION><Partner_Name>b</Partner_Name><Camp><P_Camps>b1</P_Camps></Camp><Camp><P_Camps>b2</P_Camps></Camp><Camp><P_Camps>b3</P_Camps></Camp></INFORMATION></Partner></PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>';
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-        forms[ 'nested-repeats-nastier' ] = {
-            xml_model: forms[ 'nested-repeats-nasty.xml' ].xml_model
-        };
-        // both repeats get the 'minimal appearance'
-        forms[ 'nested-repeats-nastier' ].html_form = forms[ 'nested-repeats-nasty.xml' ].html_form.replace( "class=\"or-repeat ", "class=\"or-repeat or-appearance-minimal " );
-        form = loadForm( 'nested-repeats-nastier', instanceStr );
-        form.init();
-
-        expect( form.view.$.find( a ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).hasClass( 'or-appearance-minimal' ) ).toEqual( true );
-        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 3 );
-    } );
-
-    it( 'uses the "minimal" appearance for an empty form to create 0 repeats', function() {
-        var form;
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-        forms[ 'nested-repeats-nastier' ] = {
-            xml_model: forms[ 'nested-repeats-nasty.xml' ].xml_model
-        };
-        // both repeats get the 'minimal appearance'
-        forms[ 'nested-repeats-nastier' ].html_form = forms[ 'nested-repeats-nasty.xml' ].html_form.replace( "class=\"or-repeat ", "class=\"or-repeat or-appearance-minimal " );
-        form = loadForm( 'nested-repeats-nastier' );
-        form.init();
-
-        expect( form.view.$.find( a ).length ).toEqual( 0 );
-    } );
-
-    it( 'In an empty form it creates the first repeat instance automatically (almost same as previous test)', function() {
-        var form = loadForm( 'nested-repeats-nasty.xml' );
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-        form.init();
-
-        expect( form.view.$.find( a ).length ).toEqual( 1 );
-        expect( form.view.$.find( a ).hasClass( 'or-appearance-minimal' ) ).toEqual( false );
-        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 1 );
-    } );
-
-    it( 'doesn\'t duplicate date widgets in a cloned repeat', function() {
-        form = loadForm( 'nested_repeats.xml' );
-        form.init();
-        var $dates = form.view.$.find( '[name="/nested_repeats/kids/kids_details/immunization_info/date"]' );
-
-        expect( $dates.length ).toEqual( 5 );
-        // for some reason these widgets are not instantiated here
-        expect( $dates.parent().find( '.widget.date' ).length ).toEqual( 5 );
-    } );
-
-    describe( 'ordinals are set for default repeat instances in the default model upon initialization', function() {
-        /*
-        var config = require( 'enketo/config' );
-        var dflt = config.repeatOrdinals;
-        beforeAll( function() {
-            config.repeatOrdinals = true;
-        } );
-
-        afterAll( function() {
-            config.repeatOrdinals = dflt;
-        } );
-        */
-        // this test is only interested in the model, but adding ordinals to default repeat instances is directed
-        // by Form.js
-        // Very theoretical. Situation will never occur with OC.
-        xit( 'initialize correctly with ordinals if more than one top-level repeat is included in model', function() {
-            var f = loadForm( 'nested_repeats.xml' );
-            f.init();
-            var model = f.model;
-            expect( model.getStr().replace( />\s+</g, '><' ) ).toContain(
-                '<kids_details enk:last-used-ordinal="2" enk:ordinal="1"><kids_name>Tom</kids_name><kids_age>2</kids_age>' +
-                '<immunization_info enk:last-used-ordinal="2" enk:ordinal="1"><vaccine>Polio</vaccine><date/></immunization_info>' +
-                '<immunization_info enk:ordinal="2"><vaccine>Rickets</vaccine><date/></immunization_info></kids_details>' +
-                '<kids_details enk:ordinal="2"><kids_name>Dick</kids_name><kids_age>5</kids_age>' +
-                '<immunization_info enk:last-used-ordinal="3" enk:ordinal="1"><vaccine>Malaria</vaccine><date/></immunization_info>' +
-                '<immunization_info enk:ordinal="2"><vaccine>Flu</vaccine><date/></immunization_info>' +
-                '<immunization_info enk:ordinal="3"><vaccine>Polio</vaccine><date/></immunization_info>' +
-                '</kids_details>' );
-        } );
-    } );
-
-    describe( 'supports repeat count', function() {
-        it( 'to dynamically remove/add repeats', function() {
-            var f = loadForm( 'repeat-count.xml' );
-            var rep = '.or-repeat[name="/dynamic-repeat-count/rep"]';
-            var cnt = '[name="/dynamic-repeat-count/count"]';
-            var $form;
-            var $model;
-            f.init();
-            $form = f.view.$;
-            $model = f.model.$;
-            // check that repeat count is evaluated upon load for default values
-            expect( $form.find( rep ).length ).toEqual( 2 );
-            expect( $model.find( 'rep' ).length ).toEqual( 2 );
-            // increase
-            $form.find( cnt ).val( 10 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 10 );
-            expect( $model.find( 'rep' ).length ).toEqual( 10 );
-            // decrease
-            $form.find( cnt ).val( 5 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 5 );
-            expect( $model.find( 'rep' ).length ).toEqual( 5 );
-            // decrease too much
-            $form.find( cnt ).val( 0 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 0 );
-            expect( $model.find( 'rep' ).length ).toEqual( 0 );
-            // decrease way too much
-            $form.find( cnt ).val( -10 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 0 );
-            expect( $model.find( 'rep' ).length ).toEqual( 0 );
-            // go back up after reducing to 0
-            $form.find( cnt ).val( 5 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 5 );
-            expect( $model.find( 'rep' ).length ).toEqual( 5 );
-            // empty value should be considered as 0
-            $form.find( cnt ).val( '' ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 0 );
-            expect( $model.find( 'rep' ).length ).toEqual( 0 );
-        } );
-
-        it( 'and works nicely with relevant even if repeat count is 0 (with relevant on group)', function() {
-            // When repeat count is zero there is no context node to pass to evaluator.
-            var f = loadForm( 'repeat-count-relevant.xml' );
-            var errors = f.init();
-            expect( errors.length ).toEqual( 0 );
-            expect( f.view.$.find( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
-            expect( f.view.$.find( '.or-group.or-branch[name="/data/rep"]' ).hasClass( 'disabled' ) ).toBe( true );
-        } );
-
-        it( 'and works nicely with relevant even if repeat count is 0 (with output in group label)', function() {
-            // When repeat count is zero there is no context node to pass to evaluator.
-            var f = loadForm( 'repeat-count-relevant.xml' );
-            var errors = f.init();
-            expect( errors.length ).toEqual( 0 );
-            expect( f.view.$.find( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
-            f.view.$.find( 'input[name="/data/q1"]' ).val( 2 ).trigger( 'change' );
-            expect( f.view.$.find( '.or-group.or-branch[name="/data/rep"]>h4 .or-output' ).text() ).toEqual( '2' );
-        } );
-
-        it( 'and correctly deals with nested repeats that have a repeat count', function() {
-            var f = loadForm( 'repeat-count-nested-2.xml' );
-            var schools = '[name="/data/repeat_A/schools"]';
-            var a = '.or-repeat[name="/data/repeat_A"]';
-            var b = '.or-repeat[name="/data/repeat_A/repeat_B"]';
-            f.init();
-
-            f.view.$.find( schools ).eq( 1 ).val( '2' ).trigger( 'change' );
-
-            expect( f.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 2 );
-        } );
-    } );
-
-
-    describe( 'creates 0 repeats', function() {
-
-        it( ' if a record is loaded with 0 repeats (simple)', function() {
-            var repeat = '.or-repeat[name="/repeat-required/rep"]';
-            var f = loadForm( 'repeat-required.xml', '<repeat-required><d>b</d><meta><instanceID>a</instanceID></meta></repeat-required>' );
-            f.init();
-            expect( f.view.$.find( repeat ).length ).toEqual( 0 );
-        } );
-
-        it( ' if a record is loaded with 0 nested repeats (simple)', function() {
-            var repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-            var repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-            var f = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
-                '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name></INFORMATION></Partner>' +
-                '</PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>' );
-            f.init();
-            expect( f.view.$.find( repeat1 ).length ).toEqual( 1 );
-            expect( f.view.$.find( repeat2 ).length ).toEqual( 0 );
-        } );
-
-        it( ' if a record is loaded with 0 nested repeats (advanced)', function() {
-            var repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-            var repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-            var f = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
-                '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name></INFORMATION></Partner>' +
-                '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name><Camp><P_Camps/></Camp></INFORMATION></Partner>' +
-                '</PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>' );
-            f.init();
-            expect( f.view.$.find( repeat1 ).length ).toEqual( 2 );
-            expect( f.view.$.find( repeat1 ).eq( 0 ).find( repeat2 ).length ).toEqual( 0 );
-            expect( f.view.$.find( repeat1 ).eq( 1 ).find( repeat2 ).length ).toEqual( 1 );
-        } );
-
-        // This is a VERY special case, because the form contains a template as well as multiple repeat instances
-        xit( ' if a record is loaded with 0 repeats (very advanced)', function() {
-            var repeat = '.or-repeat[name="/repeat-dot/rep.dot"]';
-            var f = loadForm( 'repeat-dot.xml', '<repeat-dot><meta><instanceID>a</instanceID></meta></repeat-dot>' );
-            f.init();
-            expect( f.view.$.find( repeat ).length ).toEqual( 0 );
-        } );
-    } );
-
-    describe( 'initializes date widgets', function() {
-        it( 'in a new repeat instance if the date widget is not relevant by default', function() {
-            var form = loadForm( 'repeat-irrelevant-date.xml' );
-            form.init();
-            form.view.$.find( '.add-repeat-btn' ).click();
-            // make date field in second repeat relevant
-            form.view.$.find( '[name="/repeat/rep/a"]' ).eq( 1 ).val( 'a' ).trigger( 'change' );
-            expect( form.view.$.find( '[name="/repeat/rep/b"]' ).eq( 1 ).closest( '.question' ).find( '.widget' ).length ).toEqual( 1 );
-        } );
     } );
 
 } );
@@ -922,6 +621,18 @@ describe( 'branching functionality', function() {
         } );
     } );
 
+    describe( 'on a question inside a REMOVED repeat', function() {
+        it( 'does not try to evaluate it', function() {
+            var form = loadForm( 'repeat-irrelevant-date.xml' );
+            form.init();
+            form.view.$.find( '[name="/repeat/rep"] button.remove' ).click();
+            // This is testing what happens inside getDataStrWithoutIrrelevantNodes
+            // It tests whether the cache is updated when a repeat is removed.s
+            // https://github.com/kobotoolbox/enketo-express/issues/1014
+            expect( form.getRelatedNodes( 'data-relevant' ).length ).toEqual( 0 );
+        } );
+    } );
+
 } );
 
 describe( 'obtaining XML string from form without irrelevant nodes', function() {
@@ -1213,338 +924,49 @@ describe( 'validation', function() {
 
 } );
 
-describe( 'Readonly items', function() {
+describe( 'Readonly questions', function() {
     it( 'show their calculated value', function() {
         var form = loadForm( 'readonly.xml' );
         form.init();
-        expect( form.view.$.find( '[name="/readonly/a"]' ).val() ).toEqual( 'martijn' );
+        var $input = form.view.$.find( '[name="/readonly/a"]' );
+        expect( $input.val() ).toEqual( 'martijn' );
+        expect( $input.closest( '.question' ).hasClass( 'note' ) ).toBe( false );
+    } );
+
+    it( 'show a default text input value', function() {
+        var form = loadForm( 'readonly.xml' );
+        form.init();
+        var $input = form.view.$.find( '[name="/readonly/b"]' );
+        expect( $input.val() ).toEqual( 'is' );
+        expect( $input.closest( '.question' ).hasClass( 'note' ) ).toBe( false );
     } );
 } );
 
-describe( 'Itemset functionality', function() {
-    var form;
-
-    describe( 'in a cascading multi-select after an itemset update', function() {
-        var $items1;
-        var $items2;
-        var items1 = ':not(.itemset-template) > input:checkbox[name="/select-from-selected/crops"]';
-        var items2 = ':not(.itemset-template) > input:checkbox[name="/select-from-selected/crop"]';
-
-        beforeEach( function() {
-            form = loadForm( 'select-from-selected.xml' );
-            form.init();
-            $items1 = function() {
-                return form.view.$.find( items1 );
-            };
-            $items2 = function() {
-                return form.view.$.find( items2 );
-            };
-        } );
-
-        it( 'retains (checks) any current values that are still valid values', function() {
-            $items1().filter( '[value="banana"], [value="cacao"]' ).prop( 'checked', true ).trigger( 'change' );
-            expect( $items2().length ).toEqual( 2 );
-            expect( $items2().siblings().text() ).toEqual( 'BananaCacao' );
-            // check model
-            expect( form.model.$.find( 'crops' ).text() ).toEqual( 'banana cacao' );
-            expect( form.model.$.find( 'crop' ).text() ).toEqual( '' );
-            // select both items in itemset 2
-            $items2().filter( '[value="banana"], [value="cacao"]' ).prop( 'checked', true ).trigger( 'change' );
-            // check model
-            expect( form.model.$.find( 'crops' ).text() ).toEqual( 'banana cacao' );
-            expect( form.model.$.find( 'crop' ).text() ).toEqual( 'banana cacao' );
-            // select an additional item in itemset 1
-            $items1().filter( '[value="maize"]' ).prop( 'checked', true ).trigger( 'change' );
-            // check that the new item was added to itemset 2
-            expect( $items2().length ).toEqual( 3 );
-            expect( $items2().siblings().text() ).toEqual( 'BananaCacaoMaize' );
-            // check that the first two items of itemset 2 are still selected
-            expect( $items2().filter( '[value="banana"]' ).prop( 'checked' ) ).toEqual( true );
-            expect( $items2().filter( '[value="cacao"]' ).prop( 'checked' ) ).toEqual( true );
-            // check that the new item is unselected
-            expect( $items2().filter( '[value="maize"]' ).prop( 'checked' ) ).toEqual( false );
-            // check model
-            expect( form.model.$.find( 'crops' ).text() ).toEqual( 'banana cacao maize' );
-            expect( form.model.$.find( 'crop' ).text() ).toEqual( 'banana cacao' );
-        } );
-
-        it( 'removes (unchecks) any current values that are no longer valid values', function() {
-            $items1().filter( '[value="banana"], [value="cacao"]' ).prop( 'checked', true ).trigger( 'change' );
-            // select both items in itemset 2
-            $items2().filter( '[value="banana"], [value="cacao"]' ).prop( 'checked', true ).trigger( 'change' );
-            expect( form.model.$.find( 'crop' ).text() ).toEqual( 'banana cacao' );
-            // add a third non-existing item to model for itemset 2
-            form.model.$.find( 'crop' ).text( 'banana fake cacao' );
-            expect( form.model.$.find( 'crop' ).text() ).toEqual( 'banana fake cacao' );
-            // select an additional item in itemset 1, to trigger update of itemset 2
-            $items1().filter( '[value="maize"]' ).prop( 'checked', true ).trigger( 'change' );
-            // check that the new item was added to itemset 2
-            expect( $items2().siblings().text() ).toEqual( 'BananaCacaoMaize' );
-            // check that the first two items of itemset 2 are still selected
-            expect( $items2().filter( '[value="banana"]' ).prop( 'checked' ) ).toEqual( true );
-            expect( $items2().filter( '[value="cacao"]' ).prop( 'checked' ) ).toEqual( true );
-            // check model to see that the fake value was removed
-            expect( form.model.$.find( 'crop' ).text() ).toEqual( 'banana cacao' );
-        } );
+describe( 'Required questions', function() {
+    it( 'dynamically update the asterisk visibility in real-time', function() {
+        var form = loadForm( 'required.xml' );
+        form.init();
+        var $input = form.view.$.find( '[name="/required/a"]' );
+        var $asterisk = form.view.$.find( '[name="/required/b"]' ).closest( '.question' ).find( '.required' );
+        expect( $asterisk.hasClass( 'hide' ) ).toBe( true );
+        $input.val( 'yes' ).trigger( 'change' );
+        expect( $asterisk.hasClass( 'hide' ) ).toBe( false );
     } );
 
-    describe( 'in a cascading select using itext for all labels', function() {
-        var $items1Radio, $items2Radio, $items3Radio, $items1Select, $items2Select, $items3Select,
-            sel1Radio = ':not(.itemset-template) > input:radio[data-name="/new_cascading_selections/group1/country"]',
-            sel2Radio = ':not(.itemset-template) > input:radio[data-name="/new_cascading_selections/group1/city"]',
-            sel3Radio = ':not(.itemset-template) > input:radio[data-name="/new_cascading_selections/group1/neighborhood"]',
-            sel1Select = 'select[name="/new_cascading_selections/group2/country2"]',
-            sel2Select = 'select[name="/new_cascading_selections/group2/city2"]',
-            sel3Select = 'select[name="/new_cascading_selections/group2/neighborhood2"]';
+    it( 'fail validation if the value includes only whitespace', function( done ) {
+        var form = loadForm( 'required.xml' );
+        form.init();
+        form.view.$.find( '[name="/required/a"]' ).val( 'yes' ).trigger( 'change' );
+        var $input = form.view.$.find( '[name="/required/b"]' );
+        $input.val( ' a ' ).trigger( 'change' );
 
-        beforeEach( function() {
-            form = loadForm( 'new_cascading_selections.xml' );
-            form.init();
-
-            spyOn( form.itemset, 'update' ).and.callThrough();
-
-            $items1Radio = function() {
-                return form.view.$.find( sel1Radio );
-            };
-            $items2Radio = function() {
-                return form.view.$.find( sel2Radio );
-            };
-            $items3Radio = function() {
-                return form.view.$.find( sel3Radio );
-            };
-            $items1Select = function() {
-                return form.view.$.find( sel1Select + ' > option:not(.itemset-template)' );
-            };
-            $items2Select = function() {
-                return form.view.$.find( sel2Select + ' > option:not(.itemset-template)' );
-            };
-            $items3Select = function() {
-                return form.view.$.find( sel3Select + ' > option:not(.itemset-template)' );
-            };
-        } );
-
-        it( 'level 1: with <input type="radio"> elements has the expected amount of options', function() {
-            expect( $items1Radio().length ).toEqual( 2 );
-            expect( $items1Radio().siblings().text() ).toEqual( 'NederlandThe NetherlandsVerenigde StatenUnited States' );
-            expect( $items2Radio().length ).toEqual( 0 );
-            expect( $items3Radio().length ).toEqual( 0 );
-        } );
-
-        it( 'level 2: with <input type="radio"> elements has the expected amount of options', function() {
-            //select first option in cascade
-            form.view.$.find( sel1Radio + '[value="nl"]' ).prop( 'checked', true ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'country';
-            } ) ).toEqual( true );
-
-            expect( $items1Radio().length ).toEqual( 2 );
-            expect( $items2Radio().length ).toEqual( 3 );
-            expect( $items2Radio().siblings().text() ).toEqual( 'AmsterdamAmsterdamRotterdamRotterdamDrontenDronten' );
-            expect( $items3Radio().length ).toEqual( 0 );
-        } );
-
-        it( 'level 3: with <input type="radio"> elements has the expected amount of options', function() {
-            //select first option
-            form.view.$.find( sel1Radio + '[value="nl"]' ).attr( 'checked', true ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'country';
-            } ) ).toEqual( true );
-
-            //select second option
-            form.view.$.find( sel2Radio + '[value="ams"]' ).attr( 'checked', true ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'city';
-            } ) ).toEqual( true );
-
-            expect( $items1Radio().length ).toEqual( 2 );
-            expect( $items2Radio().length ).toEqual( 3 );
-            expect( $items3Radio().length ).toEqual( 2 );
-            expect( $items3Radio().siblings().text() ).toEqual( 'WesterparkWesterparkDe DamDam' );
-
-            //select other first option to change itemset
-            form.view.$.find( sel1Radio + '[value="nl"]' ).attr( 'checked', false );
-            form.view.$.find( sel1Radio + '[value="usa"]' ).attr( 'checked', true ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'city';
-            } ) ).toEqual( true );
-
-            expect( $items1Radio().length ).toEqual( 2 );
-            expect( $items2Radio().length ).toEqual( 3 );
-            expect( $items2Radio().siblings().text() ).toEqual( 'DenverDenverNieuw AmsterdamNew York CityDe EngelenLos Angeles' );
-            expect( $items3Radio().length ).toEqual( 0 );
-        } );
-
-        it( 'level 1: with <select> <option> elements has the expected amount of options', function() {
-            expect( $items1Select().length ).toEqual( 2 );
-            expect( $items1Select().eq( 0 ).attr( 'value' ) ).toEqual( 'nl' );
-            expect( $items1Select().eq( 1 ).attr( 'value' ) ).toEqual( 'usa' );
-            expect( $items2Select().length ).toEqual( 0 );
-        } );
-
-        it( 'level 2: with <select> <option> elements has the expected amount of options', function() {
-            //select first option in cascade
-            form.view.$.find( sel1Select ).val( 'nl' ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'country2';
-            } ) ).toEqual( true );
-
-            expect( $items1Select().length ).toEqual( 2 );
-            expect( $items2Select().length ).toEqual( 3 );
-            expect( $items2Select().eq( 0 ).attr( 'value' ) ).toEqual( 'ams' );
-            expect( $items2Select().eq( 2 ).attr( 'value' ) ).toEqual( 'dro' );
-            expect( $items3Select().length ).toEqual( 0 );
-        } );
-
-        it( 'level 3: with <select> <option> elements has the expected amount of options', function() {
-            //select first option in cascade
-            form.view.$.find( sel1Select ).val( 'nl' ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'country2';
-            } ) ).toEqual( true );
-
-            //select second option
-            form.view.$.find( sel2Select ).val( 'ams' ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'city2';
-            } ) ).toEqual( true );
-
-            expect( $items1Select().length ).toEqual( 2 );
-            expect( $items2Select().length ).toEqual( 3 );
-            expect( $items3Select().length ).toEqual( 2 );
-            expect( $items3Select().eq( 0 ).attr( 'value' ) ).toEqual( 'wes' );
-            expect( $items3Select().eq( 1 ).attr( 'value' ) ).toEqual( 'dam' );
-
-            //select other first option to change itemset
-            form.view.$.find( sel1Select ).val( 'usa' ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'city2';
-            } ) ).toEqual( true );
-
-            expect( $items1Select().length ).toEqual( 2 );
-            expect( $items2Select().length ).toEqual( 3 );
-            expect( $items2Select().eq( 0 ).attr( 'value' ) ).toEqual( 'den' );
-            expect( $items2Select().eq( 2 ).attr( 'value' ) ).toEqual( 'la' );
-            expect( $items3Select().length ).toEqual( 0 );
-        } );
-    } );
-
-    describe( 'in a cascading select that includes labels without itext', function() {
-        var $items1Radio, $items2Radio, $items3Radio,
-            sel1Radio = ':not(.itemset-template) > input:radio[data-name="/form/state"]',
-            sel2Radio = ':not(.itemset-template) > input:radio[data-name="/form/county"]',
-            sel3Radio = ':not(.itemset-template) > input:radio[data-name="/form/city"]';
-
-        beforeEach( function() {
-            $.fx.off = true; //turn jQuery animations off
-            form = loadForm( 'cascading_mixture_itext_noitext.xml' );
-            form.init();
-
-            spyOn( form.itemset, 'update' ).and.callThrough();
-
-            $items1Radio = function() {
-                return form.view.$.find( sel1Radio );
-            };
-            $items2Radio = function() {
-                return form.view.$.find( sel2Radio );
-            };
-            $items3Radio = function() {
-                return form.view.$.find( sel3Radio );
-            };
-        } );
-
-        it( 'level 3: with <input type="radio"> elements using direct references to instance labels without itext has the expected amount of options', function() {
-            //select first option
-            form.view.$.find( sel1Radio + '[value="washington"]' )
-                .attr( 'checked', true ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'state';
-            } ) ).toEqual( true );
-
-            //select second option
-            form.view.$.find( sel2Radio + '[value="king"]' )
-                .attr( 'checked', true ).trigger( 'change' );
-
-            expect( form.itemset.update.calls.mostRecent().args[ 0 ].nodes.some( function( node ) {
-                return node === 'county';
-            } ) ).toEqual( true );
-
-            expect( $items1Radio().length ).toEqual( 2 );
-            expect( $items2Radio().length ).toEqual( 3 );
-            expect( $items3Radio().length ).toEqual( 2 );
-            expect( $items3Radio().siblings().text() ).toEqual( 'SeattleRedmond' );
-        } );
-    } );
-
-    describe( 'in a cloned repeat with dependencies inside repeat, ', function() {
-        var countrySelector = '[data-name="/new_cascading_selections_inside_repeats/group1/country"]';
-        var citySelector = 'label:not(.itemset-template) [data-name="/new_cascading_selections_inside_repeats/group1/city"]';
-        var form;
-        var $masterRepeat;
-        var $clonedRepeat;
-
-        beforeEach( function() {
-            form = loadForm( 'new_cascading_selections_inside_repeats.xml' );
-            form.init();
-            $masterRepeat = form.view.$.find( '.or-repeat' );
-            //select usa in master repeat
-            $masterRepeat.find( countrySelector + '[value="usa"]' ).prop( 'checked', true ).trigger( 'change' );
-            //add repeat
-            form.view.$.find( '.add-repeat-btn' ).click();
-            $clonedRepeat = form.view.$.find( '.or-repeat.clone' );
-        } );
-
-        it( 'the itemset of the cloned repeat is correct (and not a cloned copy of the master repeat)', function() {
-            expect( $masterRepeat.find( citySelector ).length ).toEqual( 3 );
-            expect( $clonedRepeat.find( countrySelector + ':selected' ).val() ).toBeUndefined();
-            expect( $clonedRepeat.find( citySelector ).length ).toEqual( 0 );
-        } );
-
-        it( 'the itemset of the master repeat is not affected if the cloned repeat is changed', function() {
-            $clonedRepeat.find( countrySelector + '[value="nl"]' ).prop( 'checked', true ).trigger( 'change' );
-            expect( $masterRepeat.find( citySelector ).length ).toEqual( 3 );
-            expect( $masterRepeat.find( citySelector ).eq( 0 ).attr( 'value' ) ).toEqual( 'den' );
-            expect( $clonedRepeat.find( citySelector ).length ).toEqual( 3 );
-            expect( $clonedRepeat.find( citySelector ).eq( 0 ).attr( 'value' ) ).toEqual( 'ams' );
-        } );
-    } );
-
-    describe( 'in a cloned repeat with dependencies outside the repeat', function() {
-        it( 'initializes the itemset', function() {
-            var form = loadForm( 'nested-repeats-itemset.xml' );
-            var selector = '[name="/bug747/name_of_region/name_of_zone/zone"]';
-            form.init();
-            form.view.$.find( '[data-name="/bug747/name_of_region/region"][value="tigray"]' ).prop( 'checked', true ).trigger( 'change' );
-            form.view.$.find( '.or-repeat-info[data-name="/bug747/name_of_region/name_of_zone"] .add-repeat-btn' ).click();
-            expect( form.view.$.find( selector ).eq( 0 ).find( 'option:not(.itemset-template)' ).text() ).toEqual( 'CentralSouthern' );
-            expect( form.view.$.find( selector ).eq( 1 ).find( 'option:not(.itemset-template)' ).text() ).toEqual( 'CentralSouthern' );
-        } );
-    } );
-
-    describe( ' in a cloned repeat with a predicate including current()/../', function() {
-        it( 'works', function() {
-            // This test is added to show that once the makeBugCompliant function has been removed
-            // itemsets with relative predicates still work.
-            var form = loadForm( 'reprelcur1.xml' );
-            form.init();
-            form.view.$.find( '[data-name="/repeat-relative-current/rep/crop"][value="banana"]' ).prop( 'checked', true ).trigger( 'change' );
-            form.view.$.find( '.add-repeat-btn' ).click();
-            form.view.$.find( '[data-name="/repeat-relative-current/rep/crop"][value="beans"]' ).eq( 1 ).prop( 'checked', true ).trigger( 'change' );
-            var sel1 = '.itemset > input[data-name="/repeat-relative-current/rep/sel_a"]';
-            var sel2 = '.itemset > input[data-name="/repeat-relative-current/rep/group/sel_b"]';
-            expect( form.view.$.find( sel1 ).eq( 0 ).val() ).toEqual( 'banana' );
-            expect( form.view.$.find( sel2 ).eq( 0 ).val() ).toEqual( 'banana' );
-            expect( form.view.$.find( sel1 ).eq( 1 ).val() ).toEqual( 'beans' );
-            expect( form.view.$.find( sel2 ).eq( 1 ).val() ).toEqual( 'beans' );
-        } );
+        setTimeout( function() {
+            $input.val( '      ' ).trigger( 'change' );
+            setTimeout( function() {
+                expect( $input.closest( '.question' ).hasClass( 'invalid-required' ) ).toBe( true );
+                done();
+            }, 100 );
+        }, 100 );
     } );
 } );
 
@@ -1557,7 +979,7 @@ describe( 're-validating inputs and updating user feedback', function() {
     $oneComment = form.view.$.find( '[name="/comment/one_comment"]' );
     it( 'works', function( done ) {
         // set question "one" in invalid state (automatic)
-        $one.val( '3' ).trigger( 'change' ).val( '' ).trigger( 'change' );
+        $one.val( '' ).trigger( 'change' );
         // validation is asynchronous
         setTimeout( function() {
             expect( $one.closest( '.question' ).hasClass( 'invalid-required' ) ).toBe( true );
@@ -1631,7 +1053,7 @@ describe( 'jr:choice-name', function() {
         form.init();
 
         expect( form.view.$.find( '[name="/choice-regex/translator"]:checked' ).next().text() ).toEqual( '[Default Value] Area' );
-        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( '[Default Value] Area' );
+        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( '[Default Value] Area' );
 
         // when
         form.view.$.find( '[name="/choice-regex/input"]' ).val( 'abc' ).trigger( 'change' );
@@ -1642,13 +1064,13 @@ describe( 'jr:choice-name', function() {
         // and
         // We don't expect the value change to cascade to a label until the choice value itself is changed.
         // See: https://github.com/enketo/enketo-core/issues/412
-        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( '[Default Value] Area' );
+        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( '[Default Value] Area' );
 
         // when
         form.view.$.find( '[name="/choice-regex/translator"][value=health_center]' ).click().trigger( 'change' );
 
         // then
-        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( '[abc] Health Center' );
+        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( '[abc] Health Center' );
     } );
 
     /** @see https://github.com/enketo/enketo-core/issues/490 */
@@ -1658,13 +1080,13 @@ describe( 'jr:choice-name', function() {
         form.init();
 
         // then
-        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( 'unspecified' );
+        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( 'unspecified' );
 
         // when
         form.view.$.find( '[name="/embedded-choice/translator"][value=clinic]' ).click().trigger( 'change' );
 
         // then
-        expect( form.view.$.find( '.note .or-output' ).text() ).toEqual( 'Area' );
+        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( 'Area' );
     } );
 } );
 
@@ -1675,7 +1097,9 @@ describe( 'Form.prototype', function() {
         $.each( {
             'jr:choice-name( /choice-regex/translator, " /choice-regex/translator ")': '"__MOCK_VIEW_VALUE__"',
             '     jr:choice-name(       /choice-regex/translator     ,  " /choice-regex/translator "   )    ': '     "__MOCK_VIEW_VALUE__"    ',
-            "if(string-length( /embedded-choice/translator ) !=0, jr:choice-name( /embedded-choice/translator ,' /embedded-choice/translator '),'unspecified')": "if(string-length( /embedded-choice/translator ) !=0, \"__MOCK_VIEW_VALUE__\",'unspecified')",
+            'if(string-length( /embedded-choice/translator ) !=0, jr:choice-name( /embedded-choice/translator ,\' /embedded-choice/translator \'),\'unspecified\')': 'if(string-length( /embedded-choice/translator ) !=0, "__MOCK_VIEW_VALUE__",\'unspecified\')',
+            'jr:choice-name( selected-at( /energy_1/light/light_equip , 1), " /energy_1/light/light_equip " )': '"__MOCK_VIEW_VALUE__"',
+            'if( /data/C1 =01, jr:choice-name( /data/C2 ," /data/C2 "), jr:choice-name( /data/C3 ," /data/C3 " ) )': 'if( /data/C1 =01, "__MOCK_VIEW_VALUE__", "__MOCK_VIEW_VALUE__" )',
         }, function( initial, expected ) {
             it( 'should replace ' + initial + ' with ' + expected, function() {
                 // given

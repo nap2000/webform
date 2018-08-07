@@ -52,8 +52,7 @@ Filepicker.prototype._init = function() {
     this.$widget = $(
             '<div class="widget file-picker">' +
             '<input class="ignore fake-file-input"/>' +
-            ( this.props.readonly ? '' : '<button class="btn-icon-only btn-reset" type="button"><i class="icon icon-refresh"> </i></button>' ) +
-            '<a class="btn-icon-only btn-download" download href=""><i class="icon icon-download"> </i></a>' +
+            ( this.props.readonly ? '' : this.resetButtonHtml ) + this.downloadButtonHtml +
             '<div class="file-feedback"></div>' +
             '<div class="file-preview"></div>' +
             '</div>' )
@@ -67,9 +66,12 @@ Filepicker.prototype._init = function() {
         .find( '.btn-reset' ).on( 'click', function() {
             if ( ( $input.val() || that.$fakeInput.val() ) ) {
                 dialog.confirm( t( 'filepicker.resetWarning', { item: t( 'filepicker.file' ) } ) )
-                    .then( function() {
-                        $input.val( '' ).trigger( 'change' );
-                    } );
+                    .then( function( confirmed ) {
+                        if ( confirmed ) {
+                            $input.val( '' ).trigger( 'change' );
+                        }
+                    } )
+                    .catch( function() {} );
             }
         } )
         .end();
@@ -258,11 +260,8 @@ Filepicker.prototype._showPreview = function( url, mediaType ) {
     }
 };
 
-Filepicker.prototype._updateDownloadLink = function( url, fileName ) {
-    this.$downloadLink.attr( {
-        'href': url || '',
-        'download': fileName || ''
-    } );
+Filepicker.prototype._updateDownloadLink = function( objectUrl, fileName ) {
+    utils.updateDownloadLink( this.$downloadLink[ 0 ], objectUrl, fileName );
 };
 
 $.fn[ pluginName ] = function( options, event ) {

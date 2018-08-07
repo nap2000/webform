@@ -4,7 +4,6 @@
 var MergeXML = require( 'mergexml/mergexml' );
 var utils = require( './utils' );
 var $ = require( 'jquery' );
-var Promise = require( 'lie' );
 var FormLogicError = require( './Form-logic-error' );
 var config = require( 'enketo/config' );
 var types = require( './types' );
@@ -23,7 +22,7 @@ var Nodeset;
  * Class dealing with the XML Model of a form
  *
  * @constructor
- * @param {{modelStr: string, ?instanceStr: string, ?external: <{id: string, xmlStr: string }>, ?submitted: boolean }} data:
+ * @param {{modelStr: string, ?instanceStr: string, ?external: <{id: string, xml: ( string || xmlDocument) }>, ?submitted: boolean }} data:
  *                            data object containing XML model, 
  *                            (partial) XML instance to load, 
  *                            external data array
@@ -125,7 +124,22 @@ FormModel.prototype.init = function() {
             for ( i = secondaryInstanceChildren.length - 1; i >= 0; i-- ) {
                 instanceDoc.removeChild( secondaryInstanceChildren[ i ] );
             }
-            instanceDoc.appendChild( $.parseXML( instance.xmlStr ).firstChild );
+            var rootEl;
+            if ( typeof instance.xml === 'string' || instance.xmlStr ) {
+                console.deprecate( 'External instance provided as string', 'provide external instance as XML Document' );
+                rootEl = $.parseXML( instance.xml || instance.xmlStr ).firstChild;
+            } else if ( instance.xml instanceof XMLDocument ) {
+                if ( global.navigator.userAgent.indexOf( 'Trident/' ) >= 0 ) {
+                    // IE does not support importNode
+                    rootEl = that.importNode( instance.xml.documentElement, true );
+                } else {
+                    // Create a clone of the root node
+                    rootEl = that.xml.importNode( instance.xml.documentElement, true );
+                }
+            }
+            if ( rootEl ) {
+                instanceDoc.appendChild( rootEl );
+            }
         } );
 
         // TODO: in the future, we should search for jr://instance/session and 
@@ -235,8 +249,6 @@ FormModel.prototype.getSecondaryInstance = function( id ) {
     return instanceEl;
 };
 
-
-
 /**
  * Returns a new Nodeset instance
  *
@@ -253,6 +265,7 @@ FormModel.prototype.node = function( selector, index, filter ) {
 
 /**
  * Alternative adoptNode on IE11 (http://stackoverflow.com/questions/1811116/ie-support-for-dom-importnode)
+ * TODO: remove to be replaced by separate IE11-only polyfill file/service
  */
 FormModel.prototype.importNode = function( node, allChildren ) {
     var i;
@@ -282,7 +295,6 @@ FormModel.prototype.importNode = function( node, allChildren ) {
             return document.createTextNode( node.nodeValue );
     }
 };
-
 /**
  * Merges an XML instance string into the XML Model
  *
@@ -339,8 +351,7 @@ FormModel.prototype.mergeXml = function( recordStr ) {
     templateEls = record.querySelectorAll( '[*|template]' );
 
     for ( var i = 0; i < templateEls.length; i++ ) {
-        // IE11 has no remove method, so we use jQuery
-        $( templateEls[ i ] ).remove();
+        templateEls[ i ].remove();
     }
 
     /**
@@ -392,9 +403,12 @@ FormModel.prototype.mergeXml = function( recordStr ) {
         var path = that.getXPath( this, 'instance', true );
         var instanceNode = that.node( path, 0 ).get()[ 0 ];
         if ( instanceNode ) {
-            // TODO: after dropping support for IE11, we can use instanceNode.children.length
-            if ( $( instanceNode ).children().length === 0 ) {
-                instanceNode.textContent = '';
+            // TODO: after dropping support for IE11, we can also use instanceNode.children.length
+            if ( that.evaluate( './*', 'nodes', path, 0, true ).length === 0 ) {
+                // Select all text nodes (excluding repeat COMMENT nodes!)
+                that.evaluate( './text()', 'nodes', path, 0, true ).forEach( function( node ) {
+                    node.textContent = '';
+                } );
             } else {
                 // If the node in the default instance is a group (empty in record, so appears to be a leaf node
                 // but isn't), empty all true leaf node descendants.
@@ -427,7 +441,6 @@ FormModel.prototype.mergeXml = function( recordStr ) {
      */
     mergeResultDoc = $.parseXML( merger.Get( 1 ) );
 
-
     /** 
      * To properly show 0 repeats, if the form definition contains multiple default instances
      * and the record contains none, we have to iterate trough the templates object, and
@@ -438,11 +451,11 @@ FormModel.prototype.mergeXml = function( recordStr ) {
      * functionality out.
      */
 
-    // remove the primary instance  childnode from the original model
+    // Remove the primary instance childnode from the original model
     this.xml.querySelector( 'instance' ).removeChild( modelInstanceChildEl );
     // checking if IE
     if ( global.navigator.userAgent.indexOf( 'Trident/' ) >= 0 ) {
-        // IE not support adoptNode
+        // IE does not support adoptNode
         modelInstanceChildEl = this.importNode( mergeResultDoc.documentElement, true );
     } else {
         // adopt the merged instance childnode
@@ -793,8 +806,7 @@ FormModel.prototype.extractTemplates = function() {
          * The template of the repeat ancestor of the nested repeat contains the correct comment.
          * However, since the ancestor repeat (template)
          */
-        // IE11 has no remove() method so we use jQuery
-        $( templateEl ).remove();
+        templateEl.remove();
     } );
 };
 
@@ -1085,10 +1097,6 @@ FormModel.prototype.replaceIndexedRepeatFn = function( expr, selector, index ) {
     var that = this;
     var indexedRepeats = utils.parseFunctionFromExpression( expr, 'indexed-repeat' );
 
-    if ( !indexedRepeats.length ) {
-        return expr;
-    }
-
     indexedRepeats.forEach( function( indexedRepeat ) {
         var i, positionedPath;
         var position;
@@ -1111,6 +1119,20 @@ FormModel.prototype.replaceIndexedRepeatFn = function( expr, selector, index ) {
         } else {
             throw new FormLogicError( 'indexed repeat with incorrect number of parameters found: ' + indexedRepeat[ 0 ] );
         }
+    } );
+
+    return expr;
+};
+
+FormModel.prototype.replaceVersionFn = function( expr ) {
+    var that = this;
+    var version;
+    var versions = utils.parseFunctionFromExpression( expr, 'version' );
+
+    versions.forEach( function( versionPart ) {
+        version = version || that.evaluate( '/node()/@version', 'string', null, 0, true );
+        // ignore arguments
+        expr = expr.replace( versionPart[ 0 ], '"' + version + '"' );
     } );
 
     return expr;
@@ -1222,6 +1244,7 @@ FormModel.prototype.evaluate = function( expr, resTypeStr, selector, index, tryN
     if ( !this.convertedExpressions[ cacheKey ] ) {
         expr = expr.trim();
         expr = this.replaceInstanceFn( expr );
+        expr = this.replaceVersionFn( expr );
         expr = this.replaceCurrentFn( expr, this.getXPath( context, 'instance', true ) );
         // shiftRoot should come after replaceCurrentFn
         expr = this.shiftRoot( expr );
@@ -1409,7 +1432,7 @@ Nodeset.prototype.setVal = function( newVals, constraintExpr, xmlDataType, requi
     newVal = this.convert( newVal, xmlDataType );
     $target = this.get();
 
-    if ( $target.length === 1 && newVal.toString().trim() !== curVal.toString().trim() ) {
+    if ( $target.length === 1 && newVal.toString() !== curVal.toString() ) {
         // first change the value so that it can be evaluated in XPath (validated)
         $target.text( newVal.toString() );
         // then return validation result

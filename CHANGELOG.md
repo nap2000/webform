@@ -3,10 +3,119 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-[Unreleased]
+[4.56.0] - 2018-08-06
+----------------------
+##### Added
+- Enable/disable meridian in timepicker and datetimepicker based upon detected locale preferences.
+
+[4.55.2] - 2018-08-02
+----------------------
+##### Fixed
+- Download links in file input and draw widgets not working in IE11.
+- The required asterisks (*) do not update in real-time if `validateContinously` is set to `false`.
+- If a required text input field has a non-whitespace value that is replaced by the user to a white-space-only value the new whitespace-only value is saved and considered valid.
+
+[4.55.1] - 2018-07-25
+----------------------
+##### Changed
+- In Grid Theme readonly questions with value now have the same whole-cell background color as readonly questions without a value.
+
+##### Fixed
+- The external data property of the form data instantiation parameter changes to an empty XML Document after adding it to the model. This causes issues in applications that rely on that property to remain immutable.
+
+[4.55.0] - 2018-07-19
+----------------------
+##### Added
+- Support for 'no-ticks' appearance in range widget.
+
+##### Changed
+- ODK namespace for `<rank>` widget (in enketo-transformer) to http://www.opendatakit.org/xforms.
+
+##### Fixed
+- Range widget in FF, the ticks partially disappear when the widget has a value.
+- Randomize() doesn't work for itemsets that use itext() labels (in enketo-transformer)
+
+[4.54.3] - 2018-07-11
+---------------------
+##### Fixed
+- Exceptions thrown with complex jr:choice-name() usage.
+- Various Geo Widget styling issues with buttons, mobile (fullscreen) and RTL scripts.
+
+[4.54.2] - 2018-06-27
+---------------------
+##### Fixed
+- Autocomplete question inside a non-first repeat shows list from first repeat.
+- Dates are now considered local to fix constraints such as ". < today()"
+
+[4.54.1] - 2018-06-20
+---------------------
+##### Fixed
+- In a form containing a group with a single child repeat (and no other repeat sibling questions), fails to load a record where that group is empty. When creating the first repeat after load an exception occurs.
+- Output inside a group that is irrelevant upon loading does not get evaluated when the group becomes relevant.
+
+[4.54.0] - 2018-06-18
+---------------------
+##### Added
+- URL widget
+
+##### Fixed
+- When unfolding collapsed groups, the draw widgets are not functional until the window is resized.
+- Various styling degradations of geo widgets.
+
+[4.53.0] - 2018-06-15
+---------------------
+##### Added
+- Support for ranking widget 
+
+[4.52.4] - 2018-06-12
+---------------------
+##### Fixed
+- Range widget loading error if relevant is used.
+
+[4.52.3] - 2018-06-11
+---------------------
+##### Fixed
+- Readonly text inputs with a default value are hidden.
+- Certain XPath function calls without parameters cause an infinite loop.
+
+[4.52.2] - 2018-06-06
+---------------------
+##### Fixed
+- IE11 hack is not focused enough (affecting EE modals).
+- Coordinates around the international dateline (longitude < -180 degrees) are considered invalid in geo widgets. 
+
+[4.52.1] - 2018-06-04
+---------------------
+##### Fixed
+- Range widget turns geopoint coordinate inputs into rangepickers if initialized after geo widget.
+
+[4.52.0] - 2018-06-04
+---------------------
+##### Added
+- Support to provide external data as XML Document. **Warning: providing an XML string is now considered deprecated usage.**
+- Support for range widget (basic).
+
+##### Changed
+- Performance-optimized itemsets. Cutting-edge browsers can now deal well with documents containging 16,500 items (!).
+
+[4.51.6] - 2018-05-24
+---------------------
+##### Changed
+- Improved accessibility of buttons and links.
+
+##### Fixed
+- Styling interference occurs when an appearance is added to a question type that doesn't support it.
+
+[4.51.5] - 2018-05-23
+---------------------
+##### Changed
+- Facilitate custom apps with different calculation _types_ by making calculation.update overwritable.
+
+[4.51.4] - 2018-05-14
 ---------------------
 ##### Fixed
 - Appearance "horizontal" enlarges the last option if the remainder of the options modulo 3 is 1.
+- If all repeats containing a question that has skip logic are removed, an exception occurs when obtaining the model as string without irrelevant nodes.
 
 [4.51.3] - 2018-05-02
 ---------------------

@@ -70,7 +70,7 @@ h4 {
 label,
 legend,
 .trigger,
-.note {
+.readonly {
   font-size: 12px; }
 
 .question-label,
@@ -101,7 +101,7 @@ label.geo {
   .or legend span:not(.or-output) {
     display: block; }
 
-.or .note,
+.or .readonly,
 .or .trigger {
   font-weight: normal;
   background: none;

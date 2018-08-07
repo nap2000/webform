@@ -28,9 +28,9 @@ function parseFunctionFromExpression( expr, func ) {
         openBrackets = 1;
         args = [];
         start = result.index;
-        index = findFunc.lastIndex;
-        argStart = index;
-        while ( openBrackets !== 0 ) {
+        argStart = findFunc.lastIndex;
+        index = argStart - 1;
+        while ( openBrackets !== 0 && index < expr.length ) {
             index++;
             if ( expr[ index ] === '(' ) {
                 openBrackets++;
@@ -42,7 +42,9 @@ function parseFunctionFromExpression( expr, func ) {
             }
         }
         // add last argument
-        args.push( expr.substring( argStart, index ).trim() );
+        if ( argStart < index ) {
+            args.push( expr.substring( argStart, index ).trim() );
+        }
 
         // add [ 'function( a ,b)', ['a','b'] ] to result array
         results.push( [ expr.substring( start, index + 1 ), args ] );
@@ -153,6 +155,18 @@ function getPasteData( event ) {
     return ( clipboardData ) ? clipboardData.getData( 'text' ) : null;
 }
 
+/**
+ * Update a HTML anchor to serve as a download or reset it if an empty objectUrl is provided.
+ * 
+ * @param {HTMLElement} anchor the anchor element
+ * @param {*} objectUrl the objectUrl to download
+ * @param {*} fileName  the filename of the file
+ */
+function updateDownloadLink( anchor, objectUrl, fileName ) {
+    anchor.setAttribute( 'href', objectUrl || '' );
+    anchor.setAttribute( 'download', fileName || '' );
+}
+
 module.exports = {
     parseFunctionFromExpression: parseFunctionFromExpression,
     stripQuotes: stripQuotes,
@@ -161,5 +175,6 @@ module.exports = {
     isNumber: isNumber,
     readCookie: readCookie,
     dataUriToBlobSync: dataUriToBlobSync,
-    getPasteData: getPasteData
+    getPasteData: getPasteData,
+    updateDownloadLink: updateDownloadLink
 };

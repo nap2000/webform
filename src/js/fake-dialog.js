@@ -1,7 +1,5 @@
 'use strict';
 
-var Promise = require( 'lie' );
-
 /*
  * This file is meant to be overidden with one that uses the app's dialogs.
  */
@@ -18,24 +16,11 @@ function alert( content ) {
  * @param {String | {message: String, heading: String}} content Dialog content
  */
 function confirm( content ) {
-    return new Promise( function( resolve, reject ) {
-        if ( window.confirm( content ) ) {
-            resolve();
-        } else {
-            reject();
-        }
-    } );
+    return Promise.resolve( window.confirm( content ) );
 }
 
 function prompt( content, def ) {
-    return new Promise( function( resolve, reject ) {
-        var value = window.prompt( content, def );
-        if ( value ) {
-            resolve( value );
-        } else {
-            reject();
-        }
-    } );
+    return Promise.resolve( window.prompt( content, def ) );
 }
 
 module.exports = {
