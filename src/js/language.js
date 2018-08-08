@@ -9,11 +9,12 @@ var $ = require( 'jquery' );
 module.exports = {
     init: function() {
         var that = this;
-
+        var $langSelector = $( '.form-language-selector' ); // smap
+       
         if ( !this.form ) {
             throw new Error( 'Language module not correctly instantiated with form property.' );
         }
-        var $langSelector = $( this.form.view.html.parentNode.querySelector( '.form-language-selector' ) );
+        //var $langSelector = $( this.form.view.html.parentNode.querySelector( '.form-language-selector' ) );  smap
         this.$formLanguages = $( this.form.view.html.querySelector( '#form-languages' ) );
         this.currentLang = this.$formLanguages.attr( 'data-default-lang' ) || this.$formLanguages.find( 'option' ).eq( 0 ).attr( 'value' );
         var currentDirectionality = this.$formLanguages.find( '[value="' + this.currentLang + '"]' ).attr( 'data-dir' ) || 'ltr';
