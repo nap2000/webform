@@ -28,13 +28,15 @@ module.exports = {
                 .attr( 'role', 'page' );
 
             if ( $allPages.length > 0 || $allPages.eq( 0 ).hasClass( 'or-repeat' ) ) {
-                var formWrapper = this.form.view.html.parentNode;
-                this.$formFooter = $( formWrapper.querySelector( '.form-footer' ) );
+                this.$formFooter = $( '.form-footer' );     // smap
+                //var formWrapper = this.form.view.html.parentNode; // smap
+                //this.$formFooter = $( formWrapper.querySelector( '.form-footer' ) );   // smap
                 this.$btnFirst = this.$formFooter.find( '.first-page' );
                 this.$btnPrev = this.$formFooter.find( '.previous-page' );
                 this.$btnNext = this.$formFooter.find( '.next-page' );
                 this.$btnLast = this.$formFooter.find( '.last-page' );
-                this.$toc = $( formWrapper.querySelector( '.page-toc' ) );
+                //this.$toc = $( formWrapper.querySelector( '.page-toc' ) );    // smap
+                this.$toc = $( '.page-toc' );   // smap
                 this._updateAllActive( $allPages );
                 this._updateToc();
                 this._toggleButtons( 0 );

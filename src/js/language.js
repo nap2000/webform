@@ -10,7 +10,7 @@ module.exports = {
     init: function() {
         var that = this;
         var $langSelector = $( '.form-language-selector' ); // smap
-       
+
         if ( !this.form ) {
             throw new Error( 'Language module not correctly instantiated with form property.' );
         }
