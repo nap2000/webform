@@ -76,8 +76,8 @@ module.exports = {
                     outputCache[ expr ] = val;
                 }
             }
-            if ( $output.text() !== val ) {
-                $output.text( val );
+            if ( $output.html() !== val ) {     // smap XXXX text to html
+                $output.html( val );            // smap text to html
             }
         } );
     }
