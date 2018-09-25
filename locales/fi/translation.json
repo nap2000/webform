@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Tallentamaton tietue löytyi",
-            "msg": "Enketo on löytänyt tallentamattoman tietueen. Haluatko ladata tämän tietueen vai hävittää sen?",
+            "msg": "Webform on löytänyt tallentamattoman tietueen. Haluatko ladata tämän tietueen vai hävittää sen?",
             "negButton": "Hävitä",
             "posButton": "Lataa tietue"
         },
@@ -139,7 +139,7 @@
             "heading": "PANIIKKI!",
             "msg": [
                 "Tämä poistaa kaikki jonossa olevat tietosi ja kaikki lomakkeesi selaimelta. Tieto häviää lopullisesti. Käytä tätä vaihtoehtoa ainoastaan jos selaimesi tallennus vaikuttaa olevan korruptoitunut.",
-                "Sulje kaikki muut Enketo-selaimen välilehdet ensin. ",
+                "Sulje kaikki muut Webform-selaimen välilehdet ensin. ",
                 "Sivusto ladataan uudestaan. Jos saat virheilmoituksen, sinun täytyy uusia tämä toiminto. ",
                 "Oletko varma että haluat tehdä tämän?"
             ],
@@ -248,7 +248,7 @@
     },
     "here": "täällä",
     "home": {
-        "msg": "__appTitle__ on käynnissä! Ole hyvä ja kirjaudu Enketo lomakkeisiin __serverName__ asennuksesta."
+        "msg": "__appTitle__ on käynnissä! Ole hyvä ja kirjaudu Webform lomakkeisiin __serverName__ asennuksesta."
     },
     "langs": {
         "ar": "Arabia",
@@ -280,7 +280,7 @@
             "heading": "Uudenaikaiset selaimet",
             "ie": {
                 "heading": "Miksi ei rakkautta noille inhottaville, vanhentuneille Internet Explorer versioille?",
-                "msg": "Ymmärrämme että erityisesti niillä ihmisillä jotka työsketelevät suurissa organisaatioissa, ei ole pääsyä viimeisille ja parhaille selaimille. Koska tiedämme miten mahtava verkko voi olla oikeilla työkaluilla, meillä on runsaasti empatiaa noita epäonnisia käyttäjiä kohtaan. Yleensä yritämme keksiä keinoja tukea joitain suosittuja vanhentuneita selaimia. Kuitenkin Enketon olemassaolo perustuu joidenkin erittäin hienostuneiden, viimeisten teknologioiden mahdollisuuksiin. Valitettavasti vanhentuneiden selainten käyttäjät ovat siksi epäonnisia. "
+                "msg": "Ymmärrämme että erityisesti niillä ihmisillä jotka työsketelevät suurissa organisaatioissa, ei ole pääsyä viimeisille ja parhaille selaimille. Koska tiedämme miten mahtava verkko voi olla oikeilla työkaluilla, meillä on runsaasti empatiaa noita epäonnisia käyttäjiä kohtaan. Yleensä yritämme keksiä keinoja tukea joitain suosittuja vanhentuneita selaimia. Kuitenkin Webformn olemassaolo perustuu joidenkin erittäin hienostuneiden, viimeisten teknologioiden mahdollisuuksiin. Valitettavasti vanhentuneiden selainten käyttäjät ovat siksi epäonnisia. "
             },
             "msg1": "Auts! Pahoittelut, olet tällä sivustolla todennäköisimmin koska selaimesi on vanhentunut tai joitain sen tärkeimpiä ominaisuuksia on suljettu käyttämällä 'yksityisselain' asetuksia. ",
             "msg2": "Jos käytät vanhentunutta selainta, suosittelemme päivittämään viimeisimmä version seuraavista erinomaisista, uudenaikaisista selaimista:"
@@ -333,7 +333,7 @@
         "http408": "Tietopalvelimen aika loppui.",
         "http413": "Tiedosto on liian suuri. ",
         "http4xx": "Tuntematon lähetysongelma tietopalvelimella. ",
-        "http500": "Tietopalvelin on Enketo-lomakkeellesi ei toimi. Yritä myöhemmin uudestaan tai ole yhteydessä __supportEmail__.",
+        "http500": "Tietopalvelin on Webform-lomakkeellesi ei toimi. Yritä myöhemmin uudestaan tai ole yhteydessä __supportEmail__.",
         "http504": "Yhteyttä tietopalvelimeen ei saatu."
     },
     "version": "versio:",

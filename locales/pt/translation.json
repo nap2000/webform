@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Registro não salvo encontrado",
-            "msg": "O Enketo encontrou um registro não salvo. Gostaria de carregar este registro ou descartá-lo?",
+            "msg": "O Webform encontrou um registro não salvo. Gostaria de carregar este registro ou descartá-lo?",
             "negButton": "Descartar",
             "posButton": "Carregar registro"
         },
@@ -139,7 +139,7 @@
             "heading": "PÂNICO!",
             "msg": [
                 "Isso excluirá todos os seus dados da fila e todos os seus formulários do armazenamento do navegador. Não será possível recuperar os dados. Utilize isso apenas como último recurso se o armazenamento do navegador parecer corrompido.",
-                "Primeiro, feche todas as outras guias do navegador onde o Enketo estiver aberto.",
+                "Primeiro, feche todas as outras guias do navegador onde o Webform estiver aberto.",
                 "A página será recarregada. Se aparecer um erro, talvez seja necessário repetir essa ação.",
                 "Tem certeza de que quer fazer isso?"
             ],
@@ -265,7 +265,7 @@
     },
     "here": "aqui",
     "home": {
-        "msg": "__appTitle__ está em execução! Por favor, acesse os formulários do Enketo na sua instalação de __serverName__."
+        "msg": "__appTitle__ está em execução! Por favor, acesse os formulários do Webform na sua instalação de __serverName__."
     },
     "imagemap": {
         "svgNotFound": "A imagem SVG não foi encontrada"
@@ -302,7 +302,7 @@
             "heading": "Navegadores modernos",
             "ie": {
                 "heading": "Onde está o amor por essas malvadas versões desatualizadas do Internet Explorer?",
-                "msg": "Entendemos que algumas pessoas, especialmente aquelas que trabalham em grandes burocracias, não têm acesso aos navegadores melhores e mais recentes. Como sabemos o quão legal a Web poderia ser com as ferramentas certas, temos grande empatia pelos usuários nessa situação infeliz. Normalmente, tentaríamos fornecer soluções alternativas para pessoas com navegadores desatualizados. No entanto, o Enketo existe graças a algumas tecnologias avançadas de ponta. Infelizmente, os usuários de navegadores mais antigos são deixados de fora."
+                "msg": "Entendemos que algumas pessoas, especialmente aquelas que trabalham em grandes burocracias, não têm acesso aos navegadores melhores e mais recentes. Como sabemos o quão legal a Web poderia ser com as ferramentas certas, temos grande empatia pelos usuários nessa situação infeliz. Normalmente, tentaríamos fornecer soluções alternativas para pessoas com navegadores desatualizados. No entanto, o Webform existe graças a algumas tecnologias avançadas de ponta. Infelizmente, os usuários de navegadores mais antigos são deixados de fora."
             },
             "msg1": "Ai! Desculpe, você provavelmente foi redirecionado para cá porque seu navegador está desatualizado ou talvez tenha suas principais funcionalidades desabilitadas no modo \"navegação privada\".",
             "msg2": "Se você estiver usando um navegador desatualizado, recomendamos que baixe uma versão recente de um dos seguintes navegadores modernos:"
@@ -355,7 +355,7 @@
         "http408": "O servidor de dados expirou.",
         "http413": "Os dados são muito grandes.",
         "http4xx": "Problema de envio desconhecido no servidor de dados.",
-        "http500": "O servidor de dados para seu formulário ou o servidor Enketo está inativo. Tente novamente mais tarde ou entre em contato com __supportEmail__.",
+        "http500": "O servidor de dados para seu formulário ou o servidor Webform está inativo. Tente novamente mais tarde ou entre em contato com __supportEmail__.",
         "http504": "Não foi possível estabelecer conexão com o servidor de dados."
     },
     "version": "versão:",

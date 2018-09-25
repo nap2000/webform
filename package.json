@@ -1,6 +1,6 @@
 {
     "name": "webform",
-    "description": "A fork of Enketo Smart Paper that integrates with Smap",
+    "description": "A fork of Webform Smart Paper that integrates with Smap",
     "homepage": "http://www.smap.com.au",
     "version": "4.51.0",
     "license": "Apache-2.0",

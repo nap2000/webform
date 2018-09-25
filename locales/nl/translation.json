@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Niet Opgeslagen Record Gevonden",
-            "msg": "Enketo heeft een niet opgeslagen record gevonden. Wil je dit record laden of verwijderen?",
+            "msg": "Webform heeft een niet opgeslagen record gevonden. Wil je dit record laden of verwijderen?",
             "negButton": "Verwijder",
             "posButton": "Laad Record"
         },
@@ -139,7 +139,7 @@
             "heading": "PANIEK!",
             "msg": [
                 "Dit verwijderd all de opgeslagen records en alle enquetes uit de browser. De records zullen voor altijd verloren gaan. Gebruik dit alleen als noodoplossing als de browser opslag corrupt lijkt te zijn.",
-                "Sluit eerst alle andere Enketo browser tabs.",
+                "Sluit eerst alle andere Webform browser tabs.",
                 "De pagine zal zich herladen. Als er een fout opduikt kan het zijn dat je deze aktie moet herhalen.",
                 "Weet je zeker dat je dit wilt doen?"
             ],
@@ -265,7 +265,7 @@
     },
     "here": "hier",
     "home": {
-        "msg": "__appTitle__ werkt! De Enketo enquetes zijn vanaf de __serverName__ installatie toegankelijk."
+        "msg": "__appTitle__ werkt! De Webform enquetes zijn vanaf de __serverName__ installatie toegankelijk."
     },
     "imagemap": {
         "svgNotFound": "SVG-afbeelding kan niet worden gevonden"
@@ -288,7 +288,9 @@
         "nl": "Nederlands",
         "no": "Noorweegs",
         "pl": "Pools",
+        "pt": "Portugees",
         "ro": "Roemeens",
+        "ru": "Russisch",
         "sk": "Slowaaks",
         "supported": "Talen ondersteund:",
         "sv": "Zweeds",
@@ -302,7 +304,7 @@
             "heading": "Moderne Browsers",
             "ie": {
                 "heading": "Waarom geen liefde voor die nare ouderwetse versies van Internet Explorer?",
-                "msg": "We begrijpen dat sommige mensen, vooral degenen die werken voor een grote bureaucratie, geen toegang hebben tot the laatste en best browsers. Aangezien we weten hoe fantastisch het Web kan zijn, zijn we empatisch met de gebruikers in zo'n situatie. Normaal, zouden we proberen om hier een oplossing voor te vinden voor de populairste ouderwetse browsers. Alleen in dit geval niet omdat Enketo gebouwd is naar aanleiding van een aantal hele nieuwe technologien. Helaas hebben gebruikers met oudere browsers hierdoor pech."
+                "msg": "We begrijpen dat sommige mensen, vooral degenen die werken voor een grote bureaucratie, geen toegang hebben tot the laatste en best browsers. Aangezien we weten hoe fantastisch het Web kan zijn, zijn we empatisch met de gebruikers in zo'n situatie. Normaal, zouden we proberen om hier een oplossing voor te vinden voor de populairste ouderwetse browsers. Alleen in dit geval niet omdat Webform gebouwd is naar aanleiding van een aantal hele nieuwe technologien. Helaas hebben gebruikers met oudere browsers hierdoor pech."
             },
             "msg1": "Au! Sorry, je bent hier waarschijnlijk heen gestuurd omdat je browser te ouderwets is of misschien belangrijke functies heeft uitgeschakeld in 'prive mode'.",
             "msg2": "Als je een ouderwetse browser gebruikt, raden wij aan om deze te vervangen of up-te-daten met een van de volgende prima moderne browsers:"
@@ -323,6 +325,10 @@
             "submit": "Verzend",
             "username": "Gebruikersnaam"
         }
+    },
+    "rankwidget": {
+        "clickstart": "Klik om te starten",
+        "tapstart": "Klik om te starten"
     },
     "record-list": {
         "export": "Exporteer",

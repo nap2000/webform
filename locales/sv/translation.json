@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Osparade uppgifter finns",
-            "msg": "Enketo har hittat en osparad post. Vill du läsa in denna post eller ta bort den?",
+            "msg": "Webform har hittat en osparad post. Vill du läsa in denna post eller ta bort den?",
             "negButton": "Släng",
             "posButton": "Ladda in post"
         },
@@ -139,7 +139,7 @@
             "heading": "PANIK!",
             "msg": [
                 "Detta tar bort alla dina köade data och alla formulär från webbläsarens minne. Data kommer att att förloras permanent. Använd detta endast som en sista utväg om webbläsaren minne verkar vara korrupt.",
-                "Stäng övriga Enketo-flikar i webbläsaren först.",
+                "Stäng övriga Webform-flikar i webbläsaren först.",
                 "Denna sida kommer att laddas om. Om ett fel uppstår behöver du kanske upprepa denna åtgärd.",
                 "Är du säker på att du vill göra detta?"
             ],
@@ -248,7 +248,7 @@
     },
     "here": "här",
     "home": {
-        "msg": "__appTitle__ är igång! Vänligen få åtkomst till Enketo-formulär från __serverName__ installationen."
+        "msg": "__appTitle__ är igång! Vänligen få åtkomst till Webform-formulär från __serverName__ installationen."
     },
     "langs": {
         "ar": "Arabiska",
@@ -281,7 +281,7 @@
             "heading": "Moderna webbläsare",
             "ie": {
                 "heading": "Varför finns det ingen kärlek till dem ondskefulla daterade versionerna av Internet Explorer?",
-                "msg": "Vi förstår att vissa människor, särskilt de som arbetar för stora byråkratier, inte har tillgång till dem senaste och bästa webbläsarna. Eftersom vi vet hur bra webben skulle kunna vara med de rätt verktygen, har vi stor empati för användare i denna otursamma situation. Normalt sett skulle vi försöka erbjuda lösningar för att stödja vissa populära och föråldrade webbläsare. Dock är anledningen till att  Enketo finns tillgängligheten av spjutspetsteknik. Tyvärr är därför användare av äldre webbläsare utan tur i detta avseende."
+                "msg": "Vi förstår att vissa människor, särskilt de som arbetar för stora byråkratier, inte har tillgång till dem senaste och bästa webbläsarna. Eftersom vi vet hur bra webben skulle kunna vara med de rätt verktygen, har vi stor empati för användare i denna otursamma situation. Normalt sett skulle vi försöka erbjuda lösningar för att stödja vissa populära och föråldrade webbläsare. Dock är anledningen till att  Webform finns tillgängligheten av spjutspetsteknik. Tyvärr är därför användare av äldre webbläsare utan tur i detta avseende."
             },
             "msg1": "Aj då! Du har förmodligen skickas hit eftersom webbläsaren är föråldrad eller kanske har viktiga funktioner avaktiveras genom att använda 'privat surfning'.",
             "msg2": "Om du använder en gammal webbläsare, rekommenderar vi att du uppgraderar till den senaste versionen av en av följande utmärkta moderna webbläsare:"
@@ -334,7 +334,7 @@
         "http408": "Dataservern har pausats.",
         "http413": "Datamängden är för stor.",
         "http4xx": "Okänt problem med att skicka in på dataservern.",
-        "http500": "Dataservern för formuläret eller Enketo-servern är ur funktion. Försök igen senare eller kontakta __supportEmail__.",
+        "http500": "Dataservern för formuläret eller Webform-servern är ur funktion. Försök igen senare eller kontakta __supportEmail__.",
         "http504": "Det gick inte att etablera en anslutning till dataservern."
     },
     "version": "version:",

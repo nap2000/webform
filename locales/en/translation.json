@@ -290,6 +290,7 @@
         "pl": "Polish",
         "pt": "Portuguese",
         "ro": "Romanian",
+        "ru": "Russian",
         "sk": "Slovak",
         "supported": "Languages supported: ",
         "sv": "Swedish",
@@ -324,6 +325,10 @@
             "submit": "Submit",
             "username": "Username"
         }
+    },
+    "rankwidget": {
+        "clickstart": "Click to start",
+        "tapstart": "Tap to start"
     },
     "record-list": {
         "export": "Export",

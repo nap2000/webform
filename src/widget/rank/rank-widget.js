@@ -33,7 +33,7 @@ RankWidget.prototype._init = function() {
         that._reset();
         return false;
     } );
-    var startText = support.touch ? t( 'rankwidget.tapstart' ) : t( 'rankwidget.clickstart' );
+    var startText = ""; // smap - support.touch ? t( 'rankwidget.tapstart' ) : t( 'rankwidget.clickstart' );
 
     $( this.list )
         .toggleClass( 'rank-widget--empty', !loadedValue )

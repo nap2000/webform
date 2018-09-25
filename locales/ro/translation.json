@@ -120,7 +120,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Unsaved Record Found",
-            "msg": "Enketo has found an unsaved record. Would you like to load this record or discard it?",
+            "msg": "Webform has found an unsaved record. Would you like to load this record or discard it?",
             "negButton": "Discard",
             "posButton": "Load Record"
         },
@@ -134,7 +134,7 @@
             "heading": "PANICĂ!",
             "msg": [
                 "Această opțiune va șterge toate datele și formularele din memoria navigatorului. Aceste date vor fi pierdute pentru totdeauna. Folosiți această opțiune numai ca ultimă instanță dacă memoria navigatorului pare coruptă.",
-                "Mai întâi închideți toate filele (taburi) în care rulează Enketo.",
+                "Mai întâi închideți toate filele (taburi) în care rulează Webform.",
                 "Pagina va fi reîncărcată. Dacă observați o eroare este posibil să trebuiască să repetați această acțiune.",
                 "Sunteți sigur(ă)?"
             ],
@@ -228,7 +228,7 @@
     },
     "here": "aici",
     "home": {
-        "msg": "__appTitle__ rulează! Accesați Enketo forms din instalarea dvs __serverName__."
+        "msg": "__appTitle__ rulează! Accesați Webform forms din instalarea dvs __serverName__."
     },
     "langs": {
         "ar": "Arabă",
@@ -258,7 +258,7 @@
             "heading": "Navigatoare Moderne",
             "ie": {
                 "heading": "De ce nu iubește nimeni versiunile învechite de Internet Explorer?",
-                "msg": "Înțelegem că unii oameni, mai ales cei care lucrează în organizații mari, nu au acces la cele mai recente și grozave navigatoare. Deoarece știm cât de grozav poate să fie internetul cu uneltele potrivite, simțim o empatie deosebită pentru utilizatorii care se regăsesc în această situație nefericită. În mod normal, am încerca să punem la dispoziție soluții pentru a susține unele navigatoare populare dar învechite. Totuși, Enketo depinde de unele tehnologii de ultimă oră. Din păcate, utilizatorii de navigatoare vechi nu au noroc."
+                "msg": "Înțelegem că unii oameni, mai ales cei care lucrează în organizații mari, nu au acces la cele mai recente și grozave navigatoare. Deoarece știm cât de grozav poate să fie internetul cu uneltele potrivite, simțim o empatie deosebită pentru utilizatorii care se regăsesc în această situație nefericită. În mod normal, am încerca să punem la dispoziție soluții pentru a susține unele navigatoare populare dar învechite. Totuși, Webform depinde de unele tehnologii de ultimă oră. Din păcate, utilizatorii de navigatoare vechi nu au noroc."
             },
             "msg1": "Vai! Ne pare rău, ați fost trimis(ă) aici deoarece navigatorul dvs este învechit, sau poate pentru că unele funcționalități esențiale au fost dezactivate deoarece folosiți modul de navigare privat.",
             "msg2": "Dacă folosiți un navigator învechit, vă recomandăm să actualizați la o versiune recentă a unuia dintre următoarele navigatoare moderne excelente:"
@@ -306,7 +306,7 @@
         "http404": "Serviciu de trimitere nu a fost găsit pe serverul de date.",
         "http413": "Informațiile au o dimensiune prea mare.",
         "http4xx": "Problemă necunoscută în timpul transmiterii către serverul de date.",
-        "http500": "Serverul de date pentru formularul dvs sau serverul Enketo este căzut. Vă rugăm încercați mai târziu sau contactați __supportEmail__."
+        "http500": "Serverul de date pentru formularul dvs sau serverul Webform este căzut. Vă rugăm încercați mai târziu sau contactați __supportEmail__."
     },
     "version": "versiune:"
 }

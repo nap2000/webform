@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Znaleziono niezapisany rekord",
-            "msg": "Enketo znalazł niezapisany rekord. Chciałbyś go wczytać, czy odrzucić?",
+            "msg": "Webform znalazł niezapisany rekord. Chciałbyś go wczytać, czy odrzucić?",
             "negButton": "Odrzuć",
             "posButton": "Wczytaj rekord"
         },
@@ -139,7 +139,7 @@
             "heading": "PANIKA!",
             "msg": [
                 "To usunie wszystkie zakolejkowane dane i wszystkie formularze z pamięci przeglądarki. Dane zostaną utracone bezpowrotnie. Użyj tego wyłącznie jako ostatniej deski ratunku w sytuacji gdy pamięć przeglądarki wydaje się uszkodzona.",
-                "Najpierw zamknij wszystkie pozostałe zakładki przeglądarki z Enketo.",
+                "Najpierw zamknij wszystkie pozostałe zakładki przeglądarki z Webform.",
                 "Strona zostanie wczytana ponownie. Jeśli zobaczysz jakikolwiek błąd, być może będziesz musiał powtórzyć tę czynność.",
                 "Czy jesteś pewny, że chcesz to zrobić?"
             ],
@@ -265,7 +265,7 @@
     },
     "here": "tutaj",
     "home": {
-        "msg": "__appTitle__ jest uruchomiona! Wczytaj proszę formularze Enketo ze swojej instalacji __serverName__."
+        "msg": "__appTitle__ jest uruchomiona! Wczytaj proszę formularze Webform ze swojej instalacji __serverName__."
     },
     "imagemap": {
         "svgNotFound": "Obraz SVG nie został znaleziony"
@@ -301,7 +301,7 @@
             "heading": "Nowoczesne przeglądarki",
             "ie": {
                 "heading": "Nikt nie kocha już starych, złowrogich wersji Internet Explorera?",
-                "msg": "Rozumiemy, że niektóre osoby, szczególnie ci pracujący dla dużych biurokracji, nie mają dostępu do najnowszych i najlepszych przeglądarek. Ponieważ wiemy, jak fantastyczna potrafi być Sieć z odpowiednimi narzędziami, czujemy głęboką więź z użytkownikami w tej niefortunnej sytuacji. Zazwyczaj próbowalibyśmy znaleźć obejścia, aby wesprzeć osoby z niektórymi popularnymi i przestarzałymi przeglądarkami. Jednakże Enketo funkcjonuje dzięki dostępności niektórych super nowoczesnych technologii. W związku z tym użytkownicy starszych przeglądarek mają po prostu ogromnego pecha."
+                "msg": "Rozumiemy, że niektóre osoby, szczególnie ci pracujący dla dużych biurokracji, nie mają dostępu do najnowszych i najlepszych przeglądarek. Ponieważ wiemy, jak fantastyczna potrafi być Sieć z odpowiednimi narzędziami, czujemy głęboką więź z użytkownikami w tej niefortunnej sytuacji. Zazwyczaj próbowalibyśmy znaleźć obejścia, aby wesprzeć osoby z niektórymi popularnymi i przestarzałymi przeglądarkami. Jednakże Webform funkcjonuje dzięki dostępności niektórych super nowoczesnych technologii. W związku z tym użytkownicy starszych przeglądarek mają po prostu ogromnego pecha."
             },
             "msg1": "Auć! Przepraszamy, zostałeś tu odesłany prawdopodobnie dlatego, że twoja przeglądarka jest przestarzała lub część z jej kluczowych funkcjo została wyłączona używając trybu 'prywatnego przeglądania'.",
             "msg2": "Jeśli używasz przestarzałej przeglądarki, rekomendujemy zaktualizowanie do bieżącej wersji jednej z poniższych, doskonałych, nowoczesnych przeglądarek:"
@@ -354,7 +354,7 @@
         "http408": "Upłynął limit czasu serwera danych.",
         "http413": "Ilość danych jest zbyt duża.",
         "http4xx": "Nieznany problem zatwierdzania na serwerze danych.",
-        "http500": "Nie działa serwer danych dla twojego formularza na serwerze Enketo. Proszę spróbuj ponownie później lub skontaktuj się z __supportEmail__.",
+        "http500": "Nie działa serwer danych dla twojego formularza na serwerze Webform. Proszę spróbuj ponownie później lub skontaktuj się z __supportEmail__.",
         "http504": "Nie udało się ustanowić połączenia z serwerem danych."
     },
     "version": "wersja:",

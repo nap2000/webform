@@ -120,7 +120,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Bảng ghi chưa lưu được tìm thấy",
-            "msg": "Enketo đã tìm thấy một bảng ghi chưa được lưu. Bạn muốn tải bảng ghi này hay là hủy bỏ nó?",
+            "msg": "Webform đã tìm thấy một bảng ghi chưa được lưu. Bạn muốn tải bảng ghi này hay là hủy bỏ nó?",
             "negButton": "Hủy bỏ",
             "posButton": "Tải bản ghi"
         },
@@ -134,7 +134,7 @@
             "heading": "Panic",
             "msg": [
                 "Thao tác này sẽ loại bỏ tất cả dữ liệu đang được chờ lưu trữ và tất cả form được lưu trong trình duyệt. Dữ liệu sẽ mất vĩnh viễn. Chỉ nên thực hiện điều này như là giải pháp cuối cùng nếu bộ lưu trữ của trình duyệt bị hỏng.",
-                "Hãy đóng các cửa sổ trình duyệt hiển thị Enketo trước.",
+                "Hãy đóng các cửa sổ trình duyệt hiển thị Webform trước.",
                 "Trang được tải lại. Bạn sẽ thấy thông báo lỗi nếu bạn thực hiện lại thông báo này.",
                 "Bạn có chắc chắn muốn thực hiện điều này?"
             ],
@@ -228,7 +228,7 @@
     },
     "here": "tại đây",
     "home": {
-        "msg": "__appTitle__ đang chạy! Hãy truy xuất từ form Enketo máy chủ __serverName__"
+        "msg": "__appTitle__ đang chạy! Hãy truy xuất từ form Webform máy chủ __serverName__"
     },
     "langs": {
         "ar": "Ả rập",
@@ -258,7 +258,7 @@
             "heading": "Các trình duyệt mới",
             "ie": {
                 "heading": "Vì sao không thương xót gì đến những phiên bản lạc hậu IE?",
-                "msg": "Chúng tôi hiểu rằng một số người, đặc biệt là những người làm trong các môi trường văn phòng lớn, không có cơ hội sử dụng các trình duyệt tốt nhất và mới nhất. Vì chúng tôi biết web rất tuyệt vời với các công cụ phù hợp, chúng tôi rất thông cảm những người sử dụng  trong tình huống kém may mắn đó. Thông thường, chúng tôi cố gắng cung cấp sự hỗ trợ cho cả những trình duyệt lỗi thời. Nhưtng, lý do mà Enketo tồn tại là nó có những đặc tính công nghệ tiên tiến nhất. Rất tiếc, những người sử dụng các trình duyệt cũ, do đó, không có sự may mắn đó."
+                "msg": "Chúng tôi hiểu rằng một số người, đặc biệt là những người làm trong các môi trường văn phòng lớn, không có cơ hội sử dụng các trình duyệt tốt nhất và mới nhất. Vì chúng tôi biết web rất tuyệt vời với các công cụ phù hợp, chúng tôi rất thông cảm những người sử dụng  trong tình huống kém may mắn đó. Thông thường, chúng tôi cố gắng cung cấp sự hỗ trợ cho cả những trình duyệt lỗi thời. Nhưtng, lý do mà Webform tồn tại là nó có những đặc tính công nghệ tiên tiến nhất. Rất tiếc, những người sử dụng các trình duyệt cũ, do đó, không có sự may mắn đó."
             },
             "msg1": "Ồ! Xin lỗi, bạn nên gửi tại đây bởi vì trình duyệt của bạn đã lỗi thời hoặc có lẽ đã bị khóa một số thuộc tính do sử dụng chế độ 'trình duyệt cá nhân' ",
             "msg2": "Nếu bạn đang dùng một trình duyệt đã lỗi thời, chúng tôi khuyên bạn nâng cấp lên một phiên bản mới  hơn, là một trong số các trình duyệt hiện đại nhiều tính năng vượt trội như sau:"
@@ -306,7 +306,7 @@
         "http404": "Dịch vụ gửi dữ liệu lên máy chủ không được tìm thấy.",
         "http413": "Dữ liệu quá lớn.",
         "http4xx": "Không xác định được dữ liệu gửi lên máy chủ.",
-        "http500": "Dữ liệu gửi lên máy chủ trong form của bạn hoặc hiển thị Enketo đã bị ngừng. Hãy thử lại sau hoặc liên hệ _supportEmail_."
+        "http500": "Dữ liệu gửi lên máy chủ trong form của bạn hoặc hiển thị Webform đã bị ngừng. Hãy thử lại sau hoặc liên hệ _supportEmail_."
     },
     "version": "Phiên bản:"
 }

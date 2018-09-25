@@ -288,7 +288,9 @@
         "nl": "Holandés",
         "no": "Noruego",
         "pl": "Polaco",
+        "pt": "Portugués",
         "ro": "Rumano",
+        "ru": "Ruso",
         "sk": "Eslovaco",
         "supported": "Idiomas soportados:",
         "sv": "Sueco",
@@ -323,6 +325,10 @@
             "submit": "Enviar",
             "username": "Nombre de usuario"
         }
+    },
+    "rankwidget": {
+        "clickstart": "Haga clic para empezar",
+        "tapstart": "Toque para comenzar"
     },
     "record-list": {
         "export": "Exportar",

@@ -120,7 +120,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Trovati Record NON Salvati",
-            "msg": "Enketo ha trovato record non salvati.Voui caricarli o eliminarli?",
+            "msg": "Webform ha trovato record non salvati.Voui caricarli o eliminarli?",
             "negButton": "Elimina",
             "posButton": "Carica Record"
         },
@@ -134,7 +134,7 @@
             "heading": "PANIC!",
             "msg": [
                 "Questo eliminer&agrave; tutti i dati in coda e tutti i moduli dal browser. I dati saranno persi per sempre . Utilizzare solo come ultima risorsa , se la memoria del browser sembra corrotta .",
-                "Chiudere prima tutte le altre schede del browser Enketo .",
+                "Chiudere prima tutte le altre schede del browser Webform .",
                 "La pagina verr&agrave; ricaricata. Se ci sono errori, ripeti l' operazione.",
                 "Sei sicuro di volerlo fare ?"
             ],
@@ -228,7 +228,7 @@
     },
     "here": "qui",
     "home": {
-        "msg": "__appTitle__ in esecuzione! Si prega di accedere ai forms Enketo dall' installazione __serverName__"
+        "msg": "__appTitle__ in esecuzione! Si prega di accedere ai forms Webform dall' installazione __serverName__"
     },
     "langs": {
         "ar": "Arabo",
@@ -258,7 +258,7 @@
             "heading": "Browsers moderni",
             "ie": {
                 "heading": "Perch&egrave; non ami questo diavolo di Internet Explorer non aggiornato?",
-                "msg": "Siamo consapevoli che alcune persone , in particolare quelli che lavorano per le grandi burocrazie , non hanno accesso alle versioni pi&ugrave; recenti dei browser . Poich&egrave; sappiamo quanto possa essere grande il web con gli strumenti giusti , abbiamo grande empatia per gli utenti che si trovano in questa spiacevole situazione . Normalmente , dovremmo cercare di fornire soluzioni per supportare alcuni popolari browser obsoleti . Tuttavia, la ragione di esistenza di Enketo &egrave; di rendere disponibili alcune tecnologie all'avanguardia . Purtroppo , gli utenti con browser pi&ugrave; vecchi sono quindi sfortunati."
+                "msg": "Siamo consapevoli che alcune persone , in particolare quelli che lavorano per le grandi burocrazie , non hanno accesso alle versioni pi&ugrave; recenti dei browser . Poich&egrave; sappiamo quanto possa essere grande il web con gli strumenti giusti , abbiamo grande empatia per gli utenti che si trovano in questa spiacevole situazione . Normalmente , dovremmo cercare di fornire soluzioni per supportare alcuni popolari browser obsoleti . Tuttavia, la ragione di esistenza di Webform &egrave; di rendere disponibili alcune tecnologie all'avanguardia . Purtroppo , gli utenti con browser pi&ugrave; vecchi sono quindi sfortunati."
             },
             "msg1": "Ops! Siamo spiacenti, probabilmente sei stato indirizzato qui perch&egrave; il tuo browser non &egrave; aggiornato o alcuni componenti sono disattivati utilizzando la modalit&agrave; ' navigazione privata '.",
             "msg2": "Se stai usando una versione del browser non aggiornata, raccomandiamo di aggiornarla ad una versione recente di uno dei seguente browser pi&ugrave; performanti:"
@@ -306,7 +306,7 @@
         "http404": "Servizio di invio dati server non trovato.",
         "http413": "Dati troppo grandi",
         "http4xx": "Problema di invio sconosciuto sul data server.",
-        "http500": "Il server per il tuo modulo o il server Enketo sono offline. Si prega di riprovare pi&ugrave; tardi o contattare  __supportEmail__."
+        "http500": "Il server per il tuo modulo o il server Webform sono offline. Si prega di riprovare pi&ugrave; tardi o contattare  __supportEmail__."
     },
     "version": "Versione:"
 }

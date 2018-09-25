@@ -85,6 +85,17 @@ define(function (require, exports, module) {
         } );
 
         $( '.side-slider-toggle' ).on( 'click', function() {
+
+            // Smap Apply translations
+            $(".lang", "aside").each(function() {
+                var $this = $(this);
+                var code = $this.data("lang");
+                console.log("code: " + code);
+                if(code) {
+                    $this.html(t(code));
+                }
+            });
+
             var $body = $( 'body' );
             window.scrollTo( 0, 0 );
             $body.toggleClass( 'show-side-slider' );

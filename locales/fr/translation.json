@@ -120,7 +120,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Un enregistrement non sauvegardé a été trouvé",
-            "msg": "Enketo a trouvé un enregistrement non sauvegardé. Voulez-vous charger ses données ou les supprimer ?",
+            "msg": "Webform a trouvé un enregistrement non sauvegardé. Voulez-vous charger ses données ou les supprimer ?",
             "negButton": "Supprimer",
             "posButton": "Charger l'enregistrement"
         },
@@ -134,7 +134,7 @@
             "heading": "PANIQUE!",
             "msg": [
                 "Cela supprimera toutes les données et tous les formulaires de la mémoire du navigateur. Les données seront perdues pour toujours. N'utiliser qu'en dernier ressort si la mémoire du navigateur semble corrompue. ",
-                "Fermer tous les autres onglets Enketo d'abord.",
+                "Fermer tous les autres onglets Webform d'abord.",
                 "La page sera rechargée. Si une erreur apparaît, il pourra être nécessaire de réitérer cette action.",
                 "Êtes-vous sûr de vouloir faire cela ?"
             ],
@@ -240,7 +240,7 @@
     },
     "here": "ici",
     "home": {
-        "msg": "__appTitle__ est lancé ! Merci d'accéder aux formulaires Enketo depuis votre installation __serverName__."
+        "msg": "__appTitle__ est lancé ! Merci d'accéder aux formulaires Webform depuis votre installation __serverName__."
     },
     "langs": {
         "ar": "Arabe",
@@ -270,7 +270,7 @@
             "heading": "Navigateurs modernes",
             "ie": {
                 "heading": "Pourquoi nous n'aimons pas ces versions dangereuses et obsolètes d'Internet Explorer ?",
-                "msg": "Nous comprenons que certaines personnes, en particulier celles travaillant pour de grandes bureaucraties, n'ont pas accès aux meilleurs navigateurs les plus récents. Or, nous savons combien le web peut être formidable en utilisant les bons outils ; c'est pourquoi nous témoignons notre empathie aux utilisateurs qui se trouvent dans cette situation regrettable. Normalement, nous devrions proposer des solutions pour supporter les navigateurs obsolètes les plus populaires. Cependant, la raison d'être d'Enketo est l'existence de technologies d'avant-garde très efficaces. Malheureusement, les utilisateurs de navigateurs plus anciens sont donc malchanceux. "
+                "msg": "Nous comprenons que certaines personnes, en particulier celles travaillant pour de grandes bureaucraties, n'ont pas accès aux meilleurs navigateurs les plus récents. Or, nous savons combien le web peut être formidable en utilisant les bons outils ; c'est pourquoi nous témoignons notre empathie aux utilisateurs qui se trouvent dans cette situation regrettable. Normalement, nous devrions proposer des solutions pour supporter les navigateurs obsolètes les plus populaires. Cependant, la raison d'être d'Webform est l'existence de technologies d'avant-garde très efficaces. Malheureusement, les utilisateurs de navigateurs plus anciens sont donc malchanceux. "
             },
             "msg1": "Oups ! Désolé, vous avez été envoyé ici probablement parce que votre navigateur est obsolète, ou peut-être que certaines fonctionnalités importantes sont désactivées à cause du mode de \"navigation privée\". ",
             "msg2": "Si vous utilisez un navigateur obsolète, nous recommandons de mettre à jour pour une version récente de l'un des excellents navigateurs modernes :"
@@ -322,7 +322,7 @@
         "http404": "Le service de soumission n'a pas été trouvé sur le serveur.",
         "http413": "Les données sont trop volumineuses.",
         "http4xx": "Probème inconnu de soumission sur le serveur.",
-        "http500": "Le serveur de données pour votre formulaire, ou le serveur Enketo, n'est pas accessible. Ré-essayez plus tard ou contactez __supportEmail__."
+        "http500": "Le serveur de données pour votre formulaire, ou le serveur Webform, n'est pas accessible. Ré-essayez plus tard ou contactez __supportEmail__."
     },
     "version": "version :"
 }

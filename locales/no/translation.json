@@ -120,7 +120,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Ulagrede Oppføringer Funnet",
-            "msg": "Enketo har funnet en ulagret oppføring. Vil du laste inn eller forkaste den?",
+            "msg": "Webform har funnet en ulagret oppføring. Vil du laste inn eller forkaste den?",
             "negButton": "Forkast",
             "posButton": "Last inn Oppføring"
         },
@@ -134,7 +134,7 @@
             "heading": "PANIKK!",
             "msg": [
                 "Dette vil fjerne all data i køen og alle skjemaene som er lagret i nettleseren din. Data blir slettet for alltid. Bruk dette bare som en siste utvei hvis lagringen til nettleseren virker ødelagt. ",
-                "Steng alle andre nettleserfaner med Enketo først.",
+                "Steng alle andre nettleserfaner med Webform først.",
                 "Denne siden vil bli lastet inn på nytt. Hvis du ser en feilmelding kan det hende du må gjenta dette.",
                 "Er du sikker på at du vil gjøre dette?'"
             ],
@@ -228,7 +228,7 @@
     },
     "here": "her",
     "home": {
-        "msg": "__appTitle__ kjører! Vennligst åpne Enketo-skjemaer fra din __serverName__-installasjon."
+        "msg": "__appTitle__ kjører! Vennligst åpne Webform-skjemaer fra din __serverName__-installasjon."
     },
     "langs": {
         "ar": "Arabisk",
@@ -258,7 +258,7 @@
             "heading": "Moderne Nettlesere",
             "ie": {
                 "heading": "Hvorfor viser vi ingen kjærlighet for de slemme, udaterte versjonene av Internet Explorer?",
-                "msg": "Vi forstår at noen mennesker, spesielt de som jobber for større byråkratier, ikke har tilgang til den beste og nyeste nettleserene. Fordi vi vet hvor fantastisk internet kan være med de riktige verktøyene føler vi med alle brukere i slike uheldige situasjoner. Normalt hadde vi forsøkt å tilby midlertidige løsninger for å støtte noen populære, utdaterte nettlesere, men Enketo eksisterer på grunn av tilgjengeligheten til noen veldig flotte, moderne teknologier. Dessverre er dette derfor ikke noe man kan bruke med eldre nettlesere."
+                "msg": "Vi forstår at noen mennesker, spesielt de som jobber for større byråkratier, ikke har tilgang til den beste og nyeste nettleserene. Fordi vi vet hvor fantastisk internet kan være med de riktige verktøyene føler vi med alle brukere i slike uheldige situasjoner. Normalt hadde vi forsøkt å tilby midlertidige løsninger for å støtte noen populære, utdaterte nettlesere, men Webform eksisterer på grunn av tilgjengeligheten til noen veldig flotte, moderne teknologier. Dessverre er dette derfor ikke noe man kan bruke med eldre nettlesere."
             },
             "msg1": "Au! Unnskyld, du ble mest sannsynlig sendt hit fordi nettleseren din er utdatert eller kanskje fordi noen viktige funksjoner har blitt skrudd av i \"privat surfing\" modus.",
             "msg2": "Hvis du bruker en utdatert nettleser anbefaler vi at du oppgraderer til en nyere versjon av en av disse følgende utmerkede moderne nettleserne:"
@@ -306,7 +306,7 @@
         "http404": "Innsendingsservice på dataserveren ble ikke funnet.",
         "http413": "Dataen er for stor.",
         "http4xx": "Ukjent problem ved sending til dataserver.",
-        "http500": "Dataserveren for ditt skjema eller Enketo-serveren er nede. Vennligst prøv igjen senere eller kontakt __supportEmail__."
+        "http500": "Dataserveren for ditt skjema eller Webform-serveren er nede. Vennligst prøv igjen senere eller kontakt __supportEmail__."
     },
     "version": "Versjon:"
 }

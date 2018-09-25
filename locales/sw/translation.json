@@ -139,7 +139,7 @@
             "heading": "Hatari!",
             "msg": [
                 "Hatua hii itasababisha kuondolewa kwa data yako yote iliyo kwenye foleni na fomu zako zote kutoka kwenye Kivinjari Wavuti. Utapoteza data yako kabisa. Chukua hatua hii kama hifadhi ya kivinjari imevurugika.",
-                "Funga kivinjari zote za Enketo kwanza.",
+                "Funga kivinjari zote za Webform kwanza.",
                 "ukurasa huu utaonyeshwa upya. Ukiona kosa, rudia hatua hii.",
                 "Una uhakika unataka kufanya hivi?"
             ],
@@ -248,7 +248,7 @@
     },
     "here": "hapa",
     "home": {
-        "msg": "__appTitle__ bado liko tendeshi. Tafadhali tumia Enketo fomu zako kupitia usakinishaji uitwao __serverName__."
+        "msg": "__appTitle__ bado liko tendeshi. Tafadhali tumia Webform fomu zako kupitia usakinishaji uitwao __serverName__."
     },
     "langs": {
         "ar": "Kiarabu",
@@ -280,7 +280,7 @@
             "heading": "Browser za kisasa",
             "ie": {
                 "heading": "Kwanini hatupendi kivinjari wavuti za kale za Internet Explorer?",
-                "msg": "Tunaelewa ya kwamba watu wengine, haswa wale wafanyao kwenye urasimu mkubwa, hawana njia ya kupata vivinjari vya kisasa. Kwa sababu tunafahamu vile mtandao unaweza kuwa wa manufaa ukitumika na vifaa vifaavyo, tunawasikitikia sana wale walio kwenye hali hii. Kwa kawaida tungejaribu kutafuta njia nyingine za kuwawezesha kutumia vivnjari vya kale lakini Enketo iko ilivyo sasa kwa sababu ya kuwepo kwa teknolojia ya hali ya juu. Kwa sababu hii, tunasikitika watumizi wa vivinjari vya kale hawataweza kuitumia."
+                "msg": "Tunaelewa ya kwamba watu wengine, haswa wale wafanyao kwenye urasimu mkubwa, hawana njia ya kupata vivinjari vya kisasa. Kwa sababu tunafahamu vile mtandao unaweza kuwa wa manufaa ukitumika na vifaa vifaavyo, tunawasikitikia sana wale walio kwenye hali hii. Kwa kawaida tungejaribu kutafuta njia nyingine za kuwawezesha kutumia vivnjari vya kale lakini Webform iko ilivyo sasa kwa sababu ya kuwepo kwa teknolojia ya hali ya juu. Kwa sababu hii, tunasikitika watumizi wa vivinjari vya kale hawataweza kuitumia."
             },
             "msg1": "Samahani, umeelekezwa hapa kwa sababu kivinjari wavuti unayotumia ni ya kale au huenda ikawa kipengele kinachohitajika hakipatikani kwenye hali-tumizi hii.",
             "msg2": "Ikiwa unatumia kivinjari wavuti ya kale, tunapendekeza utafute Kivinjari Wavuti la kisasa."
@@ -333,7 +333,7 @@
         "http408": "Data server timed out.",
         "http413": "Data ni kubwa mno.",
         "http4xx": "Data seva ina utata wakuwasilisha data tusioujua.",
-        "http500": "Hatukuweza kuwasiliana na data seva iliyo na fomu yako au seva ya Enketo. Tafadhali jaribu tena baadaye au wasiliana nasi kupitia __supportEmail__.",
+        "http500": "Hatukuweza kuwasiliana na data seva iliyo na fomu yako au seva ya Webform. Tafadhali jaribu tena baadaye au wasiliana nasi kupitia __supportEmail__.",
         "http504": "Could not establish connection with data server."
     },
     "version": "toleo:",

@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Nicht gespeicherter Datensatz gefunden",
-            "msg": "Enketo hat einen nicht gespeicherten Datensatz gefunden. Möchten Sie diesen Datensatz laden oder verwerfen?",
+            "msg": "Webform hat einen nicht gespeicherten Datensatz gefunden. Möchten Sie diesen Datensatz laden oder verwerfen?",
             "negButton": "Löschen",
             "posButton": "Datensatz laden"
         },
@@ -139,7 +139,7 @@
             "heading": "ACHTUNG!",
             "msg": [
                 "Hierdurch werden alle Ihre Daten in der Warteschlange und alle Ihre Formulare aus dem Browserspeicher entfernt. Die Daten sind dann für immer verloren. Verwenden Sie diese Funktion nur als letzte Option wenn der Browserspeicher beschädigt wurde.",
-                "Schließen Sie zuerst alle anderen Enketo Tabs.",
+                "Schließen Sie zuerst alle anderen Webform Tabs.",
                 "Die Seite wird neu geladen. Wenn Sie einen Fehler sehen, müssen Sie diese Aktion wiederholen.",
                 "Sind Sie sicher, dass Sie dies tun wollen?"
             ],
@@ -265,7 +265,7 @@
     },
     "here": "hier",
     "home": {
-        "msg": "__appTitle__ läuft! Bitte besuchen Sie Enketo Formulare von Ihrer __serverName__ Installation."
+        "msg": "__appTitle__ läuft! Bitte besuchen Sie Webform Formulare von Ihrer __serverName__ Installation."
     },
     "imagemap": {
         "svgNotFound": "SVG Bild konnte nicht gefunden werden"
@@ -288,7 +288,9 @@
         "nl": "Niederländisch",
         "no": "Norwegisch",
         "pl": "Polnisch",
+        "pt": "Portugiesisch ",
         "ro": "Rumänisch",
+        "ru": "Russisch",
         "sk": "Slowakisch",
         "supported": "Unterstützte Sprachen:",
         "sv": "Schwedisch",
@@ -302,7 +304,7 @@
             "heading": "Moderne Browser",
             "ie": {
                 "heading": "Warum wir die bösen veralteten Versionen von Internet Explorer nicht lieben?",
-                "msg": "Wir verstehen, dass einige Leute, vor allem diejenigen, die für große Institutionen arbeiten, keinen Zugang zu den neuesten und besten Browsern haben. Da wir wissen, wie großartig das Web mit den richtigen Programmen sein könnte, haben wir großes Mitgefühl für Benutzer in dieser traurigen Lage. Normalerweise würden wir versuchen, provisorische Lösungen bereitzustellen um einige beliebte veralteten Browser zu unterstützen. Allerdings existiert Enketo um mehrere nagelneue Technologien zu verwenden. Leider haben die Benutzer dieser ältereren Browser daher kein Glück."
+                "msg": "Wir verstehen, dass einige Leute, vor allem diejenigen, die für große Institutionen arbeiten, keinen Zugang zu den neuesten und besten Browsern haben. Da wir wissen, wie großartig das Web mit den richtigen Programmen sein könnte, haben wir großes Mitgefühl für Benutzer in dieser traurigen Lage. Normalerweise würden wir versuchen, provisorische Lösungen bereitzustellen um einige beliebte veralteten Browser zu unterstützen. Allerdings existiert Webform um mehrere nagelneue Technologien zu verwenden. Leider haben die Benutzer dieser ältereren Browser daher kein Glück."
             },
             "msg1": "Autsch! Leider wurden Sie wahrscheinlich hierher geschickt, weil Ihr Browser veraltet ist. Oder vielleicht haben Sie einige Browserfunktionen mit Hilfe des \"Privates Surfen\" deaktiviert.",
             "msg2": "Wenn Sie einen veralteten Browser verwenden, empfehlen wir Ihnen ein Upgrade auf eine neuere Version eines der folgenden ausgezeichneten modernen Browser:"
@@ -323,6 +325,10 @@
             "submit": "Senden",
             "username": "Benutzername"
         }
+    },
+    "rankwidget": {
+        "clickstart": "Klicken Sie, um zu beginnen",
+        "tapstart": "Tippen Sie, um zu beginnen"
     },
     "record-list": {
         "export": "Exportieren",
@@ -355,7 +361,7 @@
         "http408": "Datenserver Verbindung nach Wartezeit abgebrochen.",
         "http413": "Datenmenge ist zu groß.",
         "http4xx": "Unbekanntes Sendeproblem auf Datenserver.",
-        "http500": "Der Datenserver für das Formular oder der Enketo Server sind ausgefallen. Bitte versuchen Sie es später noch einmal oder kontaktieren __supportEmail__",
+        "http500": "Der Datenserver für das Formular oder der Webform Server sind ausgefallen. Bitte versuchen Sie es später noch einmal oder kontaktieren __supportEmail__",
         "http504": "Verbindung zum Datenserver konnte nicht hergestellt werden."
     },
     "version": "Version:",

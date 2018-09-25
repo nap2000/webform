@@ -125,7 +125,7 @@
     "confirm": {
         "autosaveload": {
             "heading": "Nalezen Neuložený Záznam",
-            "msg": "Enketo našlo neuložený záznam. Chtěli byste nahrát tento záznam, nebo jej odstranit?",
+            "msg": "Webform našlo neuložený záznam. Chtěli byste nahrát tento záznam, nebo jej odstranit?",
             "negButton": "Vymazat",
             "posButton": "Načti Záznam"
         },
@@ -139,7 +139,7 @@
             "heading": "PANIKA!",
             "msg": [
                 "Tímto odstranit všechny vaše data čekající na odeslání a vaše formuláře z úložiště prohlížeče. Data budou permanentně vymazány. Použijte tuto možnost pouze jako poslední alternativu v případě, že úložiště prohlížeče se zdá být poškozené.",
-                "Nejdřív zavřete všechny ostatní záložky prohlížeče, které Enketo používá.",
+                "Nejdřív zavřete všechny ostatní záložky prohlížeče, které Webform používá.",
                 "Tato stránka bude znovu načtena. Pokud vidíte chybovou hlášku, může být nezbytné tuto akci zopakovat.",
                 "Jste si jisti, že to chcete udělat?"
             ],
@@ -248,7 +248,7 @@
     },
     "here": "tady",
     "home": {
-        "msg": "__appTitle__ běží! Prosím přistupujte k Enketo formulářům z instalace vašeho __serverName__."
+        "msg": "__appTitle__ běží! Prosím přistupujte k Webform formulářům z instalace vašeho __serverName__."
     },
     "langs": {
         "ar": "Arabština",
@@ -281,7 +281,7 @@
             "heading": "Moderní Prohlížeče",
             "ie": {
                 "heading": "No nemilujte tyto zákeřné zastaralé verze Internet Exploreru?",
-                "msg": "Chápeme, že někteří lidé, zejména ti, kteří pracují pro velké byrokracie, nemají přístup k nejnovějším a nejlepším prohlížečů. Protože víme, jaký skvělý by web mohl být s těmi správnými nástroji, máme velkou empatii pro uživatele v této nešťastné situaci. Za normálních okolností bychom se snažili poskytnout řešení pro podporu některých populární zastaralých prohlížečů. Nicméně jeden z důvodů, proč Enketo existuje, je dostupnost některých moderních špičkových technologií. Bohužel, uživatelé starších prohlížečů mají tedy smůlu."
+                "msg": "Chápeme, že někteří lidé, zejména ti, kteří pracují pro velké byrokracie, nemají přístup k nejnovějším a nejlepším prohlížečů. Protože víme, jaký skvělý by web mohl být s těmi správnými nástroji, máme velkou empatii pro uživatele v této nešťastné situaci. Za normálních okolností bychom se snažili poskytnout řešení pro podporu některých populární zastaralých prohlížečů. Nicméně jeden z důvodů, proč Webform existuje, je dostupnost některých moderních špičkových technologií. Bohužel, uživatelé starších prohlížečů mají tedy smůlu."
             },
             "msg1": "Ach! Promiňte, ale pravděpodobně jste se byli přesměrováni protože váš prohlížeč je zastaralý, nebo jej používáte v režimu 'ochrany soukromí' a tudíž jsou určité klíčové funkce nedostupné.",
             "msg2": "Pokud používáte zastaralý prohlížeč, doporučujeme upgrade na nejnovější verzi jednoho z následujících vynikajících moderních prohlížečů:"
