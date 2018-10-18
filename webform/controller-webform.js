@@ -47,8 +47,8 @@ define(function (require, exports, module) {
 
         setTimeout( function() {
             /*
-  * Add check prior to the user leaving the screen
-  */
+             * Add check prior to the user leaving the screen
+             */
             window.onbeforeunload = function () {
                 if (hasChanged()) {
                     return "You have unsaved changes. Are you sure you want to leave?";
@@ -707,7 +707,9 @@ define(function (require, exports, module) {
                             blob = dataURLtoBlob(media[fileIndex].dataUrl);
                             name = media[fileIndex].name;
                         } else {
-                            console.log("++++++++++ File not found: " + media[fileIndex].name);
+                            // Assume the media file is the blob
+                            blob = media[fileIndex];
+                            name = blob.name;
                         }
 
                         console.log("++++++++++ append file: " + name);

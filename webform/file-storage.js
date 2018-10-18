@@ -73,23 +73,6 @@ define( function( require, exports, module ) {
         return false;
     }
 
-    /**
-     * Obtain files currently stored in file input elements of open record
-     * @return {[File]} array of files
-     */
-    function getCurrentFiles() {
-        var file,
-            files = [];
-
-        // first get any files inside file input elements
-        $('form.or input[type="file"]').each(function () {
-            file = this.files[0];
-            if (file) {
-                files.push(file);
-            }
-        });
-        return files;
-    }
 
     /**
      * Whether the file is too large too handle and should be rejected
@@ -270,7 +253,6 @@ define( function( require, exports, module ) {
         isSupported: isSupported,
         isWaitingForPermissions: isWaitingForPermissions,
         init: init,
-        getCurrentFiles: getCurrentFiles,
         deleteAllAttachments: deleteAllAttachments,
         deleteDir: deleteDir,
         getCurrentQuota: getCurrentQuota,

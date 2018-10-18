@@ -11,7 +11,6 @@ require( 'enketo/polyfills-ie11' );
 var $ = require( 'jquery' );
 var support = require( './src/js/support' );
 var Form = require( './src/js/Form' );
-var fileManager = require( './src/js/file-manager' );
 var loadErrors;
 var form;
 var formStr;
@@ -56,8 +55,6 @@ $( '#validate-form' ).on( 'click', function() {
             } else {
                 window.alert( 'Form is valid! (see XML record and media files in the console)' );
                 $( 'form.or' ).trigger( 'beforesave' );
-                console.log( 'record:', form.getDataStr() );
-                console.log( 'media files:', fileManager.getCurrentFiles() );
             }
         } );
 } );
