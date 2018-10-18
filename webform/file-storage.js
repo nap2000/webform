@@ -106,7 +106,7 @@ define( function( require, exports, module ) {
      */
     function _getMaxSize() {
         if (!maxSize) {
-            maxSize = $(document).data('maxSubmissionSize') || 5 * 1024 * 1024;
+            maxSize = $(document).data('maxSubmissionSize') || 100 * 1024 * 1024;
         }
         return maxSize;
     }
@@ -115,8 +115,7 @@ define( function( require, exports, module ) {
      * Functions for managing storage of media files
      */
     /**
-     * Deletes all files stored (for a subsubdomain)
-     * @param {Function=} callbackComplete  function to call when complete
+     * Deletes all stored files
      */
     function deleteAllAttachments () {
 
@@ -124,6 +123,11 @@ define( function( require, exports, module ) {
 
         for (var key in localStorage){
             if(key.startsWith(FM_STORAGE_PREFIX)) {
+                var item = localStorage.getItem(key);
+                if(item) {
+                    console.log("Revoke URL: " + item);
+                    window.URL.revokeObjectURL(item);
+                }
                 console.log("Delete item: " + key);
                 localStorage.removeItem(key);
             }
@@ -184,6 +188,12 @@ define( function( require, exports, module ) {
 
             for (var key in localStorage) {
                 if (key.startsWith(FM_STORAGE_PREFIX + "/" + name)) {
+
+                    var item = localStorage.getItem(key);
+                    if(item) {
+                        console.log("Revoke URL: " + item);
+                        window.URL.revokeObjectURL(item);
+                    }
                     console.log("Delete item: " + key);
                     localStorage.removeItem(key);
                 }
@@ -200,72 +210,15 @@ define( function( require, exports, module ) {
 
         console.log("save file: " + media.name + " : " + dirname);
         try {
-            localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl );
+            //localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl );
+            var objectUrl = window.URL.createObjectURL(media);
+            console.log("^^^^^^^^^^^ " + objectUrl);
+            localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, objectUrl);
         }
         catch(err) {
              alert("Error: " + err.message);
         }
 
-
-        /*
-         filesystemReady.done(function () {
-         var filePath = _getDirPrefix(instanceId) + file.name;
-         console.log('saving file with url: ' + filePath);
-         fs.root.getFile(
-         filePath, {
-         create: true,
-         exclusive: false
-         },
-         function (fileEntry) {
-         fileEntry.createWriter(function (fileWriter) {
-         fileWriter.write(file.file);
-         fileWriter.onwriteend = function (e) {
-         console.log("Write end");
-         if (e.total === e.loaded) {
-         setCurrentQuotaUsed();
-         console.log('complete file stored, with persistent url:' + fileEntry.toURL());
-         if (callbacks.success) {
-         callbacks.success(fileEntry.toURL());
-         }
-         }
-         };
-         fileWriter.onerror = function (e) {
-         console.log("Error");
-         console.log(e);
-         var newBytesRequest,
-         targetError = e.target.error;
-         if (targetError instanceof FileError && targetError.code === window.FileError.QUOTA_EXCEEDED_ERR) {
-         newBytesRequest = ( ( e.total * 5 ) < DEFAULTBYTESREQUESTED ) ? currentQuota + DEFAULTBYTESREQUESTED : currentQuota + ( 5 * e.total );
-         console.log('Required storage exceeding quota, going to request more, in bytes: ' + newBytesRequest);
-         requestQuota(
-         newBytesRequest, {
-         success: function (bytes) {
-         console.log('request for additional quota approved! (quota: ' + bytes + ' bytes)');
-         currentQuota = bytes;
-         saveFile(file, callbacks);
-         },
-         error: callbacks.error
-         }
-         );
-         } else {
-         callbacks.error(e);
-         }
-         };
-         }, callbacks.error);
-         },
-         callbacks.error
-         );
-         });
-         */
-    };
-
-    /**
-     * returns dir prefix to be use to build a filesystem path
-     * @param  {string=} dirName the dirName to use if provided, otherwise the current directory name is used
-     * @return {string} returns the path prefix or '/' (root)
-     */
-    function _getDirPrefix(dirName) {
-        return ( dirName ) ? '/' + dirName + '/' : ( currentDir ) ? '/' + currentDir + '/' : '/';
     };
 
     /**
@@ -275,16 +228,35 @@ define( function( require, exports, module ) {
      */
     function retrieveFile(dirname, file) {
 
+        var deferred = Q.defer();
+        var updatedFile = {
+            fileName: file.fileName
+        };
+
         var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + file.fileName;
+        var objectUrl = localStorage.getItem( key );
+        var blob;
 
-        file.dataUrl = localStorage.getItem( key );
-        if(file.dataUrl) {
-            file.size = file.dataUrl.length;
-        } else {
-            file.size = 0;
-        }
-        return file;
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', objectUrl, true);
+        xhr.responseType = 'blob';
+        xhr.onreadystatechange = function(e) {
 
+            if (xhr.readyState !== 4) {
+                return;
+            }
+
+            if (this.status == 200) {
+                updatedFile.blob = this.response;
+                updatedFile.size = this.response.size;
+                deferred.resolve(updatedFile);
+            } else {
+                deferred.resolve(updatedFile);
+            }
+        };
+        xhr.send(null);
+
+        return deferred.promise;
 
     };
 

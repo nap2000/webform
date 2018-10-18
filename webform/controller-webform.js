@@ -143,7 +143,7 @@ define(function (require, exports, module) {
                     '<ul class="record-list"></ul>' +
                     '<div class="button-bar">' +
                     //'<button class="btn btn-default export-records">Export</button>' +
-                    '<button class="btn btn-primary upload-records lang" data-lang="record-list.upload" ' +
+                    '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
                     'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
                     '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
                     'style="' + btnstyle + '">Delete</button>' +
@@ -646,36 +646,47 @@ define(function (require, exports, module) {
 
             $fileNodes = ( fileManager ) ? model.$.find('[type="file"]').removeAttr('type') : [];
 
-            if ($fileNodes.length > 0) {
+            var todo = [];
+            if (fileManager) {
                 $fileNodes.each(function () {
-
-
                     fileO = {
                         fileName: $(this).text()
                     };
 
-                    var fileObj = fileManager.retrieveFile(directory, fileO);
-                    count++;
-                    if (fileObj) {
-                        media.push(fileObj);
-                        sizes.push(fileObj.size);
-                    } else {
-                        // Smap allow for file not to be found, as we could be be editing an existing record and the image was not replaced
-                        //failedFiles.push( fileO.fileName );
-                    }
-                    if (count == $fileNodes.length) {
-                        distributeFiles();
-                    }
+                    todo.push(fileManager.retrieveFile(directory, fileO));
 
-                });
-            } else {
-                recordPrepped = basicRecordPrepped(1, 0);
-                callbacks.success(recordPrepped);
+                }).toArray();
             }
+
+            return Promise.all( todo )
+                .then( function(values) {
+                    if (values.length > 0) {
+
+                        var i;
+                        var notfound = [];
+                        for(i = 0; i < values.length; i++) {
+
+                            if(values[i].blob) {
+                                media.push(values[i]);
+                                sizes.push(values[i].size);
+                            } else {
+                                notfound.push(values[i].fileName);
+                            }
+                        }
+                        if(notfound.length > 0) {
+                            alert("Cound not find the following files: " + notfound.join(""));
+                        }
+                        distributeFiles();
+                    } else {
+                        recordPrepped = basicRecordPrepped(1, 0);
+                        callbacks.success(recordPrepped);
+                    }
+                })
         }
 
         function distributeFiles() {
-            var maxSize = connection.getMaxSubmissionSize();
+            //var maxSize = connection.getMaxSubmissionSize();
+            var maxSize = 100 * 1024 * 1024;
             if (media.length > 0) {
                 batches = divideIntoBatches(sizes, maxSize);
                 console.log('splitting record into ' + batches.length + ' batches to reduce submission size ');
@@ -685,12 +696,21 @@ define(function (require, exports, module) {
                         fileIndex = batches[k][l];
                         //recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
                         var blob;
-                        if (media[fileIndex].dataUrl) {
+                        var name;
+                        if(media[fileIndex].blob) {
+                            blob = media[fileIndex].blob;
+                            name = media[fileIndex].fileName;
+                        } else if (media[fileIndex].dataUrl) {
+                            // immediate send data is still in dataUrl
                             blob = dataURLtoBlob(media[fileIndex].dataUrl);
+                            name = media[fileIndex].name;
                         } else {
-                            blob = media[fileIndex];
+                            blob = new Blob(media[fileIndex]);
+                            name = media[fileIndex].name;
                         }
-                        recordPrepped.formData.append(media[fileIndex].name, blob, media[fileIndex].name);
+
+                        console.log("++++++++++ append file: " + name);
+                        recordPrepped.formData.append(name, blob, name);
                     }
                     callbacks.success(recordPrepped);
                 }
