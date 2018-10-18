@@ -272,16 +272,18 @@ define(function (require, exports, module) {
 
 
                         // Save any media
+                        var getFileClosure = function(i) {
+                            ecFm.getFileUrl(media[i]).then(function(url) {
+                                media[i].dataUrl = url;
+                                fileManager.saveFile(media[i], dirname);
+                            });
+                        }
                         var dirname = "/" + form.getInstanceID();
                         if (media.length > 0) {
                             fileManager.deleteDir(dirname);        // Remove any existing media
                             for (i = 0; i < media.length; i++) {
                                 if(!media[i].dataUrl) {
-                                    ecFm.getFileUrl(media[i]).then(function(url) {
-                                        var m = media[i];
-                                        m.dataUrl = url;
-                                        fileManager.saveFile(m, dirname);
-                                    });
+                                    getFileClosure(i, media[i]);
                                 } else {
                                     fileManager.saveFile(media[i], dirname);
                                 }
@@ -695,8 +697,8 @@ define(function (require, exports, module) {
                     for (l = 0; l < batches[k].length; l++) {
                         fileIndex = batches[k][l];
                         //recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
-                        var blob;
-                        var name;
+                        var blob = undefined;
+                        var name = undefined;
                         if(media[fileIndex].blob) {
                             blob = media[fileIndex].blob;
                             name = media[fileIndex].fileName;
@@ -705,12 +707,13 @@ define(function (require, exports, module) {
                             blob = dataURLtoBlob(media[fileIndex].dataUrl);
                             name = media[fileIndex].name;
                         } else {
-                            blob = new Blob(media[fileIndex]);
-                            name = media[fileIndex].name;
+                            console.log("++++++++++ File not found: " + media[fileIndex].name);
                         }
 
                         console.log("++++++++++ append file: " + name);
-                        recordPrepped.formData.append(name, blob, name);
+                        if(blob) {
+                            recordPrepped.formData.append(name, blob, name);
+                        }
                     }
                     callbacks.success(recordPrepped);
                 }
