@@ -64,7 +64,6 @@ fileManager.getFileUrl = function( subject ) {
             var file = {
                 fileName: subject
             }
-            //store.retrieveFile(dirname, file);   // Attempt to get a saved file first
             if (file.dataUrl) {
                 resolve(file.dataUrl);
             } else {
