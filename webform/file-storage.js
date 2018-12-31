@@ -117,6 +117,16 @@ define( function( require, exports, module ) {
         }
     };
 
+    function getAllAttachments () {
+        var files = [];
+        for (var key in localStorage) {
+            if (key.startsWith(FM_STORAGE_PREFIX)) {
+                files.push(key);
+            }
+        }
+        return files;
+    }
+
 
     function getCurrentQuota() {
         return currentQuota;
@@ -258,6 +268,7 @@ define( function( require, exports, module ) {
         getCurrentQuota: getCurrentQuota,
         getCurrentQuotaUsed: getCurrentQuotaUsed,
         saveFile: saveFile,
+        getAllAttachments: getAllAttachments,
         retrieveFile: retrieveFile
     };
 

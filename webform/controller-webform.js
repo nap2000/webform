@@ -52,6 +52,8 @@ define(function (require, exports, module) {
             window.onbeforeunload = function () {
                 if (hasChanged()) {
                     return "You have unsaved changes. Are you sure you want to leave?";
+                } else if(fileManager.getAllAttachments().length > 0) {
+                    return "Some of the saved results that have not been submitted contain attached files.  These will be lost if you leave. Are you sure you want to leave?";
                 }
             };
 
@@ -648,8 +650,10 @@ define(function (require, exports, module) {
 
             $fileNodes = ( fileManager ) ? model.$.find('[type="file"]').removeAttr('type') : [];
 
+
             var todo = [];
             if (fileManager) {
+                var xxx = fileManager.getAllAttachments();
                 $fileNodes.each(function () {
                     fileO = {
                         fileName: $(this).text()

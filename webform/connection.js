@@ -222,7 +222,7 @@ define( function( require, exports, module ) {
         	$( document ).trigger( 'submissioncomplete' );
         	var responseMsg;
         	var preamble = '{"status": "error","message": ';
-        	if(jqXHR.responseText.indexOf(preamble) == 0) {
+        	if(jqXHR.responseText && jqXHR.responseText.indexOf(preamble) == 0) {   // smap check for response text
         	    responseMsg = jqXHR.responseText.substring(preamble.length + 1, jqXHR.responseText.length - 2);
             }
         	_processOpenRosaResponse( jqXHR.status,
@@ -255,6 +255,7 @@ define( function( require, exports, module ) {
             $( document ).trigger( 'submissionstart' );
 
             var url = getSubmissionUrl(record);		// Get the url for this record
+            console.debug("Submit: " + url);
             $.ajax( url, {
                 type: 'POST',
                 data: content,
