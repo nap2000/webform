@@ -47,14 +47,13 @@ require( 'leaflet.gridlayer.googlemutant' );
 
 function Geopicker( element, options ) {
     this.namespace = pluginName;
-        // Start smap - get google api key from server
-        var smapGoogleApiKey;
-        if(typeof smapConfig === "undefined") {
-                smapGoogleApiKey = $('#googleApiKey').text();
-        } else {
-                smapGoogleApiKey = smapConfig.googleApiKey;
-        }
-        // end smap
+
+    // Start smap - get google api key from server
+    if(typeof smapConfig !== "undefined") {
+        googleApiKey = smapConfig.googleApiKey;
+    }
+    // end smap
+    
     // call the super class constructor
     Widget.call( this, element, options );
 
