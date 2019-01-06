@@ -6,11 +6,10 @@
  */
 'use strict';
 
-require( 'enketo/polyfills-ie11' );
-
-var $ = require( 'jquery' );
-var support = require( './src/js/support' );
-var Form = require( './src/js/Form' );
+import $ from 'jquery';
+import support from './src/js/support';
+import { Form } from './src/js/form';
+import fileManager from './src/js/file-manager';
 var loadErrors;
 var form;
 var formStr;

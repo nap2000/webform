@@ -1,9 +1,6 @@
-'use strict';
-
-var Widget = require( '../../js/Widget' );
-var $ = require( 'jquery' );
-var pluginName = 'datepickerNative';
-var support = require( '../../js/support' );
+import Widget from '../../js/widget';
+import support from '../../js/support';
+import { elementDataStore as data } from '../../js/dom-utils';
 
 /**
  * The whole purpose of this widget is to hide the placeholder text on native date inputs
@@ -13,46 +10,20 @@ var support = require( '../../js/support' );
  * The placeholder is considered particularly unhelpful for month-year and year appearances. 
  * For consistency it's also removed from regular date inputs.
  * 
- * @constructor
- * @param {Element}                       element   Element to apply widget to.
- * @param {*}    options   options
- * @param {*=}                            event     event
  */
 
-function DatepickerNative( element, options ) {
-    this.namespace = pluginName;
-    Widget.call( this, element, options );
-    this._init();
+class DatepickerNative extends Widget {
+    static get selector() {
+        return 'input[type="date"]';
+    }
+    static condition( element ) {
+        // Do not instantiate if DatepickerExtended was instantiated on element or if mobile device is used.
+        return !data.has( element, 'DatepickerExtended' ) && !support.touch;
+    }
+    _init() {
+        this.element.type = 'text';
+        this.element.classList.add( 'mask-date' );
+    }
 }
 
-DatepickerNative.prototype = Object.create( Widget.prototype );
-DatepickerNative.prototype.constructor = DatepickerNative;
-
-/**
- * Initialize datepicker widget
- */
-DatepickerNative.prototype._init = function() {
-    this.element.type = 'text';
-    this.element.classList.add( 'mask-date' );
-};
-
-$.fn[ pluginName ] = function( options, event ) {
-
-    options = options || {};
-
-    return this.each( function() {
-        var $this = $( this );
-        var dp = $this.data( 'datepickerExtended' );
-        var data = $this.data( pluginName );
-
-        // If no datepickerExtended widget is present on the same element
-        if ( !dp && typeof options === 'object' && !data && !support.touch ) {
-            $this.data( pluginName, new DatepickerNative( this, options, event ) );
-        }
-    } );
-};
-
-module.exports = {
-    'name': pluginName,
-    'selector': 'input[type="date"]'
-};
+export default DatepickerNative;

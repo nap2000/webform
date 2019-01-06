@@ -1,7 +1,2 @@
-'use strict';
-
-var pluginName = 'notewidget';
-
-module.exports = {
-    'name': pluginName
-};
+// Since this class has no static selector getter, there will be no attempt to instantiate it.
+export default class NoteWidget {}

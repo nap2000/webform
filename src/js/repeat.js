@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Repeats module.
  * 
@@ -11,18 +9,19 @@
  * may have multiple series.
  */
 
-var $ = require( 'jquery' );
-var config = require( 'enketo/config' );
-var disableFirstRepeatRemoval = config.repeatOrdinals === true;
+import $ from 'jquery';
 
-module.exports = {
+import config from 'enketo/config';
+const disableFirstRepeatRemoval = config.repeatOrdinals === true;
+
+export default {
     /**
      * Initializes all Repeat Groups in form (only called once).
      * @param  {Form} form the parent form object
      */
-    init: function() {
-        var that = this;
-        var $repeatInfos;
+    init() {
+        const that = this;
+        let $repeatInfos;
 
         if ( !this.form ) {
             throw new Error( 'Repeat module not correctly instantiated with form property.' );
@@ -44,9 +43,7 @@ module.exports = {
         $repeatInfos.filter( '*:not([data-repeat-fixed]):not([data-repeat-count])' )
             .append( '<button type="button" class="btn btn-default add-repeat-btn"><i class="icon icon-plus"> </i></button>' )
             .siblings( '.or-repeat' )
-            .append( '<div class="repeat-buttons">' +
-                '<button type="button" ' + ( disableFirstRepeatRemoval ? ' disabled ' : ' ' ) +
-                'class="btn btn-default remove"><i class="icon icon-minus"> </i></button></div>' );
+            .append( `<div class="repeat-buttons"><button type="button" ${disableFirstRepeatRemoval ? ' disabled ' : ' '}class="btn btn-default remove"><i class="icon icon-minus"> </i></button></div>` );
         /**
          * The model also requires storing repeat templates for repeats that do not have a jr:template.
          * Since the model has no knowledge of which node is a repeat, we direct this here.
@@ -62,9 +59,11 @@ module.exports = {
          * Widgets not yet initialized. Values not yet set.
          */
         $repeatInfos.siblings( '.or-repeat' ).reverse().each( function() {
-            var $templateEl = $( this ).remove();
-            var xPath = $templateEl.attr( 'name' );
-            that.templates[ xPath ] = $templateEl[ 0 ];
+            const templateEl = this.cloneNode( true );
+            const xPath = templateEl.getAttribute( 'name' );
+            this.remove();
+            $( templateEl ).removeClass( 'contains-current current' ).find( '.current' ).removeClass( 'current' );
+            that.templates[ xPath ] = templateEl;
         } );
 
         $repeatInfos.filter( '*:not([data-repeat-count])' ).reverse()
@@ -94,20 +93,47 @@ module.exports = {
 
         this.countUpdate();
     },
+    /*
+     * Obtains the absolute index of the provided repeat or repeat-info element
+     * The goal of this function is to make non-nested repeat index determination as fast as possible.
+     */
+    getIndex( el ) {
+        if ( !el || !this.form.repeatsPresent ) {
+            return 0;
+        }
+        let checkEl = el.parentElement.closest( '.or-repeat' );
+        const info = el.classList.contains( 'or-repeat-info' );
+        let count = info ? 1 : Number( el.querySelector( '.repeat-number' ).textContent );
+        let name;
+        while ( checkEl ) {
+            while ( checkEl.previousElementSibling && checkEl.previousElementSibling.matches( '.or-repeat' ) ) {
+                checkEl = checkEl.previousElementSibling;
+                if ( info ) {
+                    count++;
+                } else {
+                    name = name || el.getAttribute( 'name' );
+                    count += checkEl.querySelectorAll( `.or-repeat[name="${name}"]` ).length;
+                }
+            }
+            const parent = checkEl.parentElement;
+            checkEl = parent ? parent.closest( '.or-repeat' ) : null;
+        }
+        return count - 1;
+    },
     /**
      * [updateViewInstancesFromModel description]
      * @param  {[type]} idx           not used but part of jQuery.each
      * @param   {Element} repeatInfo  repeatInfo element
      * @return {[type]}            [description]
      */
-    updateViewInstancesFromModel: function( idx, repeatInfo ) {
-        var that = this;
-        var $repeatInfo = $( repeatInfo );
-        var repeatPath = repeatInfo.dataset.name;
+    updateViewInstancesFromModel( idx, repeatInfo ) {
+        const that = this;
+        const $repeatInfo = $( repeatInfo );
+        const repeatPath = repeatInfo.dataset.name;
         // All we need is to find out in which series we are.
-        var repeatSeriesIndex = this.form.view.$.find( '.or-repeat-info[data-name="' + repeatPath + '"]' ).index( repeatInfo );
-        var repInModelSeries = this.form.model.getRepeatSeries( repeatPath, repeatSeriesIndex );
-        var repInViewSeries = $repeatInfo.siblings( '.or-repeat' );
+        const repeatSeriesIndex = this.getIndex( repeatInfo );
+        const repInModelSeries = this.form.model.getRepeatSeries( repeatPath, repeatSeriesIndex );
+        const repInViewSeries = $repeatInfo.siblings( '.or-repeat' );
         // First rep is already included (by XSLT transformation)
         if ( repInModelSeries.length > repInViewSeries.length ) {
             this.add( repeatInfo, repInModelSeries.length - repInViewSeries.length );
@@ -128,14 +154,14 @@ module.exports = {
      * @param   {Element} repeatInfo    repeatInfo element
      * @return {[type]}            [description]
      */
-    updateDefaultFirstRepeatInstance: function( idx, repeatInfo ) {
-        var repeatSeriesIndex;
-        var repeatSeriesInModel;
-        var that = this;
-        var $repeatInfo = $( repeatInfo );
-        var repeatPath = repeatInfo.dataset.name;
+    updateDefaultFirstRepeatInstance( idx, repeatInfo ) {
+        let repeatSeriesIndex;
+        let repeatSeriesInModel;
+        const that = this;
+        const $repeatInfo = $( repeatInfo );
+        const repeatPath = repeatInfo.dataset.name;
         if ( !that.form.model.data.instanceStr && !this.templates[ repeatPath ].classList.contains( 'or-appearance-minimal' ) ) {
-            repeatSeriesIndex = this.form.view.$.find( '.or-repeat-info[data-name="' + repeatPath + '"]' ).index( repeatInfo );
+            repeatSeriesIndex = this.getIndex( repeatInfo );
             repeatSeriesInModel = this.form.model.getRepeatSeries( repeatPath, repeatSeriesIndex );
             if ( repeatSeriesInModel.length === 0 ) {
                 // explicitly provide a count, so that byCountUpdate is passed to the addrepeat event
@@ -152,17 +178,17 @@ module.exports = {
      * @param   {Element} repeatInfo repeatInfo element
      * @return {[type]}            [description]
      */
-    updateRepeatInstancesFromCount: function( idx, repeatInfo ) {
-        var that = this;
-        var $last;
-        var repCountNodes;
-        var numRepsInCount;
-        var numRepsInView;
-        var toCreate;
-        var repPath;
-        var repIndex;
-        var $repeatInfo = $( repeatInfo );
-        var repCountPath = repeatInfo.dataset.repeatCount || '';
+    updateRepeatInstancesFromCount( idx, repeatInfo ) {
+        const that = this;
+        let $last;
+        let repCountNodes;
+        let numRepsInCount;
+        let numRepsInView;
+        let toCreate;
+        let repPath;
+        let repIndex;
+        const $repeatInfo = $( repeatInfo );
+        const repCountPath = repeatInfo.dataset.repeatCount || '';
 
         if ( !repCountPath ) {
             return;
@@ -179,7 +205,7 @@ module.exports = {
          * 
          */
         repPath = repeatInfo.dataset.name;
-        repIndex = this.form.view.$.find( '.or-repeat-info[data-name="' + repPath + '"]' ).index( repeatInfo );
+        repIndex = this.getIndex( repeatInfo );
         repCountNodes = this.form.model.evaluate( repCountPath, 'nodes', null, null, true );
 
         if ( repCountNodes.length && repCountNodes[ repIndex ] ) {
@@ -189,7 +215,7 @@ module.exports = {
         }
 
         numRepsInCount = isNaN( numRepsInCount ) ? 0 : numRepsInCount;
-        numRepsInView = $repeatInfo.siblings( '.or-repeat[name="' + repPath + '"]' ).length;
+        numRepsInView = $repeatInfo.siblings( `.or-repeat[name="${repPath}"]` ).length;
         toCreate = numRepsInCount - numRepsInView;
 
         if ( toCreate > 0 ) {
@@ -215,8 +241,8 @@ module.exports = {
      * @param  {[type]} updated [description]
      * @return {[type]}         [description]
      */
-    countUpdate: function( updated ) {
-        var $repeatInfos;
+    countUpdate( updated ) {
+        let $repeatInfos;
         updated = updated || {};
         $repeatInfos = this.form.getRelatedNodes( 'data-repeat-count', '.or-repeat-info', updated );
         $repeatInfos.each( this.updateRepeatInstancesFromCount.bind( this ) );
@@ -227,17 +253,17 @@ module.exports = {
      * @param   {number=} count number of clones to create
      * @return  {boolean}       [description]
      */
-    add: function( repeatInfo, count ) {
-        var $repeats;
-        var $clone;
-        var repeatIndex;
-        var repeatSeriesIndex;
-        var repeatPath;
-        var i;
-        var that = this;
-        var $repeatInfo = $( repeatInfo );
-        var byCountUpdate = !!count;
-        var modelRepeatSeriesLength;
+    add( repeatInfo, count ) {
+        let $repeats;
+        let $clone;
+        let repeatIndex;
+        let repeatSeriesIndex;
+        let repeatPath;
+        let i;
+        const that = this;
+        const $repeatInfo = $( repeatInfo );
+        const byCountUpdate = !!count;
+        let modelRepeatSeriesLength;
 
         count = count || 1;
 
@@ -252,22 +278,31 @@ module.exports = {
         $clone = $( this.templates[ repeatPath ] ).clone();
 
         // Determine the index of the repeat series.
-        repeatSeriesIndex = this.form.view.$.find( '.or-repeat-info[data-name="' + repeatPath + '"]' ).index( repeatInfo );
+        repeatSeriesIndex = this.getIndex( repeatInfo );
         modelRepeatSeriesLength = this.form.model.getRepeatSeries( repeatPath, repeatSeriesIndex ).length;
+        // Determine the index of the repeat inside its series
+        const prevSibling = repeatInfo.previousElementSibling;
+        let repeatIndexInSeries = prevSibling && prevSibling.classList.contains( 'or-repeat' ) ?
+            Number( prevSibling.querySelector( '.repeat-number' ).textContent ) : 0;
 
         // Add required number of repeats
         for ( i = 0; i < count; i++ ) {
             // Fix names of radio button groups
             $clone.find( '.option-wrapper' ).each( this.fixRadioNames );
             $clone.find( 'datalist' ).each( this.fixDatalistIds );
+
             // Insert the clone
             $clone.insertBefore( repeatInfo );
 
-            if ( $clone.prev( '.or-repeat' ).length ) {
+            if ( repeatIndexInSeries > 0 ) {
                 // Also add the clone class for all 2+ numbers as this is
                 // used for performance optimization in several places.
                 $clone.addClass( 'clone' );
             }
+
+            // Update the repeat number
+            $clone[ 0 ].querySelector( '.repeat-number' ).textContent = repeatIndexInSeries + 1;
+
             // Update the variable containing the view repeats in the current series.
             $repeats = $repeats.add( $clone );
 
@@ -278,19 +313,19 @@ module.exports = {
             }
             // This is the index of the new repeat in relation to all other repeats of the same name,
             // even if they are in different series.
-            repeatIndex = repeatIndex || this.form.view.$.find( '.or-repeat[name="' + repeatPath + '"]' ).index( $clone );
-            // This will trigger setting default values and automatic page flips.
+            repeatIndex = repeatIndex || this.getIndex( $clone[ 0 ] );
+            // This will trigger setting default values, calculations, readonly, relevancy, and automatic page flips.
             $clone.trigger( 'addrepeat', [ repeatIndex, byCountUpdate ] );
             // Initialize widgets in clone after default values have been set
             if ( this.form.widgetsInitialized ) {
-                this.form.widgets.init( $clone );
+                this.form.widgets.init( $clone, this.form.options );
             } else {
                 // Upon inital formload the eventhandlers for calculated items have not yet been set.
                 // Calculations have already been initialized before the repeat clone(s) were created.
                 // Therefore, we manually trigger a calculation update for the cloned repeat.
                 that.form.calc.update( {
-                    repeatPath: repeatPath,
-                    repeatIndex: repeatIndex
+                    repeatPath,
+                    repeatIndex
                 } );
             }
             // now create the first instance of any nested repeats if necessary
@@ -299,25 +334,26 @@ module.exports = {
             $clone = $( this.templates[ repeatPath ] ).clone();
 
             repeatIndex++;
+            repeatIndexInSeries++;
         }
 
         // number the repeats
-        this.numberRepeats( repeatInfo );
+        //this.numberRepeats( repeatInfo );
         // enable or disable + and - buttons
         this.toggleButtons( repeatInfo );
 
         return true;
     },
-    remove: function( $repeat, delay ) {
-        var that = this;
-        var $next = $repeat.next( '.or-repeat, .or-repeat-info' );
-        var repeatPath = $repeat.attr( 'name' );
-        var repeatIndex = this.form.view.$.find( '.or-repeat[name="' + repeatPath + '"]' ).index( $repeat );
-        var repeatInfo = $repeat.siblings( '.or-repeat-info' )[ 0 ];
+    remove( $repeat, delay ) {
+        const that = this;
+        const $next = $repeat.next( '.or-repeat, .or-repeat-info' );
+        const repeatPath = $repeat.attr( 'name' );
+        const repeatIndex = this.getIndex( $repeat[ 0 ] );
+        const repeatInfo = $repeat.siblings( '.or-repeat-info' )[ 0 ];
 
         delay = typeof delay !== 'undefined' ? delay : 600;
 
-        $repeat.hide( delay, function() {
+        $repeat.hide( delay, () => {
             $repeat.remove();
             that.numberRepeats( repeatInfo );
             that.toggleButtons( repeatInfo );
@@ -328,16 +364,16 @@ module.exports = {
             that.form.model.node( repeatPath, repeatIndex ).remove();
         } );
     },
-    fixRadioNames: function( index, element ) {
+    fixRadioNames( index, element ) {
         $( element ).find( 'input[type="radio"]' )
             .attr( 'name', Math.floor( ( Math.random() * 10000000 ) + 1 ) );
     },
-    fixDatalistIds: function( index, element ) {
-        var newId = element.id + Math.floor( ( Math.random() * 10000000 ) + 1 );
-        element.parentNode.querySelector( 'input[list="' + element.id + '"]' ).setAttribute( 'list', newId );
+    fixDatalistIds( index, element ) {
+        const newId = element.id + Math.floor( ( Math.random() * 10000000 ) + 1 );
+        element.parentNode.querySelector( `input[list="${element.id}"]` ).setAttribute( 'list', newId );
         element.id = newId;
     },
-    toggleButtons: function( repeatInfo ) {
+    toggleButtons( repeatInfo ) {
         $( repeatInfo )
             .siblings( '.or-repeat' )
             .children( '.repeat-buttons' )
@@ -346,10 +382,10 @@ module.exports = {
             .first()
             .prop( 'disabled', disableFirstRepeatRemoval );
     },
-    numberRepeats: function( repeatInfo ) {
+    numberRepeats( repeatInfo ) {
         $( repeatInfo )
             .siblings( '.or-repeat' )
-            .each( function( idx, repeat ) {
+            .each( ( idx, repeat ) => {
                 $( repeat ).children( '.repeat-number' ).text( idx + 1 );
             } );
     }

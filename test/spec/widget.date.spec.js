@@ -1,45 +1,44 @@
-/*global describe, require, it, expect, spyOn*/
+import Datepicker from '../../src/widget/date/datepicker-extended';
+import { runAllCommonWidgetTests } from '../helpers/test-widget';
 
-'use strict';
+const FORM1 = '<form class="or"><label class="question"><input name="/data/date" type="date" data-type-xml="date" value="" /></label></form>';
+const FORM2 = '<form class="or"><label class="question or-appearance-month-year"><input  name="/data/date" type="date" data-type-xml="date" value="" /></label></form>';
+const FORM3 = '<form class="or"><label class="question or-appearance-year"><input name="/data/date" type="date" data-type-xml="date" value="" /></label></form>';
 
-var $ = require( 'jquery' );
-var widget = require( '../../src/widget/date/datepicker-extended' );
+[ FORM1, FORM2, FORM3 ].forEach( form => {
+    runAllCommonWidgetTests( Datepicker, form, '2012-01-01' );
+} );
 
-var FORM1 = '<form class="or"><label class="question"><input type="date" data-type-xml="date"/></label><input /></form>';
-var FORM2 = '<form class="or"><label class="question or-appearance-month-year"><input type="date" data-type-xml="date"/></label></form>';
-var FORM3 = '<form class="or"><label class="question or-appearance-year"><input type="date" data-type-xml="date"/></label></form>';
-
-describe( 'datepicker widget', function() {
+describe( 'datepicker widget', () => {
 
     function initForm( form ) {
-        var $form = $( form );
-        $( 'body' ).find( 'form.or' ).append( $form );
-        $form.find( widget.selector )[ widget.name ]();
-        return $form;
+        const fragment = document.createRange().createContextualFragment( form );
+        const control = fragment.querySelector( 'input' );
+        return new Datepicker( control );
     }
 
-    describe( 'manual input without Enter', function() {
+    describe( 'manual input without Enter', () => {
 
         [
-            [ 'plain date', FORM1, '2012-01-01' ],
+            [ 'full date', FORM1, '2012-01-01' ],
             [ 'month-year', FORM2, '2012-01' ],
             [ 'year', FORM3, '2012' ]
-        ].forEach( function( t ) {
-            var desc = t[ 0 ];
-            var newVal = t[ 2 ];
-            var $form = initForm( t[ 1 ] );
-            var input = $form[ 0 ].querySelector( widget.selector );
-            var fakeInput = $form[ 0 ].querySelector( '.widget input' );
+        ].forEach( t => {
+            const desc = t[ 0 ];
+            const newVal = t[ 2 ];
+            const datepicker = initForm( t[ 1 ] );
+            const input = datepicker.element;
+            const fakeInput = datepicker.element.closest( '.question' ).querySelector( '.widget input' );
 
-            it( 'is propagated correctly for ' + desc + ' fields', function() {
-                input.onchange = function() {};
+            it( `is propagated correctly for ${desc} fields`, () => {
+
+                input.onchange = () => {};
                 spyOn( input, 'onchange' );
 
                 // add manual value to fake input
                 fakeInput.value = newVal;
                 fakeInput.dispatchEvent( new Event( 'change' ) );
 
-                expect( $( input ).data( widget.name ) ).not.toBeUndefined();
                 expect( input.value ).toEqual( '2012-01-01' );
                 expect( input.onchange.calls.count() ).toEqual( 1 );
 

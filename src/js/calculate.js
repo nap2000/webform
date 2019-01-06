@@ -1,86 +1,82 @@
-'use strict';
-
 /**
  * Updates calculated items
  *
  * @param  {{nodes:Array<string>=, repeatPath: string=, repeatIndex: number=}=} updated The object containing info on updated data nodes
  */
 
-var $ = require( 'jquery' );
+import $ from 'jquery';
 
-module.exports = {
-    update: function( updated, filter ) {
-        var $nodes;
-        var that = this;
-        var repeatCountOnly;
+import config from 'enketo/config';
 
-        // Filter is used in custom applications that make a distinction between types of calculations.
-        filter = filter || '';
+export default {
+
+    update( updated = {}, filter = '' ) {
+        let $nodes;
+        const that = this;
 
         if ( !this.form ) {
             throw new Error( 'Calculation module not correctly instantiated with form property.' );
         }
 
-        updated = updated || {};
-
+        // Filter is used in custom applications that make a distinction between types of calculations.
         if ( updated.relevantPath ) {
             // Questions that are descendants of a group:
-            $nodes = this.form.getRelatedNodes( 'data-calculate', '[name^="' + updated.relevantPath + '/"]' + filter )
+            $nodes = this.form.getRelatedNodes( 'data-calculate', `[name^="${updated.relevantPath}/"]${filter}` )
                 // Individual questions:
-                .add( this.form.getRelatedNodes( 'data-calculate', '[name="' + updated.relevantPath + '"]' + filter ) )
+                .add( this.form.getRelatedNodes( 'data-calculate', `[name="${updated.relevantPath}"]${filter}` ) )
                 // Individual radiobutton questions with a calculate....:
-                .add( this.form.getRelatedNodes( 'data-calculate', '[data-name="' + updated.relevantPath + '"]' + filter ) );
+                .add( this.form.getRelatedNodes( 'data-calculate', `[data-name="${updated.relevantPath}"]${filter}` ) );
         } else {
             $nodes = this.form.getRelatedNodes( 'data-calculate', filter, updated );
         }
 
         $nodes.each( function() {
-            var result;
-            var dataNodesObj;
-            var dataNodes;
-            var $dataNode;
-            var index;
-            var name;
-            var dataNodeName;
-            var expr;
-            var newExpr;
-            var dataType;
-            var constraintExpr;
-            var relevantExpr;
-            var relevant;
-            var $this;
+            let index;
+            const $control = $( this );
+            const name = that.form.input.getName( $control );
+            const dataNodeName = ( name.lastIndexOf( '/' ) !== -1 ) ? name.substring( name.lastIndexOf( '/' ) + 1 ) : name;
+            const expr = that.form.input.getCalculation( $control );
+            const dataType = that.form.input.getXmlType( $control );
+            const relevantExpr = that.form.input.getRelevant( $control );
+            const dataNodesObj = that.form.model.node( name );
+            const dataNodes = dataNodesObj.getElements();
 
-            $this = $( this );
-            name = that.form.input.getName( $this );
-            dataNodeName = ( name.lastIndexOf( '/' ) !== -1 ) ? name.substring( name.lastIndexOf( '/' ) + 1 ) : name;
-            expr = that.form.input.getCalculation( $this );
-            dataType = that.form.input.getXmlType( $this );
-            // for inputs that have a calculation and need to be validated
-            constraintExpr = that.form.input.getConstraint( $this );
-            relevantExpr = that.form.input.getRelevant( $this );
-            dataNodesObj = that.form.model.node( name );
-            dataNodes = dataNodesObj.get();
-
-            /*
-             * If the update was triggered by a datanode inside a repeat
-             * and the dependent node is inside the same repeat
-             */
-            if ( dataNodes.length > 1 && updated.repeatPath && name.indexOf( updated.repeatPath ) !== -1 ) {
-                $dataNode = that.form.model.node( updated.repeatPath, updated.repeatIndex ).get().find( dataNodeName );
-                index = $( dataNodes ).index( $dataNode );
-                updateCalc( index );
+            if ( dataNodes.length > 1 ) {
+                if ( updated.repeatPath && name.indexOf( updated.repeatPath ) !== -1 ) {
+                    /*
+                     * If the update was triggered by a datanode inside a repeat
+                     * and the dependent node is inside the same repeat, we can prevent the expensive index determination
+                     */
+                    const dataNode = that.form.model.node( updated.repeatPath, updated.repeatIndex ).getElement().querySelector( dataNodeName );
+                    index = dataNodes.indexOf( dataNode );
+                    updateCalc( index );
+                } else if ( $control[ 0 ].type === 'hidden' ) {
+                    /*
+                     * This case is the consequence of the unfortunate decision to place calculated items without a visible form control,
+                     * as a separate group (.or-calculated-items), instead of in the Form DOM in the locations where they belong.
+                     * This occurs when update is called with empty updated object and multiple repeats are present.
+                     */
+                    dataNodes.forEach( ( el, index ) => {
+                        updateCalc( index );
+                    } );
+                } else {
+                    /* 
+                     * This occurs when the updated object contains a relevantPath that refers to a repeat and multiple repeats are 
+                     * present, without calculated items that HAVE a visible form control.
+                     */
+                    const $repeatSiblings = $control.closest( '.or-repeat' ).siblings( '.or-repeat' ).addBack();
+                    if ( $repeatSiblings.length === dataNodes.length ) {
+                        index = $repeatSiblings.index( $control.closest( '.or-repeat' ) );
+                        updateCalc( index );
+                    }
+                }
             } else if ( dataNodes.length === 1 ) {
                 index = 0;
                 updateCalc( index );
-            } else {
-                // This occurs when update is called with empty updated object and multiple repeats are present
-                dataNodes.each( function( index ) {
-                    updateCalc( index );
-                } );
             }
 
             function updateCalc( index ) {
-                var pathParts = name.split( '/' );
+                const pathParts = name.split( '/' );
                 /*
                  * First determine immediate group parent of node, which will always be in correct location in DOM. This is where
                  * we can use the index to be guaranteed to get the correct node.
@@ -90,51 +86,58 @@ module.exports = {
                  * 
                  * TODO: determine index at every level to properly support repeats and nested repeats
                  * 
-                 * Note: getting the parents of $this wouldn't work for nodes inside #calculated-items!
+                 * Note: getting the parents of $control wouldn't work for nodes inside #calculated-items!
                  */
-                var parentPath = pathParts.splice( 0, pathParts.length - 1 ).join( '/' );
-                var $parentGroups = that.form.view.$.find( '.or-group[name="' + parentPath + '"],.or-group-data[name="' + parentPath + '"]' ).eq( index )
+                const parentPath = pathParts.splice( 0, pathParts.length - 1 ).join( '/' );
+                const $parentGroups = that.form.view.$.find( `.or-group[name="${parentPath}"],.or-group-data[name="${parentPath}"]` ).eq( index )
                     .parents( '.or-group, .or-group-data' ).addBack();
 
                 if ( $parentGroups.length ) {
                     // Start at the highest level, and traverse down to the DOM to the immediate parent group.
-                    relevant = $parentGroups.filter( '[data-relevant]' ).reverse().get().map( function( group ) {
-                        var $group = $( group );
-                        var nm = that.form.input.getName( $group );
+                    var relevant = $parentGroups.filter( '[data-relevant]' ).reverse().get().map( group => {
+                        const $group = $( group );
+                        const nm = that.form.input.getName( $group );
 
                         return {
                             context: nm,
                             // thankfully relevants on repeats are not possible with XLSForm-produced forms
-                            index: that.form.view.$.find( '.or-group[name="' + nm + '"], .or-group-data[name="' + nm + '"]' ).index( $group ), // performance....
+                            index: that.form.view.$.find( `.or-group[name="${nm}"], .or-group-data[name="${nm}"]` ).index( $group ), // performance....
                             expr: that.form.input.getRelevant( $group )
                         };
                     } ).concat( [ {
                         context: name,
-                        index: index,
+                        index,
                         expr: relevantExpr
-                    } ] ).every( function( item ) {
-                        return ( item.expr ) ? that.form.model.evaluate( item.expr, 'boolean', item.context, item.index ) : true;
-                    } );
+                    } ] ).every( item => ( item.expr ) ? that.form.model.evaluate( item.expr, 'boolean', item.context, item.index ) : true );
                 } else {
                     relevant = ( relevantExpr ) ? that.form.model.evaluate( relevantExpr, 'boolean', name, index ) : true;
                 }
 
                 // not sure if using 'string' is always correct
-                newExpr = that.form.replaceChoiceNameFn( expr, 'string', name, index );
+                const newExpr = that.form.replaceChoiceNameFn( expr, 'string', name, index );
 
                 // it is possible that the fixed expr is '' which causes an error in XPath
-                result = ( relevant && newExpr ) ? that.form.model.evaluate( newExpr, 'string', name, index ) : '';
+                const xpathType = that.form.input.getInputType( $control ) === 'number' ? 'number' : 'string';
+                const result = ( relevant && newExpr ) ? that.form.model.evaluate( newExpr, xpathType, name, index ) : '';
 
                 // filter the result set to only include the target node
                 dataNodesObj.setIndex( index );
 
                 // set the value
-                dataNodesObj.setVal( result, constraintExpr, dataType );
+                dataNodesObj.setVal( result, dataType );
 
                 // Not the most efficient to use input.setVal here as it will do another lookup
                 // of the node, that we already have...
                 // We should not use value "result" here because node.setVal() may have done a data type conversion
-                that.form.input.setVal( name, index, dataNodesObj.getVal()[ 0 ] );
+                that.form.input.setVal( $control, dataNodesObj.getVal() );
+
+                /*
+                 * We need to specifically call validate on the question itself, because the validationUpdate
+                 * in the evaluation cascade only updates questions with a _dependency_ on this question.
+                 */
+                if ( config.validateContinuously === true ) {
+                    that.form.validateInput( $control );
+                }
             }
         } );
     }

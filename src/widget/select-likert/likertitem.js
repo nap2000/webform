@@ -1,5 +1,2 @@
-'use strict';
-
-module.exports = {
-    'name': 'likertitem'
-};
+// Since this class has no static selector getter, there will be no attempt to instantiate it.
+export default class LikertItem {}

@@ -1,107 +1,90 @@
-'use strict';
+import $ from 'jquery';
+import Widget from '../../js/widget';
+import support from '../../js/support';
+import { time as timeFormat } from '../../js/format';
+import types from '../../js/types';
+import event from '../../js/event';
+import './timepicker';
+import '../../js/dropdown.jquery';
 
-var Widget = require( '../../js/Widget' );
-var support = require( '../../js/support' );
-var $ = require( 'jquery' );
-var timeFormat = require( '../../js/format' ).time;
-var types = require( '../../js/types' );
-require( './timepicker' );
-require( '../../js/dropdown.jquery' );
-var pluginName = 'timepickerExtended';
+class TimepickerExtended extends Widget {
 
-/**
- * @constructor
- * @param {Element}                       element   Element to apply widget to.
- * @param {(boolean|{touch: boolean})}    options   options
- * @param {*=}                            event     event
- */
-function TimepickerExtended( element, options ) {
-    this.namespace = pluginName;
-    //call the Super constructor
-    Widget.call( this, element, options );
-    this._init();
+    static get selector() {
+        return 'input[type="time"]:not([readonly])';
+    }
+
+    static condition() {
+        return !support.touch || !support.inputTypes.time;
+    }
+
+    _init() {
+        const fragment = document.createRange().createContextualFragment(
+            `<div class="widget timepicker">
+                <input class="ignore timepicker-default" type="text" placeholder="hh:mm" />
+            </div>`
+        );
+        fragment.querySelector( '.widget' ).append( this.resetButtonHtml );
+        this.element.classList.add( 'hide' );
+        this.element.after( fragment );
+
+        const resetBtn = this.question.querySelector( '.widget > .btn-reset' );
+        this.fakeTimeI = this.question.querySelector( '.widget > input' );
+
+        $( this.fakeTimeI )
+            .timepicker( {
+                showMeridian: timeFormat.hour12,
+                meridianNotation: {
+                    am: timeFormat.amNotation,
+                    pm: timeFormat.pmNotation
+                }
+            } );
+
+        // using setTime ensures that the fakeInput shows the meridan when needed
+        this.value = this.originalInputValue;
+
+        this.fakeTimeI.addEventListener( 'change', () => {
+            const modified = timeFormat.hour12 ? types.time.convertMeridian( this.value ) : this.value;
+            this.originalInputValue = modified;
+        } );
+
+        // reset button
+        resetBtn.addEventListener( 'click', this._reset.bind( this ) );
+
+        // pass widget focus event
+        this.fakeTimeI.addEventListener( 'focus', () => {
+            this.element.dispatchEvent( event.FakeFocus() );
+        } );
+
+        // handle original input focus
+        this.element.addEventListener( 'applyfocus', () => {
+            this.fakeTimeI.focus();
+        } );
+
+    }
+
+    _reset() {
+        const ev = this.originalInputValue ? event.Change() : null;
+        if ( ev || this.value ) {
+            this.value = '';
+            //this.originalInputValue = '';
+            this.fakeTimeI.dispatchEvent( ev );
+        }
+    }
+
+    update() {
+        $( this.element )
+            .next( '.widget' )
+            .find( 'input' )
+            .timepicker( 'setTime', this.element.value );
+    }
+
+    get value() {
+        return this.fakeTimeI.value;
+    }
+
+    set value( value ) {
+        $( this.fakeTimeI ).timepicker( 'setTime', value );
+    }
 }
 
-TimepickerExtended.prototype = Object.create( Widget.prototype );
-TimepickerExtended.prototype.constructor = TimepickerExtended;
-
-/**
- * Initialize timepicker widget
- */
-TimepickerExtended.prototype._init = function() {
-    var $timeI = $( this.element );
-    var $fakeTime = $( '<div class="widget timepicker">' +
-        '<input class="ignore timepicker-default" type="text" placeholder="hh:mm" />' +
-        this.resetButtonHtml + '</div>' );
-    var $resetBtn = $fakeTime.find( '.btn-reset' );
-    var $fakeTimeI = $fakeTime.find( 'input' );
-
-    $timeI.hide().after( $fakeTime );
-
-    $fakeTimeI
-        .timepicker( {
-            showMeridian: timeFormat.hour12,
-            meridianNotation: {
-                am: timeFormat.amNotation,
-                pm: timeFormat.pmNotation
-            }
-        } )
-        // using setTime ensures that the fakeInput shows the meridan when needed
-        .timepicker( 'setTime', this.element.value );
-
-    $fakeTimeI.on( 'change', function() {
-        var modified = timeFormat.hour12 ? types.time.convertMeridian( this.value ) : this.value;
-        $timeI.val( modified ).trigger( 'change' );
-        return false;
-    } );
-
-    // reset button
-    $resetBtn.on( 'click', function() {
-        var event = $timeI.val() ? 'change' : '';
-        if ( event || $fakeTimeI.val() ) {
-            $fakeTimeI.val( '' ).trigger( event );
-        }
-    } );
-
-    // pass widget focus event
-    $fakeTimeI.on( 'focus', function() {
-        $timeI.trigger( 'fakefocus' );
-    } );
-
-    // handle original input focus
-    $( this.element ).on( 'applyfocus', function() {
-        $fakeTimeI.focus();
-    } );
-
-};
-
-TimepickerExtended.prototype.update = function() {
-    $( this.element )
-        .next( '.widget' )
-        .find( 'input' )
-        .timepicker( 'setTime', this.element.value );
-};
-
-$.fn[ pluginName ] = function( options, event ) {
-
-    options = options || {};
-
-    return this.each( function() {
-        var $this = $( this ),
-            data = $this.data( pluginName );
-
-        if ( !data && typeof options === 'object' && ( !support.touch || !support.inputTypes.time ) ) {
-            $this.data( pluginName, new TimepickerExtended( this, options, event ) );
-        }
-        //only call method if widget was instantiated before
-        else if ( data && typeof options === 'string' ) {
-            //pass the element as a parameter as this is used in fix()
-            data[ options ]( this );
-        }
-    } );
-};
-
-module.exports = {
-    'name': pluginName,
-    'selector': 'input[type="time"]:not([readonly])'
-};
+export default TimepickerExtended;

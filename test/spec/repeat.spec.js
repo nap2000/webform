@@ -1,73 +1,82 @@
-var loadForm = require( '../helpers/loadForm' );
-var $ = require( 'jquery' );
-var forms = require( '../mock/forms' );
+import loadForm from '../helpers/load-form';
+import $ from 'jquery';
+import forms from '../mock/forms';
+import event from '../../src/js/event';
 
-describe( 'repeat functionality', function() {
-    var form;
+describe( 'repeat functionality', () => {
 
     //turn jQuery animations off
     $.fx.off = true;
 
-    describe( 'cloning', function() {
-        beforeEach( function() {
-            form = loadForm( 'thedata.xml' ); //new Form(forms2.formStr1, forms2.dataStr1);
+    describe( 'cloning', () => {
+        beforeEach( () => {
+
+        } );
+
+        it( 'removes the correct instance and HTML node when the "-" button is clicked (issue 170)', () => {
+            const form = loadForm( 'thedata.xml' );
             form.init();
-        } );
+            const repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]';
+            const nodePath = '/thedata/repeatGroup/nodeC';
+            const nodeSelector = `input[name="${nodePath}"]`;
+            const index = 2;
 
-        it( 'removes the correct instance and HTML node when the ' - ' button is clicked (issue 170)', function() {
-            var repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]',
-                nodePath = '/thedata/repeatGroup/nodeC',
-                nodeSelector = 'input[name="' + nodePath + '"]',
-                formH = form.view,
-                data = form.model,
-                index = 2;
+            expect( form.view.html.querySelectorAll( repeatSelector ).length ).toEqual( 3 );
+            expect( form.view.html.querySelectorAll( repeatSelector )[ index ].querySelector( 'button.remove' ) ).not.toEqual( null );
+            expect( form.view.html.querySelectorAll( nodeSelector )[ index ].value ).toEqual( 'c3' );
+            expect( form.model.node( nodePath, index ).getVal() ).toEqual( 'c3' );
 
-            expect( formH.$.find( repeatSelector ).eq( index ).length ).toEqual( 1 );
-            expect( formH.$.find( repeatSelector ).eq( index ).find( 'button.remove' ).length ).toEqual( 1 );
-            expect( formH.$.find( nodeSelector ).eq( index ).val() ).toEqual( 'c3' );
-            expect( data.node( nodePath, index ).getVal()[ 0 ] ).toEqual( 'c3' );
-
-            formH.$.find( repeatSelector ).eq( index ).find( 'button.remove' ).click();
-            expect( data.node( nodePath, index ).getVal()[ 0 ] ).toEqual( undefined );
+            form.view.html.querySelectorAll( repeatSelector )[ index ].querySelector( 'button.remove' ).click();
+            expect( form.model.node( nodePath, index ).getVal() ).toEqual( undefined );
             //check if it removed the correct data node
-            expect( data.node( nodePath, index - 1 ).getVal()[ 0 ] ).toEqual( 'c2' );
+            expect( form.model.node( nodePath, index - 1 ).getVal() ).toEqual( 'c2' );
             //check if it removed the correct html node
-            expect( formH.$.find( repeatSelector ).eq( index ).length ).toEqual( 0 );
-            expect( formH.$.find( nodeSelector ).eq( index - 1 ).val() ).toEqual( 'c2' );
+            expect( form.view.html.querySelectorAll( repeatSelector ).length ).toEqual( 2 );
+            expect( form.view.html.querySelectorAll( nodeSelector )[ index - 1 ].value ).toEqual( 'c2' );
         } );
 
-        it( 'marks cloned invalid fields as valid', function() {
-            var repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]',
-                repeatButton = '.add-repeat-btn',
-                nodeSelector = 'input[name="/thedata/repeatGroup/nodeC"]',
-                $node3 = form.view.$.find( nodeSelector ).eq( 2 ),
-                $node4;
+        it( 'marks cloned invalid fields as valid', () => {
+            const form = loadForm( 'thedata.xml' );
+            form.init();
+            const repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]';
+            const repeatButton = '.add-repeat-btn';
+            const nodeSelector = 'input[name="/thedata/repeatGroup/nodeC"]';
+            const node3 = form.view.html.querySelectorAll( nodeSelector )[ 2 ];
 
-            form.setInvalid( $node3 );
+            form.setInvalid( $( node3 ) );
 
-            expect( form.view.$.find( repeatSelector ).length ).toEqual( 3 );
-            expect( $node3.parent().hasClass( 'invalid-constraint' ) ).toBe( true );
-            expect( form.view.$.find( nodeSelector ).eq( 3 ).length ).toEqual( 0 );
+            expect( form.view.html.querySelectorAll( repeatSelector ).length ).toEqual( 3 );
+            expect( node3.parentElement.classList.contains( 'invalid-constraint' ) ).toBe( true );
+            expect( form.view.html.querySelectorAll( nodeSelector )[ 3 ] ).toEqual( undefined );
 
-            form.view.$.find( repeatButton ).click();
+            form.view.html.querySelector( repeatButton ).click();
 
-            $node4 = form.view.$.find( nodeSelector ).eq( 3 );
-            expect( form.view.$.find( repeatSelector ).length ).toEqual( 4 );
-            expect( $node4.length ).toEqual( 1 );
-            expect( $node4.parent().hasClass( 'invalid-constraint' ) ).toBe( false );
+            const node4 = form.view.html.querySelectorAll( nodeSelector )[ 3 ];
+            expect( form.view.html.querySelectorAll( repeatSelector ).length ).toEqual( 4 );
+            expect( node4 ).not.toEqual( undefined );
+            expect( node4.parentElement.classList.contains( 'invalid-constraint' ) ).toBe( false );
+        } );
+
+        it( 'populates default values in new clone', () => {
+            const form = loadForm( 'repeat-default.xml' );
+            form.init();
+            const repeatButton = form.view.html.querySelector( '.add-repeat-btn' );
+            repeatButton.click();
+            repeatButton.click();
+            expect( [ ...form.view.html.querySelectorAll( '[name="/repdef/rep/num"]' ) ].map( i => i.value ) ).toEqual( [ '5', '5', '5' ] );
         } );
     } );
 
-    describe( 'fixes unique ids in cloned repeats', function() {
+    describe( 'fixes unique ids in cloned repeats', () => {
         // Avoiding problems in the autocomplete widget, https://github.com/enketo/enketo-core/issues/521
-        it( 'ensures uniqueness of datalist ids, so cascading selects inside repeats work', function() {
+        it( 'ensures uniqueness of datalist ids, so cascading selects inside repeats work', () => {
             const form = loadForm( 'repeat-autocomplete.xml' );
             form.init();
-            form.view.$.find( '.add-repeat-btn' ).click();
-            const id1 = form.view.$.find( '.or-repeat' ).eq( 0 ).find( 'datalist' )[ 0 ].id;
-            const id2 = form.view.$.find( '.or-repeat' ).eq( 1 ).find( 'datalist' )[ 0 ].id;
-            const list1 = form.view.$.find( '.or-repeat' ).eq( 0 ).find( 'input[list]' ).attr( 'list' );
-            const list2 = form.view.$.find( '.or-repeat' ).eq( 1 ).find( 'input[list]' ).attr( 'list' );
+            form.view.html.querySelector( '.add-repeat-btn' ).click();
+            const id1 = form.view.html.querySelectorAll( '.or-repeat' )[ 0 ].querySelector( 'datalist' ).id;
+            const id2 = form.view.html.querySelectorAll( '.or-repeat' )[ 1 ].querySelector( 'datalist' ).id;
+            const list1 = form.view.html.querySelectorAll( '.or-repeat' )[ 0 ].querySelector( 'input[list]' ).getAttribute( 'list' );
+            const list2 = form.view.html.querySelectorAll( '.or-repeat' )[ 1 ].querySelector( 'input[list]' ).getAttribute( 'list' );
             expect( id1 ).toEqual( list1 );
             expect( id2 ).toEqual( list2 );
             expect( id1 ).not.toEqual( id2 );
@@ -75,93 +84,91 @@ describe( 'repeat functionality', function() {
         } );
     } );
 
-    it( 'clones a repeat view element on load when repeat has dot in nodeName and has multiple instances in XForm', function() {
-        form = loadForm( 'repeat-dot.xml' );
+    it( 'clones a repeat view element on load when repeat has dot in nodeName and has multiple instances in XForm', () => {
+        const form = loadForm( 'repeat-dot.xml' );
         form.init();
-        expect( form.view.$.find( 'input[name="/repeat-dot/rep.dot/a"]' ).length ).toEqual( 2 );
+        expect( form.view.html.querySelectorAll( 'input[name="/repeat-dot/rep.dot/a"]' ).length ).toEqual( 2 );
     } );
 
-    it( 'clones nested repeats if they are present in the instance upon initialization (issue #359) ', function() {
+    it( 'clones nested repeats if they are present in the instance upon initialization (issue #359) ', () => {
         //note that this form contains multiple repeats in the instance
-        form = loadForm( 'nested_repeats.xml' );
+        const form = loadForm( 'nested_repeats.xml' );
         form.init();
-        var $1stLevelTargetRepeat = form.view.$.find( '.or-repeat[name="/nested_repeats/kids/kids_details"]' );
-        var $2ndLevelTargetRepeats1 = $1stLevelTargetRepeat.eq( 0 ).find( '.or-repeat[name="/nested_repeats/kids/kids_details/immunization_info"]' );
-        var $2ndLevelTargetRepeats2 = $1stLevelTargetRepeat.eq( 1 ).find( '.or-repeat[name="/nested_repeats/kids/kids_details/immunization_info"]' );
-        expect( $1stLevelTargetRepeat.length ).toEqual( 2 );
-        expect( $2ndLevelTargetRepeats1.length ).toEqual( 2 );
-        expect( $2ndLevelTargetRepeats2.length ).toEqual( 3 );
+        const _1stLevelTargetRepeat = form.view.html.querySelectorAll( '.or-repeat[name="/nested_repeats/kids/kids_details"]' );
+        const _2ndLevelTargetRepeats1 = _1stLevelTargetRepeat[ 0 ].querySelectorAll( '.or-repeat[name="/nested_repeats/kids/kids_details/immunization_info"]' );
+        const _2ndLevelTargetRepeats2 = _1stLevelTargetRepeat[ 1 ].querySelectorAll( '.or-repeat[name="/nested_repeats/kids/kids_details/immunization_info"]' );
+        expect( _1stLevelTargetRepeat.length ).toEqual( 2 );
+        expect( _2ndLevelTargetRepeats1.length ).toEqual( 2 );
+        expect( _2ndLevelTargetRepeats2.length ).toEqual( 3 );
     } );
 
     //https://github.com/kobotoolbox/enketo-express/issues/754
-    it( 'shows the correct number of nested repeats in the view if a record is loaded', function() {
-        var instanceStr = '<q><PROGRAMME><PROJECT><Partner><INFORMATION><Partner_Name>a</Partner_Name><Camp><P_Camps>a1</P_Camps></Camp><Camp><P_Camps>a2</P_Camps></Camp></INFORMATION></Partner><Partner><INFORMATION><Partner_Name>b</Partner_Name><Camp><P_Camps>b1</P_Camps></Camp><Camp><P_Camps>b2</P_Camps></Camp><Camp><P_Camps>b3</P_Camps></Camp></INFORMATION></Partner></PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>';
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-        form = loadForm( 'nested-repeats-nasty.xml', instanceStr );
+    it( 'shows the correct number of nested repeats in the view if a record is loaded', () => {
+        const instanceStr = '<q><PROGRAMME><PROJECT><Partner><INFORMATION><Partner_Name>a</Partner_Name><Camp><P_Camps>a1</P_Camps></Camp><Camp><P_Camps>a2</P_Camps></Camp></INFORMATION></Partner><Partner><INFORMATION><Partner_Name>b</Partner_Name><Camp><P_Camps>b1</P_Camps></Camp><Camp><P_Camps>b2</P_Camps></Camp><Camp><P_Camps>b3</P_Camps></Camp></INFORMATION></Partner></PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>';
+        const a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+        const b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+        const form = loadForm( 'nested-repeats-nasty.xml', instanceStr );
         form.init();
 
-        expect( form.view.$.find( a ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 3 );
-
+        expect( form.view.html.querySelectorAll( a ).length ).toEqual( 2 );
+        expect( form.view.html.querySelectorAll( a )[ 0 ].querySelectorAll( b ).length ).toEqual( 2 );
+        expect( form.view.html.querySelectorAll( a )[ 1 ].querySelectorAll( b ).length ).toEqual( 3 );
     } );
 
-    it( 'ignores the "minimal" appearance when an existing record is loaded (almost same as previous test)', function() {
-        var form;
-        var instanceStr = '<q><PROGRAMME><PROJECT><Partner><INFORMATION><Partner_Name>a</Partner_Name><Camp><P_Camps>a1</P_Camps></Camp><Camp><P_Camps>a2</P_Camps></Camp></INFORMATION></Partner><Partner><INFORMATION><Partner_Name>b</Partner_Name><Camp><P_Camps>b1</P_Camps></Camp><Camp><P_Camps>b2</P_Camps></Camp><Camp><P_Camps>b3</P_Camps></Camp></INFORMATION></Partner></PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>';
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+    it( 'ignores the "minimal" appearance when an existing record is loaded (almost same as previous test)', () => {
+        const instanceStr = '<q><PROGRAMME><PROJECT><Partner><INFORMATION><Partner_Name>a</Partner_Name><Camp><P_Camps>a1</P_Camps></Camp><Camp><P_Camps>a2</P_Camps></Camp></INFORMATION></Partner><Partner><INFORMATION><Partner_Name>b</Partner_Name><Camp><P_Camps>b1</P_Camps></Camp><Camp><P_Camps>b2</P_Camps></Camp><Camp><P_Camps>b3</P_Camps></Camp></INFORMATION></Partner></PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>';
+        const a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+        const b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
         forms[ 'nested-repeats-nastier' ] = {
             xml_model: forms[ 'nested-repeats-nasty.xml' ].xml_model
         };
         // both repeats get the 'minimal appearance'
         forms[ 'nested-repeats-nastier' ].html_form = forms[ 'nested-repeats-nasty.xml' ].html_form.replace( 'class="or-repeat ', 'class="or-repeat or-appearance-minimal ' );
-        form = loadForm( 'nested-repeats-nastier', instanceStr );
+        const form = loadForm( 'nested-repeats-nastier', instanceStr );
         form.init();
 
-        expect( form.view.$.find( a ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).hasClass( 'or-appearance-minimal' ) ).toEqual( true );
-        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 2 );
-        expect( form.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 3 );
+        expect( form.view.html.querySelectorAll( a ).length ).toEqual( 2 );
+        expect( form.view.html.querySelector( a ).classList.contains( 'or-appearance-minimal' ) ).toEqual( true );
+        expect( form.view.html.querySelectorAll( a )[ 0 ].querySelectorAll( b ).length ).toEqual( 2 );
+        expect( form.view.html.querySelectorAll( a )[ 1 ].querySelectorAll( b ).length ).toEqual( 3 );
     } );
 
-    it( 'uses the "minimal" appearance for an empty form to create 0 repeats', function() {
-        var form;
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+    it( 'uses the "minimal" appearance for an empty form to create 0 repeats', () => {
+        const a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
         forms[ 'nested-repeats-nastier' ] = {
             xml_model: forms[ 'nested-repeats-nasty.xml' ].xml_model
         };
         // both repeats get the 'minimal appearance'
         forms[ 'nested-repeats-nastier' ].html_form = forms[ 'nested-repeats-nasty.xml' ].html_form.replace( 'class="or-repeat ', 'class="or-repeat or-appearance-minimal ' );
-        form = loadForm( 'nested-repeats-nastier' );
+        const form = loadForm( 'nested-repeats-nastier' );
         form.init();
 
-        expect( form.view.$.find( a ).length ).toEqual( 0 );
+        expect( form.view.html.querySelectorAll( a ).length ).toEqual( 0 );
     } );
 
-    it( 'In an empty form it creates the first repeat instance automatically (almost same as previous test)', function() {
-        var form = loadForm( 'nested-repeats-nasty.xml' );
-        var a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-        var b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+    it( 'In an empty form it creates the first repeat instance automatically (almost same as previous test)', () => {
+        const form = loadForm( 'nested-repeats-nasty.xml' );
+        const a = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+        const b = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
         form.init();
 
-        expect( form.view.$.find( a ).length ).toEqual( 1 );
-        expect( form.view.$.find( a ).hasClass( 'or-appearance-minimal' ) ).toEqual( false );
-        expect( form.view.$.find( a ).eq( 0 ).find( b ).length ).toEqual( 1 );
+        expect( form.view.html.querySelectorAll( a ).length ).toEqual( 1 );
+        expect( form.view.html.querySelector( a ).classList.contains( 'or-appearance-minimal' ) ).toEqual( false );
+        expect( form.view.html.querySelectorAll( a )[ 0 ].querySelectorAll( b ).length ).toEqual( 1 );
     } );
 
-    it( 'doesn\'t duplicate date widgets in a cloned repeat', function() {
-        form = loadForm( 'nested_repeats.xml' );
+    it( 'doesn\'t duplicate date widgets in a cloned repeat', () => {
+        const form = loadForm( 'nested_repeats.xml' );
         form.init();
-        var $dates = form.view.$.find( '[name="/nested_repeats/kids/kids_details/immunization_info/date"]' );
+        const dates = [ ...form.view.html.querySelectorAll( '[name="/nested_repeats/kids/kids_details/immunization_info/date"]' ) ];
 
-        expect( $dates.length ).toEqual( 5 );
+        expect( dates.length ).toEqual( 5 );
         // for some reason these widgets are not instantiated here
-        expect( $dates.parent().find( '.widget.date' ).length ).toEqual( 5 );
+        const dateWidgets = [ ...form.view.html.querySelectorAll( '.widget.date' ) ];
+        expect( dateWidgets.length ).toEqual( 5 );
     } );
 
-    describe( 'ordinals are set for default repeat instances in the default model upon initialization', function() {
+    describe( 'ordinals are set for default repeat instances in the default model upon initialization', () => {
         /*
         var config = require( 'enketo/config' );
         var dflt = config.repeatOrdinals;
@@ -176,10 +183,10 @@ describe( 'repeat functionality', function() {
         // this test is only interested in the model, but adding ordinals to default repeat instances is directed
         // by Form.js
         // Very theoretical. Situation will never occur with OC.
-        xit( 'initialize correctly with ordinals if more than one top-level repeat is included in model', function() {
-            var f = loadForm( 'nested_repeats.xml' );
+        xit( 'initialize correctly with ordinals if more than one top-level repeat is included in model', () => {
+            const f = loadForm( 'nested_repeats.xml' );
             f.init();
-            var model = f.model;
+            const model = f.model;
             expect( model.getStr().replace( />\s+</g, '><' ) ).toContain(
                 '<kids_details enk:last-used-ordinal="2" enk:ordinal="1"><kids_name>Tom</kids_name><kids_age>2</kids_age>' +
                 '<immunization_info enk:last-used-ordinal="2" enk:ordinal="1"><vaccine>Polio</vaccine><date/></immunization_info>' +
@@ -192,128 +199,148 @@ describe( 'repeat functionality', function() {
         } );
     } );
 
-    describe( 'supports repeat count', function() {
-        it( 'to dynamically remove/add repeats', function() {
-            var f = loadForm( 'repeat-count.xml' );
-            var rep = '.or-repeat[name="/dynamic-repeat-count/rep"]';
-            var cnt = '[name="/dynamic-repeat-count/count"]';
-            var $form;
-            var $model;
-            f.init();
-            $form = f.view.$;
-            $model = f.model.$;
+    describe( 'supports repeat count', () => {
+        it( 'to dynamically remove/add repeats', () => {
+            const form = loadForm( 'repeat-count.xml' );
+            const rep = '.or-repeat[name="/dynamic-repeat-count/rep"]';
+            form.init();
+            const cntEl = form.view.html.querySelector( '[name="/dynamic-repeat-count/count"]' );
+
             // check that repeat count is evaluated upon load for default values
-            expect( $form.find( rep ).length ).toEqual( 2 );
-            expect( $model.find( 'rep' ).length ).toEqual( 2 );
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 2 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 2 );
             // increase
-            $form.find( cnt ).val( 10 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 10 );
-            expect( $model.find( 'rep' ).length ).toEqual( 10 );
+            cntEl.value = 10;
+            cntEl.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 10 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 10 );
             // decrease
-            $form.find( cnt ).val( 5 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 5 );
-            expect( $model.find( 'rep' ).length ).toEqual( 5 );
+            cntEl.value = 5;
+            cntEl.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 5 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 5 );
             // decrease too much
-            $form.find( cnt ).val( 0 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 0 );
-            expect( $model.find( 'rep' ).length ).toEqual( 0 );
+            cntEl.value = 0;
+            cntEl.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 0 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 0 );
             // decrease way too much
-            $form.find( cnt ).val( -10 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 0 );
-            expect( $model.find( 'rep' ).length ).toEqual( 0 );
+            cntEl.value = -10;
+            cntEl.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 0 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 0 );
             // go back up after reducing to 0
-            $form.find( cnt ).val( 5 ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 5 );
-            expect( $model.find( 'rep' ).length ).toEqual( 5 );
+            cntEl.value = 5;
+            cntEl.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 5 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 5 );
             // empty value should be considered as 0
-            $form.find( cnt ).val( '' ).trigger( 'change' );
-            expect( $form.find( rep ).length ).toEqual( 0 );
-            expect( $model.find( 'rep' ).length ).toEqual( 0 );
+            cntEl.value = '';
+            cntEl.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 0 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 0 );
         } );
 
-        it( 'and works nicely with relevant even if repeat count is 0 (with relevant on group)', function() {
+        it( 'and works nicely with relevant even if repeat count is 0 (with relevant on group)', () => {
             // When repeat count is zero there is no context node to pass to evaluator.
-            var f = loadForm( 'repeat-count-relevant.xml' );
-            var errors = f.init();
+            const form = loadForm( 'repeat-count-relevant.xml' );
+            const errors = form.init();
             expect( errors.length ).toEqual( 0 );
-            expect( f.view.$.find( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
-            expect( f.view.$.find( '.or-group.or-branch[name="/data/rep"]' ).hasClass( 'disabled' ) ).toBe( true );
+            expect( form.view.html.querySelectorAll( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
+            expect( form.view.html.querySelector( '.or-group.or-branch[name="/data/rep"]' ).classList.contains( 'disabled' ) ).toBe( true );
         } );
 
-        it( 'and works nicely with relevant even if repeat count is 0 (with output in group label)', function() {
+        it( 'and works nicely with relevant even if repeat count is 0 (with output in group label)', () => {
             // When repeat count is zero there is no context node to pass to evaluator.
-            var f = loadForm( 'repeat-count-relevant.xml' );
-            var errors = f.init();
+            const f = loadForm( 'repeat-count-relevant.xml' );
+            const errors = f.init();
             expect( errors.length ).toEqual( 0 );
-            expect( f.view.$.find( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
-            f.view.$.find( 'input[name="/data/q1"]' ).val( 2 ).trigger( 'change' );
-            expect( f.view.$.find( '.or-group.or-branch[name="/data/rep"]>h4 .or-output' ).text() ).toEqual( '2' );
+            expect( f.view.html.querySelectorAll( '.or-repeat[name="/data/rep"]' ).length ).toEqual( 0 );
+            f.view.html.querySelector( 'input[name="/data/q1"]' ).value = 2;
+            f.view.html.querySelector( 'input[name="/data/q1"]' ).dispatchEvent( event.Change() );
+            expect( [ ...f.view.html.querySelectorAll( '.or-group.or-branch[name="/data/rep"]>h4 .or-output' ) ].map( i => i.textContent ).join( '' ) ).toEqual( '2' );
         } );
 
-        it( 'and correctly deals with nested repeats that have a repeat count', function() {
-            var f = loadForm( 'repeat-count-nested-2.xml' );
-            var schools = '[name="/data/repeat_A/schools"]';
-            var a = '.or-repeat[name="/data/repeat_A"]';
-            var b = '.or-repeat[name="/data/repeat_A/repeat_B"]';
-            f.init();
+        it( 'and correctly deals with nested repeats that have a repeat count', () => {
+            const form = loadForm( 'repeat-count-nested-2.xml' );
+            const a = '.or-repeat[name="/data/repeat_A"]';
+            const b = '.or-repeat[name="/data/repeat_A/repeat_B"]';
+            form.init();
 
-            f.view.$.find( schools ).eq( 1 ).val( '2' ).trigger( 'change' );
+            const school = form.view.html.querySelectorAll( '[name="/data/repeat_A/schools"]' )[ 1 ];
+            school.value = '2';
+            school.dispatchEvent( event.Change() );
 
-            expect( f.view.$.find( a ).eq( 1 ).find( b ).length ).toEqual( 2 );
+            expect( form.view.html.querySelectorAll( a )[ 1 ].querySelectorAll( b ).length ).toEqual( 2 );
         } );
     } );
 
 
-    describe( 'creates 0 repeats', function() {
+    describe( 'creates 0 repeats', () => {
 
-        it( ' if a record is loaded with 0 repeats (simple)', function() {
-            var repeat = '.or-repeat[name="/repeat-required/rep"]';
-            var f = loadForm( 'repeat-required.xml', '<repeat-required><d>b</d><meta><instanceID>a</instanceID></meta></repeat-required>' );
-            f.init();
-            expect( f.view.$.find( repeat ).length ).toEqual( 0 );
+        it( ' if a record is loaded with 0 repeats (simple)', () => {
+            const repeat = '.or-repeat[name="/repeat-required/rep"]';
+            const form = loadForm( 'repeat-required.xml', '<repeat-required><d>b</d><meta><instanceID>a</instanceID></meta></repeat-required>' );
+            form.init();
+            expect( form.view.html.querySelectorAll( repeat ).length ).toEqual( 0 );
         } );
 
-        it( ' if a record is loaded with 0 nested repeats (simple)', function() {
-            var repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-            var repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-            var f = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
+        it( ' if a record is loaded with 0 nested repeats (simple)', () => {
+            const repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+            const repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+            const form = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
                 '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name></INFORMATION></Partner>' +
                 '</PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>' );
-            f.init();
-            expect( f.view.$.find( repeat1 ).length ).toEqual( 1 );
-            expect( f.view.$.find( repeat2 ).length ).toEqual( 0 );
+            form.init();
+            expect( form.view.html.querySelectorAll( repeat1 ).length ).toEqual( 1 );
+            expect( form.view.html.querySelectorAll( repeat2 ).length ).toEqual( 0 );
         } );
 
-        it( ' if a record is loaded with 0 nested repeats (advanced)', function() {
-            var repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
-            var repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
-            var f = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
+        it( ' if a record is loaded with 0 nested repeats (advanced)', () => {
+            const repeat1 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner"]';
+            const repeat2 = '.or-repeat[name="/q/PROGRAMME/PROJECT/Partner/INFORMATION/Camp"]';
+            const form = loadForm( 'nested-repeats-nasty.xml', '<q><PROGRAMME><PROJECT>' +
                 '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name></INFORMATION></Partner>' +
                 '<Partner><INFORMATION><Partner_Name>MSF</Partner_Name><Camp><P_Camps/></Camp></INFORMATION></Partner>' +
                 '</PROJECT></PROGRAMME><meta><instanceID>a</instanceID></meta></q>' );
-            f.init();
-            expect( f.view.$.find( repeat1 ).length ).toEqual( 2 );
-            expect( f.view.$.find( repeat1 ).eq( 0 ).find( repeat2 ).length ).toEqual( 0 );
-            expect( f.view.$.find( repeat1 ).eq( 1 ).find( repeat2 ).length ).toEqual( 1 );
+            form.init();
+            expect( form.view.html.querySelectorAll( repeat1 ).length ).toEqual( 2 );
+            expect( form.view.html.querySelectorAll( repeat1 )[ 0 ].querySelectorAll( repeat2 ).length ).toEqual( 0 );
+            expect( form.view.html.querySelectorAll( repeat1 )[ 1 ].querySelectorAll( repeat2 ).length ).toEqual( 1 );
         } );
 
         // This is a VERY special case, because the form contains a template as well as multiple repeat instances
-        xit( ' if a record is loaded with 0 repeats (very advanced)', function() {
-            var repeat = '.or-repeat[name="/repeat-dot/rep.dot"]';
-            var f = loadForm( 'repeat-dot.xml', '<repeat-dot><meta><instanceID>a</instanceID></meta></repeat-dot>' );
+        xit( ' if a record is loaded with 0 repeats (very advanced)', () => {
+            const repeat = '.or-repeat[name="/repeat-dot/rep.dot"]';
+            const f = loadForm( 'repeat-dot.xml', '<repeat-dot><meta><instanceID>a</instanceID></meta></repeat-dot>' );
             f.init();
-            expect( f.view.$.find( repeat ).length ).toEqual( 0 );
+            expect( f.view.html.querySelectorAll( repeat ).length ).toEqual( 0 );
         } );
     } );
 
-    describe( 'initializes date widgets', function() {
-        it( 'in a new repeat instance if the date widget is not relevant by default', function() {
-            var form = loadForm( 'repeat-irrelevant-date.xml' );
+    describe( 'initializes date widgets', () => {
+        it( 'in a new repeat instance if the date widget is not relevant by default', () => {
+            const form = loadForm( 'repeat-irrelevant-date.xml' );
             form.init();
-            form.view.$.find( '.add-repeat-btn' ).click();
+            form.view.html.querySelector( '.add-repeat-btn' ).click();
             // make date field in second repeat relevant
-            form.view.$.find( '[name="/repeat/rep/a"]' ).eq( 1 ).val( 'a' ).trigger( 'change' );
-            expect( form.view.$.find( '[name="/repeat/rep/b"]' ).eq( 1 ).closest( '.question' ).find( '.widget' ).length ).toEqual( 1 );
+            const el = form.view.html.querySelectorAll( '[name="/repeat/rep/a"]' )[ 1 ];
+            el.value = 'a';
+            el.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( '[name="/repeat/rep/b"]' )[ 1 ].closest( '.question' ).querySelectorAll( '.widget' ).length ).toEqual( 1 );
+        } );
+    } );
+
+    describe( 'getIndex() function', () => {
+
+        const form = loadForm( 'nested_repeats.xml' );
+        form.init();
+        const repeats = form.view.html.querySelectorAll( '.or-repeat[name="/nested_repeats/kids/kids_details/immunization_info"]' );
+
+        [ 0, 1, 2, 3, 4 ].forEach( index => {
+            it( 'works with nested repeats to get the index of a nested repeat in respect to the whole form', () => {
+                expect( form.repeats.getIndex( repeats[ index ] ) ).toEqual( index );
+            } );
         } );
     } );
 

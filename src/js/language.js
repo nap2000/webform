@@ -1,32 +1,33 @@
-'use strict';
-
 /**
  * Form languages module.
  */
 
-var $ = require( 'jquery' );
+import $ from 'jquery';
 
-module.exports = {
-    init: function() {
-        var that = this;
-        var $langSelector = $( '.form-language-selector' ); // smap
-
+export default {
+    init() {
+	var $langSelector = $( '.form-language-selector' ); // smap
+        const that = this;
         if ( !this.form ) {
             throw new Error( 'Language module not correctly instantiated with form property.' );
         }
-        //var $langSelector = $( this.form.view.html.parentNode.querySelector( '.form-language-selector' ) );  smap
+        const root = this.form.view.html.closest( 'body' ) || this.form.view.html.parentNode;
+        if ( !root ) {
+            return;
+        }
+        // const $langSelector = $( root.querySelector( '.form-language-selector' ) );   // smap
         this.$formLanguages = $( this.form.view.html.querySelector( '#form-languages' ) );
-        this.currentLang = this.$formLanguages.attr( 'data-default-lang' ) || this.$formLanguages.find( 'option' ).eq( 0 ).attr( 'value' );
-        var currentDirectionality = this.$formLanguages.find( '[value="' + this.currentLang + '"]' ).attr( 'data-dir' ) || 'ltr';
+        this._currentLang = this.$formLanguages.attr( 'data-default-lang' ) || this.$formLanguages.find( 'option' ).eq( 0 ).attr( 'value' );
+        const currentDirectionality = this.$formLanguages.find( `[value="${this._currentLang}"]` ).attr( 'data-dir' ) || 'ltr';
 
-        if ( $langSelector.length ) {
+        if ( $langSelector.length && this.$formLanguages.find( 'option' ).length > 1 ) {
             this.$formLanguages
                 .detach()
                 .appendTo( $langSelector );
             $langSelector.removeClass( 'hide' );
         }
 
-        this.$formLanguages.val( this.currentLang );
+        this.$formLanguages.val( this._currentLang );
 
         this.form.view.$
             .attr( 'dir', currentDirectionality );
@@ -37,27 +38,27 @@ module.exports = {
 
         this.$formLanguages.change( function( event ) {
             event.preventDefault();
-            that.currentLang = $( this ).val();
-            that.setAll( that.currentLang );
+            that._currentLang = $( this ).val();
+            that.setAll( that._currentLang );
         } );
     },
-    getCurrentLang: function() {
-        return this.currentLang;
+    get currentLang() {
+        return this._currentLang;
     },
-    getCurrentLangDesc: function() {
-        return this.$formLanguages.find( '[value="' + this.currentLang + '"]' ).text();
+    get currentLangDesc() {
+        return this.$formLanguages.find( `[value="${this._currentLang}"]` ).text();
     },
-    setAll: function( lang ) {
-        var that = this;
-        var dir = this.$formLanguages.find( '[value="' + lang + '"]' ).attr( 'data-dir' ) || 'ltr';
+    setAll( lang ) {
+        const that = this;
+        const dir = this.$formLanguages.find( `[value="${lang}"]` ).attr( 'data-dir' ) || 'ltr';
 
         this.form.view.$
             .attr( 'dir', dir )
             .find( '[lang]' )
             .removeClass( 'active' )
-            .filter( '[lang="' + lang + '"], [lang=""]' )
+            .filter( `[lang="${lang}"], [lang=""]` )
             .filter( function() {
-                var $this = $( this );
+                const $this = $( this );
                 return !$this.hasClass( 'or-form-short' ) || ( $this.hasClass( 'or-form-short' ) && $this.siblings( '.or-form-long' ).length === 0 );
             } )
             .addClass( 'active' );
@@ -67,24 +68,32 @@ module.exports = {
         window.enketoFormLocale = lang;
 
         this.form.view.$.find( 'select, datalist' ).each( function() {
-            that.setSelect( $( this ) );
+            that.setSelect( this );
         } );
 
         this.form.view.$.trigger( 'changelanguage' );
     },
     // swap language of <select> and <datalist> <option>s
-    setSelect: function( $select ) {
-        var value;
-        var /** @type {string} */ curLabel;
-        var /** @type {string} */ newLabel;
-        $select.children( 'option' ).not( '[value=""], [data-value=""]' ).each( function() {
-            var $option = $( this );
-            curLabel = $option.text();
-            value = $option.attr( 'value' ) || $option[ 0 ].dataset.value;
-            newLabel = $option.closest( '.question' ).find( '.or-option-translations' )
-                .children( '.active[data-option-value="' + value + '"]' ).text().trim();
-            newLabel = ( typeof newLabel !== 'undefined' && newLabel.length > 0 ) ? newLabel : curLabel;
-            $option.text( newLabel );
-        } );
+    setSelect( select ) {
+        const type = select.nodeName.toLowerCase();
+        const question = select.closest( '.question' );
+        const translations = question ? question.querySelector( '.or-option-translations' ) : null;
+
+        if ( !translations ) {
+            return;
+        }
+        Array.prototype.slice.call( select.children )
+            .filter( el => el.matches( 'option' ) && !el.matches( '[value=""], [data-value=""]' ) )
+            .forEach( option => {
+                const curLabel = type === 'datalist' ? option.value : option.textContent;
+                const value = type === 'datalist' ? option.dataset.value : option.value;
+                const translatedOption = translations.querySelector( `.active[data-option-value="${value}"]` );
+                let newLabel = curLabel;
+                if ( translatedOption && translatedOption.textContent ) {
+                    newLabel = translatedOption.textContent;
+                }
+                option.value = value;
+                option.textContent = newLabel;
+            } );
     }
 };

@@ -1,71 +1,49 @@
-'use strict';
-
-var Widget = require( '../../js/Widget' );
-var $ = require( 'jquery' );
-var pluginName = 'datepickerMobile';
-var support = require( '../../js/support' );
+import Widget from '../../js/widget';
+import support from '../../js/support';
+import { elementDataStore as data } from '../../js/dom-utils';
 
 /**
  * For now, the whole purpose of this widget is to show a native month picker on 
  * MOBILE devices with browsers that support it.
- * 
- * @constructor
- * @param {Element} element   element to apply widget to
- * @param {*}       options   options
- * @param {*=}      event     event
  */
+class DatepickerMobile extends Widget {
 
-function DatePickerMobile( element, options ) {
-    this.namespace = pluginName;
-    Widget.call( this, element, options );
-    this._init();
+    static get selector() {
+        return '.or-appearance-month-year input[type="date"]';
+    }
+
+    static condition( element ) {
+        // Do not instantiate if DatepickerExtended was instantiated on element or if non-mobile device is used.
+        return !data.has( element, 'DatepickerExtended' ) && support.touch;
+    }
+
+    _init() {
+        if ( support.inputTypes.month ) {
+            this.element.classList.add( 'hide' );
+            const fragment = document.createRange().createContextualFragment( '<input class="ignore widget datepicker-mobile" type="month"/>' );
+            this.element.after( fragment );
+            this.widgetInput = this.question.querySelector( 'input.widget' );
+            // set default value
+            this.value = this.originalInputValue;
+
+            this.widgetInput.addEventListener( 'change', () => {
+                this.originalInputValue = this.value;
+            } );
+        }
+    }
+
+    get value() {
+        return this.widgetInput.value ? `${this.widgetInput.value}-01` : '';
+    }
+
+    set value( value ) {
+        const toSet = value ? value.substring( 0, value.lastIndexOf( '-' ) ) : '';
+        this.widgetInput.value = toSet;
+    }
+
+    update() {
+        this.value = this.originalInputValue;
+    }
 }
 
-DatePickerMobile.prototype = Object.create( Widget.prototype );
-DatePickerMobile.prototype.constructor = DatePickerMobile;
-
-/**
- * Initialize datepicker widget
- */
-DatePickerMobile.prototype._init = function() {
-    var $input = $( this.element );
-    var loadedValue = this.element.value;
-
-    // Activate the native mobile month picker
-    if ( support.inputTypes.month ) {
-        var $fakeInput = $( '<input class="ignore widget datepicker-mobile" type="month"/>' );
-
-        $input
-            .addClass( 'hide' );
-
-        $fakeInput
-            .val( loadedValue ? loadedValue.substring( 0, loadedValue.lastIndexOf( '-' ) ) : '' )
-            .insertAfter( $input )
-            .on( 'change', function() {
-                var correctedValue = this.value ? this.value + '-01' : '';
-                $input.val( correctedValue ).trigger( 'change' );
-            } );
-    }
-};
-
-$.fn[ pluginName ] = function( options, event ) {
-
-    options = options || {};
-
-    return this.each( function() {
-        var $this = $( this );
-        var dp = $this.data( 'datepickerExtended' );
-        var data = $this.data( pluginName );
-
-        // If no datepickerExtended widget is present on the same element
-        // and it is a mobile device.
-        if ( !dp && typeof options === 'object' && !data && support.touch ) {
-            $this.data( pluginName, new DatePickerMobile( this, options, event ) );
-        }
-    } );
-};
-
-module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-month-year input[type="date"]'
-};
+export default DatepickerMobile;

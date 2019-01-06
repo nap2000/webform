@@ -3,6 +3,132 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+[Unreleased]
+--------------------
+##### Fixed
+- Loading error in Pages mode when a page has no label.
+- Itemsets not populating if inside an irrelevant group upon load.
+
+[5.0.1] - 2018-12-20
+--------------------
+##### Changed
+- Support Document instance for external data.
+
+##### Fixed
+- Likert item option labels with unequal number of lines not lined up correctly in Grid Theme.
+
+[5.0.0] - 2018-12-17
+--------------------
+##### Removed
+- Deprecated methods.
+- 
+##### Changed
+- Converted to modern Javascript **WARNING: requires new build systems**
+- Do not include time component for today().
+- Converted to new widget format **WARNING: widgets in the old format are no longer supported**.
+- Consistent JS filenames without capitalization and without camelCasing.
+
+##### Fixed
+- Default values not loaded in non-first repeat instances.
+- Table widget option hover background is not centered around radiobutton/checkbox.
+- Date calculations (e.g. today()) for number type questions do not return a number.
+- RTL script detection failing with Sorani (Kurdish) and other languages (Enketo Transformer).
+
+[4.60.6] - 2016-10-26
+----------------------
+##### Fixed
+- Does not show select options from external data if form is not translated (Survey123 only).
+
+[4.60.5] - 2018-10-25
+----------------------
+##### Fixed
+- Autocomplete widget not updating when form language is changed.
+- Failing to translate select options from external data (Survey123 only).
+
+[4.60.4] - 2018-10-19
+----------------------
+##### Fixed
+- If grid form starts with a disabled question, the first question has no top border.
+- If first page in form is irrelevant upon load, it is still shown (in grayscale).
+- Minimal select picker (pulldown) not updating model (regression in 4.60.3).
+
+[4.60.3] - 2018-10-16
+----------------------
+##### Fixed
+- Loading records not working in IE11. All node values are emptied when a record is supplied.
+- In FF when a radiobutton or checkbox is clicked directly in a pulldown select, the URL fragment identifier is updated (and page scrolls to the top).
+
+[4.60.2] - 2018-10-05
+----------------------
+##### Fixed
+- Timepicker localized AM/PM strings not detected properly in Firefox and Safari.
+
+[4.60.1] - 2018-10-05
+----------------------
+##### Fixed
+- Timepicker meridian field not wide enough for Chinese AM/PM.
+- Timepicker meridian detection not working in IE11.
+- IE11 polyfill for .after not working on comment nodes.
+
+[4.60.0] - 2018-09-24
+----------------------
+##### Changed
+- Form model was refactored to remove jQuery dependency.
+
+##### Fixed
+- Cascading selections with radiobuttons/checkboxes do not show image labels.
+- Loading error when record with repeat calculation was loaded and validateContinously was set to `true`.
+
+[4.59.0] - 2018-09-11
+----------------------
+##### Added
+- new `Form.prototype.getModelValue` function and made this available as a widget helper.
+
+##### Changed
+- Performance of engine (determining index).
+- `FormModel.prototype.getVal` now returns a string. **WARNING: internal API change that may affect custom apps**
+- Print hints are now guidance hints, and follow ODK XForms specification.
+
+##### Fixed
+- Range pickers not showing current value "thumb" on printouts.
+- Distresspicker thumb not centered on Chrome and Safari.
+- `jr:choice-name()` function not working with autocomplete questions.
+- Language selector not populated in some Enketo-powered applications.
+
+[4.58.0] - 2018-08-28
+----------------------
+##### Changed
+- IE11 support is now enabled differently. See [readme.md](https://github.com/enketo/enketo-core#enabling-support-for-internet-explorer-11). **WARNING**
+  
+##### Fixed
+- Calculation results inside repeats are shown incorrectly to user under certain conditions.
+- When a repeat is removed, calculations inside sibling repeats (e.g. using `position(..)`) are not always re-calculated.
+
+[4.57.2] - 2018-08-24
+----------------------
+##### Fixed
+- Loaded year and month-year values not displayed correctly in date (desktop) widget.
+
+[4.57.1] - 2018-08-23
+----------------------
+##### Changed
+- Provide way to not apply 'empty' class to special readonly views.
+
+##### Fixed
+- Appearance "placement-map" not showing map in geowidgets.
+- If form in Pages Mode has a repeat as the first page (with field-list), a blank first page is shown.
+
+[4.57.0] - 2018-08-13
+----------------------
+##### Added
+- Table of Contents to Pages mode that enables jumping to any page.
+
+##### Fixed
+- Questions with calculations do not re-validate immediately when the value is re-calculated (with `validateContinuously: true`).
+- Labels with words longer the form width, overlap with other form elements.
+- Readonly questions in newly cloned repeats in Grid Theme do not get the proper readonly styling.
+- Whitespace only input triggers a `valuechange.enketo` event but should not.
+
 [4.56.0] - 2018-08-06
 ----------------------
 ##### Added
@@ -13,7 +139,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ##### Fixed
 - Download links in file input and draw widgets not working in IE11.
 - The required asterisks (*) do not update in real-time if `validateContinously` is set to `false`.
-- If a required text input field has a non-whitespace value that is replaced by the user to a white-space-only value the new whitespace-only value is saved and considered valid.
+- If a required text input field has a non-whitespace value that is replaced by the user to a whitespace-only value the new whitespace-only value is saved and considered valid.
 
 [4.55.1] - 2018-07-25
 ----------------------
