@@ -53,7 +53,7 @@ function Geopicker( element, options ) {
         googleApiKey = smapConfig.googleApiKey;
     }
     // end smap
-    
+
     // call the super class constructor
     Widget.call( this, element, options );
 
