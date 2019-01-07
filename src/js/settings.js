@@ -1,6 +1,6 @@
 'use strict';
 
-var config = require( 'enketo/config' );
+import config from 'enketo/config' ;
 var queryParams = _getAllQueryParams();
 var settings = {};
 var DEFAULT_MAX_SIZE = 5 * 1024 * 1024;
@@ -152,4 +152,5 @@ function _getAllQueryParams() {
     return params;
 }
 
-module.exports = settings;
+export default settings ;
+

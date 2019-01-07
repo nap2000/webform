@@ -2,8 +2,11 @@
 /**
  * When using enketo-core in your own app, you'd want to replace
  * this build file with one of your own in your project root.
+ * Smap changes
+ *  1) Remove nodeSass
+ *  2) Set develop task to only compile and not to change style
  */
-const nodeSass = require( 'node-sass' );
+/*const nodeSass = require( 'node-sass' );*/
 
 module.exports = grunt => {
     // show elapsed time at the end
@@ -142,7 +145,7 @@ module.exports = grunt => {
         }
     } );
 
-    grunt.loadNpmTasks( 'grunt-sass' );
+    /*grunt.loadNpmTasks( 'grunt-sass' );*/
 
     grunt.registerTask( 'transforms', 'Creating forms.json', function() {
         const forms = {};
@@ -175,6 +178,7 @@ module.exports = grunt => {
     grunt.registerTask( 'test', [ 'jsbeautifier:test', 'eslint', 'compile', 'transforms', 'karma:headless', 'style' ] );
     grunt.registerTask( 'style', [ 'sass' ] );
     grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );
-    grunt.registerTask( 'develop', [ 'style', 'compile', 'concurrent:develop' ] );
+    grunt.registerTask( 'develop_orig', [ 'style', 'compile', 'concurrent:develop' ] );
+    grunt.registerTask( 'develop', [ 'compile' ] );
     grunt.registerTask( 'default', [ 'style', 'compile' ] );
 };
