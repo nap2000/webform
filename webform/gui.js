@@ -18,29 +18,22 @@
  * Deals with the main GUI elements (but not the survey form)
  */
 
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
-}
-//define( [ 'Modernizr', 'wfapp/settings', 'wfapp/print', 'jquery', 'wfapp/plugin', ], function( Modernizr, settings, printForm, $ ) {
-
-define(function (require, exports, module) {
     "use strict";
 
-    var settings = require('./settings');
-    var $ = require( 'jquery' );
-    var plugin = require('./plugin');
-    var printForm = require('../src/js/print');
-    var t = require( 'enketo/translator' ).t;
+    import settings from '../src/js/settings';
+    import $ from 'jquery' ;
+    import { print, fixGrid, styleToAll, styleReset, isGrid } from '../src/js/print';
+    import { t } from 'enketo/translator';
 
     var nav, pages, updateStatus, feedbackBar,
         supportLink = '<a href="mailto:' + settings[ 'supportEmail' ] + '">' + settings[ 'supportEmail' ] + '</a>';
 
+    let gui = {};
     /**
+     *
      * Initializes a GUI object.
      */
-    function init() {
+    gui.init = function() {
         nav.setup();
         pages.init();
         setEventHandlers();
@@ -81,7 +74,7 @@ define(function (require, exports, module) {
         } );
 
         $( 'button.print' ).on( 'click', function() {
-            printForm();
+            print();
         } );
 
         $( '.side-slider-toggle' ).on( 'click', function() {
@@ -644,10 +637,11 @@ define(function (require, exports, module) {
         $target.find( 'ul' ).empty().append( listHTML );
     }
 
-    //$( document ).ready( function() {
-    init();
-    //} );
+    gui.init();
 
+    export default gui;
+
+    /*
     module.exports = {
         alert: alert,
         confirm: confirm,
@@ -659,4 +653,5 @@ define(function (require, exports, module) {
         showCacheUnsupported: showCacheUnsupported,
         parseFormlist: parseFormlist
     };
-} );
+    */
+

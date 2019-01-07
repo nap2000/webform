@@ -130,9 +130,9 @@ module.exports = grunt => {
             }
         },
         shell: {
-            transformer: {
+            /*transformer: {
                 command: 'node node_modules/enketo-transformer/app.js'
-            },
+            },*/
             rollup: {
                 command: 'npx rollup --config'
             },

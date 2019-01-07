@@ -1,29 +1,5 @@
-/**
- * @preserve Copyright 2013 Martijn van de Rijdt
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
-}
-
-//define( [ 'jquery' ], function( $ ) {
-define( function( require, exports, module ) {
-
-    var $ = require( 'jquery' );
+    import $ from 'jquery';
 
     "use strict";
     var RESERVED_KEYS = ['user_locale', '__settings', 'null', '__history', 'Firebug', 'undefined', '__bookmark', '__counter',
@@ -31,8 +7,10 @@ define( function( require, exports, module ) {
         ],
         localStorage = window.localStorage;
 
+    let store = {};
+
     // Could be replaced by Modernizr function if Modernizr remains used in final version
-    function isSupported() {
+    store.isSupported = function() {
         try {
             return 'localStorage' in window && window['localStorage'] !== null;
         } catch (e) {
@@ -40,17 +18,17 @@ define( function( require, exports, module ) {
         }
     }
 
-    function isWritable() {
-        var result = setRecord('__writetest', 'x', null, true);
+    store.isWritable = function() {
+        var result = store.setRecord('__writetest', 'x', null, true);
         if (result === 'success') {
-            removeRecord('__writetest');
+            store.removeRecord('__writetest');
             return true;
         }
         return false;
     }
 
     //used for testing
-    function getForbiddenKeys() {
+    store.getForbiddenKeys = function() {
         return RESERVED_KEYS;
     }
 
@@ -63,7 +41,7 @@ define( function( require, exports, module ) {
      * @param {?string=} oldKey    [description]
      * @return {string}
      */
-    function setRecord(newKey, record, del, overwrite, oldKey) {
+    store.setRecord = function(newKey, record, del, overwrite, oldKey) {
         var error;
         if (!newKey || typeof newKey !== 'string' || newKey.length < 1) {
             //console.error( 'no key or empty key provided for record: ' + newKey );
@@ -86,12 +64,10 @@ define( function( require, exports, module ) {
             //add timestamp to survey data
             if (typeof record['data'] === 'string') {
                 record['lastSaved'] = ( new Date() ).getTime();
-                //if (newKey == getCounterValue() ){
                 localStorage.setItem('__counter', JSON.stringify({
                     'counter': getCounterValue()
                 }));
 
-                //}
             }
             localStorage.setItem(newKey, JSON.stringify(record));
             //console.debug( 'saved: ' + newKey + ', old key was: ' + oldKey );
@@ -100,7 +76,7 @@ define( function( require, exports, module ) {
             if (oldKey !== null && oldKey !== '' && oldKey !== newKey) {
                 if (del) {
                     console.log('going to remove old record with key:' + oldKey);
-                    removeRecord(oldKey);
+                    store.removeRecord(oldKey);
                 }
             }
             return 'success';
@@ -112,13 +88,13 @@ define( function( require, exports, module ) {
             error = ( e ) ? JSON.stringify(e) : 'unknown';
             return 'error: ' + error;
         }
-    }
+    };
 
-    function setKey(key, value) {
+    store.setKey = function(key, value) {
 
         localStorage.setItem(key, JSON.stringify(value));
 
-    }
+    };
 
 
     /**
@@ -126,7 +102,7 @@ define( function( require, exports, module ) {
      * @param  {string} key [description]
      * @return {?*}     [description]
      */
-    function getRecord(key) {
+    store.getRecord = function(key) {
         var record;
         try {
             var x = localStorage.getItem(key);
@@ -136,50 +112,50 @@ define( function( require, exports, module ) {
             console.error('error with loading data from store: ' + e.message);
             return null;
         }
-    }
+    };
 
     // removes a record
-    function removeRecord(key) {
+    store.removeRecord = function(key) {
         try {
             localStorage.removeItem(key);
             if (!isReservedKey(key)) {
-                $('form.or').trigger('delete', JSON.stringify(getRecordList()));
+                $('form.or').trigger('delete', JSON.stringify(store.getRecordList()));
             }
             return true;
         } catch (e) {
             console.log('error with removing data from store: ' + e.message);
             return false;
         }
-    }
+    };
 
     // Removes all records
-    function removeAllRecords() {
+    store.removeAllRecords = function() {
         var records = getSurveyRecords(false);
 
         records.forEach(function (record) {
-            removeRecord(record.key);
+            store.removeRecord(record.key);
         });
-    }
+    };
 
     /**
      * Returns a list of locally stored form names and properties for a provided server URL
      * @param  {string} serverURL
      * @return {Array.<{name: string, server: string, title: string, url: string}>}
      */
-    function getFormList(serverURL) {
+    store.getFormList = function(serverURL) {
         if (typeof serverURL == 'undefined') {
             return null;
         }
-        return /**@type {Array.<{name: string, server: string, title: string, url: string}>}*/ getRecord('__server_' + serverURL);
-    }
+        return store.getRecord('__server_' + serverURL);
+    };
 
     /**
      * returns an ordered array of objects with record keys and final variables {{"key": "name1", "draft": true},{"key": "name2", etc.
      * @return { Array.<Object.<string, (boolean|string)>>} [description]
      */
-    function getRecordList() {
+    store.getRecordList = function() {
         var formList = [],
-            records = getSurveyRecords(false);
+            records = store.getSurveyRecords(false);
 
         records.forEach(function (record) {
             formList.push({
@@ -194,7 +170,7 @@ define( function( require, exports, module ) {
             return a['lastSaved'] - b['lastSaved'];
         });
         return formList;
-    }
+    };
 
     /**
      * retrieves all survey data
@@ -202,7 +178,7 @@ define( function( require, exports, module ) {
      * @param  {?string=} excludeName [description]
      * @return {Array.<Object.<(string|number), (string|boolean)>>}             [description]
      */
-    function getSurveyRecords(finalOnly, excludeName) {
+    store.getSurveyRecords = function(finalOnly, excludeName) {
         var i, key,
             records = [],
             record = {};
@@ -211,10 +187,10 @@ define( function( require, exports, module ) {
 
         for (i = 0; i < localStorage.length; i++) {
             key = localStorage.key(i);
-            if (!isReservedKey(key) && !key.startsWith("fs::")) {
+            if (!store.isReservedKey(key) && !key.startsWith("fs::")) {
 
                 // get record -
-                record = getRecord(key);
+                record = store.getRecord(key);
 
                 try {
                     record.key = key;
@@ -232,7 +208,7 @@ define( function( require, exports, module ) {
         }
 
         return records;
-    }
+    };
 
     /**
      * [getSurveyDataArr description]
@@ -240,35 +216,29 @@ define( function( require, exports, module ) {
      * @param  {?string=} excludeName the (currently open) record name to exclude from the returned data set
      * @return {Array.<{name: string, data: string}>}             [description]
      */
-    function getSurveyDataArr(finalOnly, excludeName) {
+    store.getSurveyDataArr = function(finalOnly, excludeName) {
         var i, records,
             dataArr = [];
 
         finalOnly = ( typeof finalOnly !== 'undefined' ) ? finalOnly : true;
         excludeName = excludeName || null;
-        return getSurveyRecords(finalOnly, excludeName);
-    }
+        return store.getSurveyRecords(finalOnly, excludeName);
+    };
 
 
-    function getExportStr() {
+    store.getExportStr = function() {
         var dataStr = '';
 
-        getSurveyDataArr(false).forEach(function (record) {
+        store.getSurveyDataArr(false).forEach(function (record) {
             dataStr += '<record name="' + record.key + '" lastSaved="' + record.lastSaved + '"' +
                 ( record.draft ? ' draft="true()"' : '' ) +
                 '>' + record.data + '</record>';
         });
 
         return dataStr;
-    }
+    };
 
-    /**
-     * private function to check if key is forbidden
-     * @param  {string}  k [description]
-     * @return {boolean}   [description]
-     */
-
-    function isReservedKey(k) {
+    store.isReservedKey = function(k) {
         var i;
         for (i = 0; i < RESERVED_KEYS.length; i++) {
             if (k === RESERVED_KEYS[i]) {
@@ -276,34 +246,24 @@ define( function( require, exports, module ) {
             }
         }
         return false;
-    }
+    };
 
-    /**
-     * private function to check if the key exists
-     * @param  {string}  k [description]
-     * @return {boolean}   [description]
-     */
-
-    function isExistingKey(k) {
+    store.isExistingKey = function(k) {
         if (localStorage.getItem(k)) {
             //console.log('existing key');// DEBUG
             return true;
         }
         //console.log('not existing key');// DEBUG
         return false;
-    }
+    };
 
-    /**
-     * Obtain a new counter string value that is one higher than the previous
-     * @return {?(string|String)} [description]
-     */
-    function getCounterValue() {
-        var record = getRecord('__counter'),
+    store.getCounterValue = function() {
+        var record = store.getRecord('__counter'),
             number = ( record && record['counter'] && isNumber(record['counter']) ) ? Number(record['counter']) : 0,
             numberStr = ( number + 1 ).toString().pad(4);
 
         return numberStr;
-    }
+    };
 
 
     function isNumber(n) {
@@ -311,6 +271,9 @@ define( function( require, exports, module ) {
     }
 
 
+    export default store;
+
+    /*
     module.exports = {
         isSupported: isSupported,
         isWritable: isWritable,
@@ -325,8 +288,9 @@ define( function( require, exports, module ) {
         getSurveyDataArr: getSurveyDataArr,
         getCounterValue: getCounterValue,
         setKey : setKey
+
     };
+*/
 
 
-} );
 

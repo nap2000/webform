@@ -1,25 +1,5 @@
-/**
- * Simple file manager with cross-browser support. That uses the FileReader
- * to create previews. Can be replaced with a more advanced version that
- * obtains files from storage.
- *
- * The replacement should support the same public methods and return the same
- * types.
- */
 
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
-}
-
-//define( [ "wfapp/q", "jquery" ], function( Q, $ ) {
-define( function( require, exports, module ) {
     "use strict";
-
-    var Q = require('./q');
-    var $ = require( 'jquery' );
-    var utils = require ( '../src/js/utils');
 
     var FM_STORAGE_PREFIX = "fs::";
 
@@ -30,6 +10,8 @@ define( function( require, exports, module ) {
         filesystemReady,
         fs,
         DEFAULTBYTESREQUESTED = 100 * 1024 * 1024;
+
+    let fileStore = {};
 
     var supported = typeof FileReader !== 'undefined';
 
@@ -44,24 +26,24 @@ define( function( require, exports, module ) {
      * Initialize the file manager .
      * @return {[type]} promise boolean or rejection with Error
      */
-    function init() {
-        var deferred = Q.defer();
+    fileStore.init = function() {
+        return new Promise((resolve, reject) => {
 
-        // Initialise fileSystem storage if it is supported
-        if (supported) {
-            deferred.resolve(true);
-        } else {
-            deferred.reject(new Error('FileReader not supported.'));
-        }
+	        // Initialise fileSystem storage if it is supported
+	        if (supported) {
+		        resolve(true);
+	        } else {
+		        reject(new Error('FileReader not supported.'));
+	        }
 
-        return deferred.promise;
+        });
     }
 
     /**
      * Whether filemanager is supported in browser
      * @return {Boolean}
      */
-    function isSupported() {
+    fileStore.isSupported = function() {
         return supported;
     }
 
@@ -69,38 +51,12 @@ define( function( require, exports, module ) {
      * Whether the filemanager is waiting for user permissions
      * @return {Boolean} [description]
      */
-    function isWaitingForPermissions() {
+    fileStore.isWaitingForPermissions = function() {
         return false;
     }
 
 
-    /**
-     * Whether the file is too large too handle and should be rejected
-     * @param  {[type]}  file the File
-     * @return {Boolean}
-     */
-    function _isTooLarge(file) {
-        return file && file.size > _getMaxSize();
-    }
-
-    /**
-     * Returns the maximum size of a file
-     * @return {Number}
-     */
-    function _getMaxSize() {
-        if (!maxSize) {
-            maxSize = $(document).data('maxSubmissionSize') || 100 * 1024 * 1024;
-        }
-        return maxSize;
-    }
-
-    /*
-     * Functions for managing storage of media files
-     */
-    /**
-     * Deletes all stored files
-     */
-    function deleteAllAttachments () {
+    fileStore.deleteAllAttachments = function() {
 
         console.log("delete all local storage");
 
@@ -117,7 +73,7 @@ define( function( require, exports, module ) {
         }
     };
 
-    function getAllAttachments () {
+    fileStore.getAllAttachments = function () {
         var files = [];
         for (var key in localStorage) {
             if (key.startsWith(FM_STORAGE_PREFIX)) {
@@ -128,53 +84,16 @@ define( function( require, exports, module ) {
     }
 
 
-    function getCurrentQuota() {
+    fileStore.getCurrentQuota = function() {
         return currentQuota;
     };
 
-    function getCurrentQuotaUsed() {
+    fileStore.getCurrentQuotaUsed = function() {
         return currentQuotaUsed;
     };
 
-    /**
-     * generic error handler
-     * @param  {(Error|FileError|string)=} e [description]
-     */
-    function errorHandler(e) {
-        var msg = '';
 
-        if (typeof e !== 'undefined') {
-            switch (e.code) {
-                case window.FileError.QUOTA_EXCEEDED_ERR:
-                    msg = 'QUOTA_EXCEEDED_ERR';
-                    break;
-                case window.FileError.NOT_FOUND_ERR:
-                    msg = 'NOT_FOUND_ERR';
-                    break;
-                case window.FileError.SECURITY_ERR:
-                    msg = 'SECURITY_ERR';
-                    break;
-                case window.FileError.INVALID_MODIFICATION_ERR:
-                    msg = 'INVALID_MODIFICATION_ERR';
-                    break;
-                case window.FileError.INVALID_STATE_ERR:
-                    msg = 'INVALID_STATE_ERR';
-                    break;
-                default:
-                    msg = 'Unknown Error';
-                    break;
-            }
-        }
-        console.log('Error occurred: ' + msg);
-        //if ( typeof console.trace !== 'undefined' ) console.trace();
-    };
-
-    /**
-     * Deletes a complete directory with all its contents
-     * @param {string}                                  name        name of directory
-     * @param {{success: Function, error: Function}}    callbacks   callback functions (error, and success)
-     */
-    function deleteDir(name) {
+    fileStore.deleteDir = function(name) {
 
         if(typeof name !== "undefined") {
             console.log("delete directory: " + name);
@@ -194,12 +113,8 @@ define( function( require, exports, module ) {
         }
     };
 
-    /**
-     * Saves a file (synchronously) in the directory provided upon initialization
-     * @param  {File}                       file      File object from input field
-     * @param  {Object.<string, Function>}  callbacks callback functions (error, and success)
-     */
-    function saveFile(media, dirname) {
+
+    fileStore.saveFile = function(media, dirname) {
 
         console.log("save file: " + media.name + " : " + dirname);
         try {
@@ -219,46 +134,48 @@ define( function( require, exports, module ) {
      * @param {string}                              directoryName   directory to look in for files
      * @param {{newName: string, fileName: string}} file           object of file properties
      */
-    function retrieveFile(dirname, file) {
+    fileStore.retrieveFile = function(dirname, file) {
 
-        var deferred = Q.defer();
-        var updatedFile = {
-            fileName: file.fileName
-        };
+        return new Promise((resolve, reject) => {
 
-        var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + file.fileName;
-        var objectUrl = localStorage.getItem( key );
-        var blob;
+	        var updatedFile = {
+		        fileName: file.fileName
+	        };
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', objectUrl, true);
-        xhr.responseType = 'blob';
-        xhr.onreadystatechange = function(e) {
+	        var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + file.fileName;
+	        var objectUrl = localStorage.getItem(key);
+	        var blob;
 
-            if (xhr.readyState !== 4) {
-                return;
-            }
+	        var xhr = new XMLHttpRequest();
+	        xhr.open('GET', objectUrl, true);
+	        xhr.responseType = 'blob';
+	        xhr.onreadystatechange = function (e) {
 
-            if (this.status == 200) {
-                updatedFile.blob = this.response;
-                updatedFile.size = this.response.size;
-                deferred.resolve(updatedFile);
-            } else {
-                deferred.resolve(updatedFile);
-            }
-        };
-        xhr.send(null);
+		        if (xhr.readyState !== 4) {
+			        return;
+		        }
 
-        return deferred.promise;
+		        if (this.status == 200) {
+			        updatedFile.blob = this.response;
+			        updatedFile.size = this.response.size;
+			        resolve(updatedFile);
+		        } else {
+			        resolve(updatedFile);
+		        }
+	        };
+	        xhr.send(null);
+
+        });
 
     };
 
+    export default fileStore;
 
     /*
      * **********************************************
      * End Media Storage Functions
      * **********************************************
-     */
+     *
     module.exports = {
         isSupported: isSupported,
         isWaitingForPermissions: isWaitingForPermissions,
@@ -271,5 +188,6 @@ define( function( require, exports, module ) {
         getAllAttachments: getAllAttachments,
         retrieveFile: retrieveFile
     };
+    */
 
-} );
+

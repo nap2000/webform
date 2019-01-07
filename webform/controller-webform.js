@@ -1,46 +1,22 @@
-/**
- * @preserve Copyright 2013 Martijn van de Rijdt
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-/**
- * Deals with the main high level survey controls: saving, submitting etc.
- */
-
-if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
-    var define = function (factory) {
-        factory(require, exports, module);
-    };
-}
-
-define(function (require, exports, module) {
     "use strict";
 
-    var translator = require( 'enketo/translator' );
-    var t = translator.t;
-    var Form = require('../src/js/Form');
-    var FormModel = require('../src/js/Form-model');
-    var gui = require('./gui');
-    var connection = require('./connection');
-    var $ = require('jquery');
-    var ecFm = require('../src/js/file-manager');
-    require('bootstrap');
+    let controller = {};
+    import { t } from 'enketo/translator';
+
+    import { Form } from '../src/js/form';
+    import { FormModel } from '../src/js/form-model';
+
+    import gui from './gui';
+    import connection from'./connection';
+    import $ from 'jquery';
+    import ecFm from '../src/js/file-manager';
+    //require('bootstrap');
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileManager, startEditData;
 
-    function init(selector, options) {
-        var loadErrors, purpose, originalUrl, recordName;
+    controller.init = function(selector, options) {
+        var  purpose;
 
         $('article').hide();   // start loader
         $('.loader').show();
@@ -127,7 +103,8 @@ define(function (require, exports, module) {
             $('.loader').hide();
             $('article').show();       // end loader
 
-            $form = form.getView().$;
+            //$form = form.getView().$;
+	        $form = $( 'form.or' );
             $formprogress = $('.form-progress');
 
             setEventHandlers();
@@ -188,7 +165,8 @@ define(function (require, exports, module) {
             form = new Form('form.or:eq(0)', originalSurveyData);
             //window.form = form; DEBUG
             form.init();
-            $form = form.getView().$;
+            //$form = form.getView().$;
+	        $form = $( 'form.or' );
             $formprogress = $('.form-progress');
             $('button#delete-form').button('disable');
 
@@ -1071,7 +1049,8 @@ define(function (require, exports, module) {
      * Functions to access Enketo Core without using WebForms wrapper
      */
     function finalise() {
-        var $form = form.getView().$;
+        //var $form = form.getView().$;
+	    var $form = $( 'form.or' );
         $form.trigger('beforesave');
         $(':focus').trigger('blur');
         form.validate();
@@ -1110,7 +1089,8 @@ define(function (require, exports, module) {
             //    purpose + ' until this is resolved.' );
         }
 
-        $form = form.getView().$;
+        //$form = form.getView().$;
+	    $form = $( 'form.or' );
         $formprogress = $('.form-progress');
 
         setEventHandlers();
@@ -1183,6 +1163,9 @@ define(function (require, exports, module) {
         form.getView().pages.prev();
     }
 
+    export default controller;
+
+    /*
     module.exports = {
         init: init,
         saveRecord: saveRecord,
@@ -1201,5 +1184,5 @@ define(function (require, exports, module) {
         prevPage: prevPage,
         divideIntoBatches: divideIntoBatches
     };
+*/
 
-});

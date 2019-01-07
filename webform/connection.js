@@ -18,24 +18,14 @@
  * Deals with communication to the server
  */
 
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
-}
-define( function( require, exports, module ) {
-//define( [ 'wfapp/gui', 'wfapp/settings', 'wfapp/store', 'jquery' ], function( gui, settings, store, $ ) {
-
-    var gui = require('./gui');
-    var store = require('./store');
-    var $ = require( 'jquery' );
-    var translator = require( 'enketo/translator' );
-    var t = translator.t;
+    import gui from './gui';
+    import store from'./store';
+    import $ from'jquery' ;
+    import { t }  from '../src/js/translator';
 
     "use strict";
     var oRosaHelper, progress, maxSubmissionSize,
         gStore,
-        that = this,
         SUBMISSION_URL,
         currentOnlineStatus = true,
         uploadOngoingID = null,
@@ -47,13 +37,13 @@ define( function( require, exports, module ) {
         uploadBatchesResult = {},
         uploadQueue = []
 
-    //setSubmissionUrl(surveyData.key);	// d1404 key is specific to a survey and should be obtained from the data record
+   let connection = {};
 
     /**
      * Initialize the connection object
      * @param  { boolean=} submissions whether or not to prepare the connection object to deal with submissions
      */
-    function init( submissions, store ) {
+    connection.init= function( submissions, store ) {
         if ( submissions ) {
             _setMaxSubmissionSize();
         }
@@ -176,7 +166,7 @@ define( function( require, exports, module ) {
             }
         }
         //override force property
-        //this caters to a situation where the record is already in a queue through automatic uploads, 
+        //this caters to a situation where the record is already in a queue through automatic uploads,
         //but the user orders a forced upload
         else {
             sameItemInQueue.forced = force;
@@ -671,6 +661,9 @@ define( function( require, exports, module ) {
         return callbacks;
     }
 
+    export default connection;
+
+    /*
     module.exports = {
         init: init,
         uploadRecords: uploadRecords,
@@ -686,4 +679,6 @@ define( function( require, exports, module ) {
         _resetUploadResult: _resetUploadResult,
         _setOnlineStatus: _setOnlineStatus
     };
-} );
+    */
+
+
