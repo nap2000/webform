@@ -1,13 +1,6 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
-    };
-}
+import $ from 'jquery';
 
-//define( [ 'jquery' ], function( $ ) {
-define( function( require, exports, module ) {
 
-    var $ = require( 'jquery' );
 
     // plugin to select the first word(s) of a string and capitalize it
     $.fn.capitalizeStart = function( numWords ) {
@@ -50,4 +43,4 @@ define( function( require, exports, module ) {
         } );
     };
 
-} );
+

@@ -11,6 +11,7 @@
     import connection from'./connection';
     import $ from 'jquery';
     import ecFm from '../src/js/file-manager';
+    import './plugin';
     //require('bootstrap');
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileManager, startEditData;
