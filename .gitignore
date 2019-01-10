@@ -1,6 +1,5 @@
 /node_modules/
 /build
-!/build/css/webform.css
 /test/mock/forms.json
 temp
 /lib

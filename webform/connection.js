@@ -133,7 +133,7 @@
      * @param {boolean} 												close after sending
      * @return {boolean}           [description]
      */
-    function uploadRecords( record, force, callbacks, autoClose ) {
+    connection.uploadRecords = function( record, force, callbacks, autoClose ) {
         var sameItemInQueue, sameItemSubmitted, sameItemOngoing;
         force = force || false;
         callbacks = callbacks || null;
@@ -545,18 +545,18 @@
         }
     }
 
-    function getMaxSubmissionSize() {
+    connection.getMaxSubmissionSize = function() {
         return maxSubmissionSize;
     }
 
-    function isValidURL( url ) {
+    connection.isValidURL = function( url ) {
         return ( /^(https?:\/\/)(([\da-z\.\-]+)\.([a-z\.]{2,6})(:[0-9]{2,4})?|(([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]{2,4})?)([\/\w \.\-]*)*\/?[\/\w \.\-\=\&\?]*$/ ).test( url );
     }
 
-    function getFormlist( serverURL, callbacks ) {
+    connection.getFormlist = function( serverURL, callbacks ) {
         callbacks = _getCallbacks( callbacks );
 
-        if ( !isValidURL( serverURL ) ) {
+        if ( !connection.isValidURL( serverURL ) ) {
             callbacks.error( null, 'validationerror', 'not a valid URL' );
             return;
         }
@@ -597,7 +597,7 @@
             console.debug( 'frag: ' + frag );
             //always override if valid URL is entered
             //TODO: REMOVE reference to connection
-            if ( isValidURL( frag ) ) {
+            if ( connection.isValidURL( frag ) ) {
                 return frag;
             }
 
@@ -616,7 +616,7 @@
                     break;
             }
 
-            if ( !isValidURL( serverURL ) ) {
+            if ( !connection.isValidURL( serverURL ) ) {
                 console.error( 'not a valid url: ' + serverURL );
                 return null;
             }
@@ -636,11 +636,11 @@
         return uploadResult;
     }
 
-    function getUploadQueue() {
+    connection.getUploadQueue = function() {
         return uploadQueue;
     }
 
-    function getUploadOngoingID() {
+    connection.getUploadOngoingID = function() {
         return uploadOngoingID;
     }
 
@@ -665,13 +665,6 @@
 
     /*
     module.exports = {
-        init: init,
-        uploadRecords: uploadRecords,
-        getUploadQueue: getUploadQueue,
-        getUploadOngoingID: getUploadOngoingID,
-        getFormlist: getFormlist,
-        isValidURL: isValidURL,
-        getMaxSubmissionSize: getMaxSubmissionSize,
         oRosaHelper: oRosaHelper,
         // "private" but used for tests:
         _processOpenRosaResponse: _processOpenRosaResponse,
