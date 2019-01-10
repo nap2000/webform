@@ -12,6 +12,10 @@ var localize;
 var htmlParagraphsPostProcessor;
 var initialize;
 
+// Smap moved to top
+t = function( key, options ) {
+	return i18next.t( key, options );
+};
 
 // The postProcessor assumes that array values with line breaks should be divided into HTML paragraphs.
 htmlParagraphsPostProcessor = {
@@ -35,6 +39,7 @@ init = function( something ) {
             return something;
         } );
 };
+t.init = init;      // smap add to t
 
 initialize = new Promise( function( resolve, reject ) {
     i18next
@@ -69,10 +74,6 @@ initialize = new Promise( function( resolve, reject ) {
             }
         } );
 } );
-
-t = function( key, options ) {
-    return i18next.t( key, options );
-};
 
 /**
  * Localizes the descendents of an element based on the data-i18n attribute.

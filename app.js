@@ -16,7 +16,7 @@ window.enketo = controller;             // Make controller global so it can be c
 
 if(typeof surveyData !== "undefined") {
 
-    //t.init().then (function() {
+    t.init().then (function() {
 
 
         // Start form
@@ -41,7 +41,7 @@ if(typeof surveyData !== "undefined") {
         //    $this.html(markdown_convert($this.html()));
         //});
 
-    //});
+    });
 }
 
 
