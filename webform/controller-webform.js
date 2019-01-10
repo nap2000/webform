@@ -10,9 +10,10 @@
     import gui from './gui';
     import connection from'./connection';
     import $ from 'jquery';
+
     import ecFm from '../src/js/file-manager';
     import './plugin';
-    //require('bootstrap');
+    import '../lib/bootstrap'
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileManager, startEditData;
 
@@ -62,7 +63,7 @@
                     // Set the global instanceID of the restored form so that filePicker can find media
                     var model = new FormModel(record.data);
                     model.init();
-                    window.gLoadedInstanceID = model.getInstanceID();
+                    window.gLoadedInstanceID = model.instanceID;
 
                     // Delete the draft key
                     store.removeRecord("draft");
@@ -225,7 +226,7 @@
         $form.trigger('beforesave');
 
         confirmed = ( typeof confirmed !== 'undefined' ) ? confirmed : false;
-        recordName = recordName || form.getRecordName() || form.getSurveyName() + ' - ' + store.getCounterValue();
+        recordName = recordName || form.recordName || form.surveyName + ' - ' + store.getCounterValue();
 
         if (!recordName) {
             console.log('No record name could be created.');
@@ -259,7 +260,7 @@
                                 fileManager.saveFile(media[i], dirname);
                             });
                         }
-                        var dirname = "/" + form.getInstanceID();
+                        var dirname = "/" + form.instanceID;
                         if (media.length > 0) {
                             fileManager.deleteDir(dirname);        // Remove any existing media
                             for (i = 0; i < media.length; i++) {
@@ -298,11 +299,11 @@
                 posAction: function (values) {
                     // if the record is new or
                     // if the record was previously loaded from storage and saved under the same name
-                    if (!form.getRecordName() || form.getRecordName() === values['record-name']) {
+                    if (!form.recordName || form.recordName === values['record-name']) {
                         saveRecord(values['record-name'], true, error);
                     } else {
                         gui.confirm({
-                            msg: 'Are you sure you want to rename "' + form.getRecordName() +
+                            msg: 'Are you sure you want to rename "' + form.recordName +
                             '"" to "' + values['record-name'] + '"?'
                         }, {
                             posAction: function () {
@@ -329,8 +330,8 @@
      */
     function writeRecord(recordName, record, draft, media) {
 
-        var overwrite = form.getRecordName() === recordName;
-        var saveResult = store.setRecord(recordName, record, true, overwrite, form.getRecordName());
+        var overwrite = form.recordName === recordName;
+        var saveResult = store.setRecord(recordName, record, true, overwrite, form.recordName);
 
         console.log('saveResult: ' + saveResult);
         if (saveResult === 'success') {
@@ -496,7 +497,7 @@
 
             if (model) {
                 model.init();
-                instanceID = model.getInstanceID();
+                instanceID = model.instanceID;
             }
 
             if (fileManager.isSupported()) {
@@ -597,7 +598,7 @@
             }
             return {
                 name: record.key,
-                instanceID: model.getInstanceID(),		// Use the instance ID that is built into the form
+                instanceID: model.instanceID,		// Use the instance ID that is built into the form
                 formData: formData,
                 batches: batchesLength,
                 batchIndex: batchIndex,
@@ -723,7 +724,7 @@
             getFileSizes();
             distributeFiles();
         } else if (model) {
-            gatherFiles(model.getInstanceID());
+            gatherFiles(model.instanceID);
         }
 
 
@@ -1124,7 +1125,7 @@
     // Get the instance name
     function getInstanceName() {
         if (typeof form !== "undefined") {
-            return form.getInstanceName();
+            return form.instanceName;
         } else {
             // return false as something has gone wrong with this form and the user should be able to exit (should be prevented from happening)
             return "unknown";

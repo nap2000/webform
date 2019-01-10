@@ -102,7 +102,7 @@
                 "<p>Only after a record has been succesfully submitted, it will be removed from the queue. " +
                 "You can safely close down your browser and computer with items in the queue. " +
                 "They will still be there next time you load the form.</p>";
-            alert( msg, 'Form works offline!', 'normal' );
+            gui.alert( msg, 'Form works offline!', 'normal' );
         } );
 
         // capture all internal links to navigation menu items (except the links in the navigation menu itself)
@@ -145,7 +145,7 @@
 
         $( document ).on( 'xpatherror', function( ev, error ) {
             var email = settings[ 'supportEmail' ];
-            alert( 'A formula evaluation error occurred. Please contact ' +
+            gui.alert( 'A formula evaluation error occurred. Please contact ' +
                 '<a href="mailto:' + email + '?subject=xpath errors for: ' + location.href + '&body=' + error + '" target="_blank" >' + email + '</a>' +
                 ' with this error:<ul class="error-list"><li>' + error + '</li></ul>', 'Formula Error' );
         } );
@@ -321,7 +321,7 @@
      * @param {string=} heading  heading to show - defaults to information, ignored in feedback bar
      * @param {Object=} choices  choices to show - defaults to simple Close button, ignored in feedback bar for now
      */
-    function feedback( message, duration, heading, choices ) {
+    gui.feedback = function( message, duration, heading, choices ) {
         heading = heading || 'Information';
         //if ($('header').css('position') === 'fixed'){
         if ( !Modernizr.touch ) {
@@ -334,7 +334,7 @@
                 heading: heading
             }, choices, null, duration );
         } else {
-            alert( message, heading, 'info', duration );
+            gui.alert( message, heading, 'info', duration );
         }
     }
 
@@ -346,7 +346,7 @@
      * @param {string=} level bootstrap css class or normal (no styling)
      * @param {number=} duration duration in secondsafter which dialog should self-destruct
      */
-    function alert( message, heading, level, duration ) {
+    gui.alert = function( message, heading, level, duration ) {
         var cls, timer,
             $alert = $( '#dialog-alert' );
 
@@ -492,7 +492,7 @@
             s = ( loadErrors.length > 1 ) ? 's' : '',
             email = settings[ 'supportEmail' ];
         advice = advice || '';
-        alert( '<p>Error' + s + ' occured during the loading of this form. ' + advice + '</p><br/><p>' +
+        gui.alert( '<p>Error' + s + ' occured during the loading of this form. ' + advice + '</p><br/><p>' +
             'Please contact <a href="mailto:' + email +
             '?subject=loading errors for: ' + location.href + '&body=' + errorStringEmail + '" target="_blank" >' + email + '</a>' +
             ' with the link to this page and the error message' + s + ' below:</p>' + errorStringHTML, 'Loading Error' + s );
@@ -643,9 +643,7 @@
 
     /*
     module.exports = {
-        alert: alert,
         confirm: confirm,
-        feedback: feedback,
         updateStatus: updateStatus,
         pages: pages,
         fillHeight: fillHeight,

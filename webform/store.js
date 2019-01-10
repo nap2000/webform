@@ -52,11 +52,11 @@
         overwrite = ( typeof overwrite !== 'undefined' && overwrite === true ) ? true : false;
 
         //using the knowledge that only survey data is provided as a "data" property (and is a string)
-        if (typeof record['data'] === 'string' && isReservedKey(newKey)) {
+        if (typeof record['data'] === 'string' && store.isReservedKey(newKey)) {
             return 'forbidden';
         }
         if (typeof record['data'] === 'string' &&
-            ( oldKey !== newKey && isExistingKey(newKey) && overwrite !== true ) ||
+            ( oldKey !== newKey && store.isExistingKey(newKey) && overwrite !== true ) ||
             ( oldKey === newKey && overwrite !== true )) {
             return 'existing';
         }
@@ -65,7 +65,7 @@
             if (typeof record['data'] === 'string') {
                 record['lastSaved'] = ( new Date() ).getTime();
                 localStorage.setItem('__counter', JSON.stringify({
-                    'counter': getCounterValue()
+                    'counter': store.getCounterValue()
                 }));
 
             }
@@ -118,7 +118,7 @@
     store.removeRecord = function(key) {
         try {
             localStorage.removeItem(key);
-            if (!isReservedKey(key)) {
+            if (!store.isReservedKey(key)) {
                 $('form.or').trigger('delete', JSON.stringify(store.getRecordList()));
             }
             return true;
@@ -286,7 +286,6 @@
         getExportStr: getExportStr,
         getSurveyRecords: getSurveyRecords,
         getSurveyDataArr: getSurveyDataArr,
-        getCounterValue: getCounterValue,
         setKey : setKey
 
     };
