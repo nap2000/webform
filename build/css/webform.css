@@ -42,14 +42,6 @@ body {
     overflow: auto;
 }
 
-.paper {
-    background-color: #E8ECDC;
-    border-radius: 7px;
-    border: 7px solid #ddd;
-    position: relative;
-    min-height: 100%;
-}
-
 .or {
     margin-bottom: 20px;
 }
@@ -132,6 +124,11 @@ summary {
     display: block;
 }
 
+.form-header {
+    display: block; /* smap lets not do flex */
+}
+
+
 /* Layout */
 @media screen and (max-width: 600px) {
     body {
@@ -166,8 +163,20 @@ summary {
     }
 
     .form-header {
-        margin: 5px 0;
-    }
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        display: block; /* smap lets not do flex */
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        position: absolute;
+        left: 0;
+        top: -76px;
+        width: 100%;
+        min-height: 69px;
+        margin: 5px 0;      /* smap add margin */
+        padding: 16px 0; }
+
     .form-header .form-language-selector {
         border-right: none;
     }
@@ -896,30 +905,6 @@ summary {
     .ad {
         display: none;
     }
-}
-body {
-    background: #f0f0f0 no-repeat;
-    font-size: 16px;
-    line-height: 20px;
-    overflow-x: hidden;
-}
-
-.main {
-    -webkit-transition: all 0.6s ease-out;
-    transition: all 0.6s ease-out;
-}
-
-progress {
-    display: block;
-    margin: 10px auto;
-}
-
-.preview progress {
-    margin: 80px auto;
-}
-
-.paper {
-    border: 7px solid #e7e7e7;
 }
 
 @media screen and (max-width: 720px) {
