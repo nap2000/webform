@@ -20,6 +20,7 @@ export default {
         this._currentLang = this.$formLanguages.attr( 'data-default-lang' ) || this.$formLanguages.find( 'option' ).eq( 0 ).attr( 'value' );
         const currentDirectionality = this.$formLanguages.find( `[value="${this._currentLang}"]` ).attr( 'data-dir' ) || 'ltr';
 
+	    $langSelector.addClass( 'hide' );       // smap - I think I removed the default hiding of this element
         if ( $langSelector.length && this.$formLanguages.find( 'option' ).length > 1 ) {
             this.$formLanguages
                 .detach()

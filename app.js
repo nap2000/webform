@@ -15,7 +15,9 @@ import { t }  from './src/js/translator';
 window.enketo = controller;             // Make controller global so it can be called by cordova app
 
 if(typeof surveyData !== "undefined") {
+
     //t.init().then (function() {
+
 
         // Start form
         controller.init('form.or:eq(0)', {
