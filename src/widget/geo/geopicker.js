@@ -18,7 +18,7 @@ const maps = ( config && config.maps && config.maps.length > 0 ) ? config.maps :
     'attribution': '© <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="www.openstreetmap.org/copyright">Terms</a>'
 } ];
 let searchSource = 'https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}';
-const googleApiKey = config.googleApiKey || config.google_api_key;
+var googleApiKey = config.googleApiKey || config.google_api_key;        // smap make googleApiKey not a constant
 const iconSingle = L.divIcon( {
     iconSize: 24,
     className: 'enketo-geopoint-marker'
