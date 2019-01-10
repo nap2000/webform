@@ -1,5 +1,5 @@
 /node_modules/
-/build
+/build/js
 /test/mock/forms.json
 temp
 /lib
@@ -23,7 +23,6 @@ npm-debug.log
 /src/widget/geo-esri/esri/**/*.md
 /src/widget/geo-esri/esri/**/*.json
 .idea
-build/css/
 build/js/
 test/mock/forms.js
 temp
