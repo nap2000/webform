@@ -1,6 +1,8 @@
 import Widget from '../../js/widget';
 import { getSiblingElements } from '../../js/dom-utils';
 
+import $ from 'jquery';
+
 /**
  * Compact Picker. Hides text labels if a media label is present.
  */

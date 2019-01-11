@@ -628,7 +628,8 @@
 
         function gatherFiles(directory) {
 
-            $fileNodes = ( fileManager ) ? model.$.find('[type="file"]').removeAttr('type') : [];
+            //$fileNodes = ( fileManager ) ? model.$.find('[type="file"]').removeAttr('type') : [];
+	        $fileNodes = ( fileManager ) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
 
 
             var todo = [];

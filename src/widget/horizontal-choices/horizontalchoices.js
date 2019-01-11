@@ -14,7 +14,8 @@ class HorizontalChoices extends Widget {
         this.element.querySelectorAll( '.option-wrapper' ).forEach( wrapper => {
             const COLUMNS = 3;
 
-            let fillers = COLUMNS - wrapper.querySelectorAll( 'label' ).not( '.itemset-template' ).length % COLUMNS;   // smap exclude template
+            //let fillers = COLUMNS - wrapper.querySelectorAll( 'label' ).not( '.itemset-template' ).length % COLUMNS;   // smap exclude template
+	        let fillers = COLUMNS - wrapper.querySelectorAll( 'label' ).length % COLUMNS; 
 
             while ( fillers < COLUMNS && fillers > 0 ) {
                 wrapper.append( document.createRange().createContextualFragment( '<label class="filler"></label>' ) );
