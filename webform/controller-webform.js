@@ -163,9 +163,12 @@
         } else {
             setDraftStatus(false);
             updateActiveRecord(null);
+
+            surveyData.instanceStrToEditId = null;
+
             form.resetView();
             form = new Form('form.or:eq(0)', originalSurveyData);
-            //window.form = form; DEBUG
+
             form.init();
             //$form = form.getView().$;
 	        $form = $( 'form.or' );
