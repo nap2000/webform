@@ -687,10 +687,11 @@
                         if(media[fileIndex].blob) {
                             blob = media[fileIndex].blob;
                             name = media[fileIndex].fileName;
-                        } else if (media[fileIndex].dataUrl) {
-                            // immediate send data is still in dataUrl
-                            blob = dataURLtoBlob(media[fileIndex].dataUrl);
-                            name = media[fileIndex].name;
+                        // Commented out 14/1/2019 during upgrade
+                        //} else if (media[fileIndex].dataUrl) {
+                        //    // immediate send data is still in dataUrl -- not any more it seems
+                        //    blob = dataURLtoBlob(media[fileIndex].dataUrl);
+                        //    name = media[fileIndex].name;
                         } else {
                             // Assume the media file is the blob
                             blob = media[fileIndex];
