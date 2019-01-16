@@ -92,14 +92,12 @@
             var loadErrors = form.init();
 
             if (recordName) {
-                form.setRecordName(recordName);
+                form.recordName = recordName;
             }
-
+            
             if (loadErrors.length > 0) {
-                purpose = ( surveyData.instanceStr ) ? 'to edit data' : 'for data entry';
-                gui.showLoadErrors(loadErrors,
-                    'It is recommended <strong>not to use this form</strong> ' +
-                    purpose + ' until this is resolved.');
+                var msg = ( surveyData.instanceStr ) ? t('alert.loaderror.editadvice') : t('alert.loaderror.entryadvice');
+                gui.showLoadErrors(loadErrors, msg);
             }
 
             $('.loader').hide();
@@ -152,7 +150,8 @@
      */
     function resetForm(confirmed) {
         var message, choices;
-        if (!confirmed && form.getEditStatus()) {
+
+        if (!confirmed && form.editStatus) {
             message = 'There are unsaved changes, would you like to continue <strong>without</strong> saving those?';
             choices = {
                 posAction: function () {
@@ -186,7 +185,7 @@
     function loadRecord(recordName, confirmed) {
         var record, texts, choices, loadErrors;
 
-        if (!confirmed && form.getEditStatus()) {
+        if (!confirmed && form.editStatus) {
             texts = {
                 msg: 'The current form has unsaved changes. Would you like to load a record <strong>without saving changes</strong> to the form you were working on?',
                 heading: 'Unsaved edits'
@@ -1085,7 +1084,7 @@
         loadErrors = form.init();
 
         if (recordName) {
-            form.setRecordName(recordName);
+            form.recordName = recordName;
         }
 
         if (loadErrors.length > 0) {

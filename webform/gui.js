@@ -329,7 +329,7 @@
         }
         //a more obtrusive message is shown
         else if ( choices ) {
-            confirm( {
+            gui.confirm( {
                 msg: message,
                 heading: heading
             }, choices, null, duration );
@@ -393,7 +393,7 @@
      *   @param {Object=} choices - [type/description]
      *   @param {number=} duration duration in seconds after which dialog should self-destruct
      */
-    function confirm( texts, choices, values, duration ) {
+    gui.confirm = function( texts, choices, values, duration ) {
         var msg, heading, errorMsg, closeFn, dialogName, $dialog, timer;
 
         if ( typeof texts === 'string' ) {
@@ -486,7 +486,7 @@
      * @param  {Array.<string>} loadErrors  load error messagesg
      * @param  {string=}        advice  a string with advice
      */
-    function showLoadErrors( loadErrors, advice ) {
+    gui.showLoadErrors = function( loadErrors, advice ) {
         var errorStringHTML = '<ul class="error-list"><li>' + loadErrors.join( '</li><li>' ) + '</li></ul>',
             errorStringEmail = '* ' + loadErrors.join( '* ' ),
             s = ( loadErrors.length > 1 ) ? 's' : '',
@@ -508,7 +508,7 @@
                     window.location = settings[ 'modernBrowsersURL' ];
                 }
             };
-        confirm( {
+        gui.confirm( {
             msg: message,
             heading: 'Application cannot launch offline'
         }, choices );
@@ -643,11 +643,9 @@
 
     /*
     module.exports = {
-        confirm: confirm,
         updateStatus: updateStatus,
         pages: pages,
         fillHeight: fillHeight,
-        showLoadErrors: showLoadErrors,
         showCacheUnsupported: showCacheUnsupported,
         parseFormlist: parseFormlist
     };
