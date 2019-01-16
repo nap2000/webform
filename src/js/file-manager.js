@@ -10,9 +10,10 @@
 import $ from 'jquery';
 
 import { getFilename, dataUriToBlobSync } from './utils';
-const fileManager = {};
 import fileStore from '../../webform/file-storage';
 import { t } from 'enketo/translator';
+
+const fileManager = {};
 
 var supported = typeof FileReader !== 'undefined',
     notSupportedAdvisoryMsg = '';
@@ -42,36 +43,34 @@ fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
     let error;
 
     if ( !subject ) {
-        resolve( null );
-    } else if ( typeof subject === 'string' ) {
-        // start smap
-        var dirname = window.gLoadedInstanceID;
-        var file = {
-            fileName: subject
-        }
-        if (file.dataUrl) {
-            resolve(file.dataUrl);
-        } else {
-	        fileStore.retrieveFile(dirname, file).then(function(f){
-	            if(f && f.blob) {
-		            resolve( URL.createObjectURL( f ) );
-                } else {
-		            resolve(location.origin + "/" + subject);		// URL must be from the server
-	            }
-            });
 
+        resolve( null );
+
+    } else if ( typeof subject === 'string' ) {
+        if(fileStore.isSupported()) {
+	        var dirname = "/" + window.gLoadedInstanceID;
+            var url = fileStore.getFile(subject, dirname);
+            if(url) {
+                resolve(url);
+            } else {
+	            resolve(location.origin + "/" + subject);		// URL must be from the server
+            }
         }
-        // end smap
-        // reject( 'no!' );	// smap
+
+
     } else if ( typeof subject === 'object' ) {
+
         if ( fileManager.isTooLarge( subject ) ) {
             error = new Error( t( 'filepicker.toolargeerror', { maxSize: fileManager.getMaxSizeReadable() } ) );
             reject( error );
         } else {
             resolve( URL.createObjectURL( subject ) );
         }
+
     } else {
+
         reject( new Error( 'Unknown error occurred' ) );
+
     }
 } );
 
@@ -116,8 +115,6 @@ fileManager.getCurrentFiles = () => {
         let newFilename;
         let file = null;
         let canvas = null;
-        var $media = $( this );                                             // smap
-        var $preview = $media.parent().find(".file-preview").find("img");   // smap
         if ( this.type === 'file' ) {
             file = this.files[ 0 ]; // Why doesn't this fail for empty file inputs?
         } else if ( this.value ) {
@@ -140,7 +137,6 @@ fileManager.getCurrentFiles = () => {
             } );
 
             file.name = newFilename;
-            file.dataUrl = $preview.attr("src");                         // smap
 
             files.push( file );
         }

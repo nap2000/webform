@@ -118,14 +118,21 @@
 
         console.log("save file: " + media.name + " : " + dirname);
         try {
-            //localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl );
-            var objectUrl = window.URL.createObjectURL(media);
-            console.log("^^^^^^^^^^^ " + objectUrl);
-            localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, objectUrl);
-        }
-        catch(err) {
+            localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl);
+        } catch(err) {
              alert("Error: " + err.message);
         }
+
+    };
+
+    fileStore.getFile = function(name, dirname) {
+
+	    console.log("get file: " + FM_STORAGE_PREFIX + dirname + "/" + name);
+	    try {
+		    return localStorage.getItem(FM_STORAGE_PREFIX + dirname + "/" + name);
+	    } catch(err) {
+		    alert("Error: " + err.message);
+	    }
 
     };
 
@@ -133,6 +140,7 @@
      * Obtains specified files from a specified directory (asynchronously)
      * @param {string}                              directoryName   directory to look in for files
      * @param {{newName: string, fileName: string}} file           object of file properties
+     * TODO DELETE!!!!!
      */
     fileStore.retrieveFile = function(dirname, file) {
 
@@ -171,23 +179,5 @@
 
     export default fileStore;
 
-    /*
-     * **********************************************
-     * End Media Storage Functions
-     * **********************************************
-     *
-    module.exports = {
-        isSupported: isSupported,
-        isWaitingForPermissions: isWaitingForPermissions,
-        init: init,
-        deleteAllAttachments: deleteAllAttachments,
-        deleteDir: deleteDir,
-        getCurrentQuota: getCurrentQuota,
-        getCurrentQuotaUsed: getCurrentQuotaUsed,
-        saveFile: saveFile,
-        getAllAttachments: getAllAttachments,
-        retrieveFile: retrieveFile
-    };
-    */
 
 

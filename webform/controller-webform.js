@@ -11,11 +11,11 @@
     import connection from'./connection';
     import $ from 'jquery';
 
-    import ecFm from '../src/js/file-manager';
+    import fileManager from '../src/js/file-manager';
     import './plugin';
     import '../lib/bootstrap'
 
-    var form, $form, $formprogress, formSelector, originalSurveyData, store, fileManager, startEditData;
+    var form, $form, $formprogress, formSelector, originalSurveyData, store, fileStore, startEditData;
 
     controller.init = function(selector, options) {
         var  purpose;
@@ -30,7 +30,7 @@
             window.onbeforeunload = function () {
                 if (hasChanged()) {
                     return "You have unsaved changes. Are you sure you want to leave?";
-                } else if(fileManager.getAllAttachments().length > 0) {
+                } else if(fileStore.getAllAttachments().length > 0) {
                     return "Some of the saved results that have not been submitted contain attached files.  These will be lost if you leave. Are you sure you want to leave?";
                 }
             };
@@ -40,7 +40,7 @@
             originalSurveyData.modelStr = surveyData.modelStr;
 
             options = options || {};
-            fileManager = options.fileStore;
+            fileStore = options.fileStore;
             store = options.recordStore || null;
 
             // Rename instanceStrToEdit to instanceStr as used by Enketo Core
@@ -48,7 +48,7 @@
             surveyData.instanceStr = surveyData.instanceStrToEdit || null;
 
             // Open an existing record if we need to
-            if (fileManager.isSupported()) {
+            if (fileStore.isSupported()) {
                 var recordName = store.getRecord("draft");	// Draft identifies the name of a draft record that is being opened
                 if (recordName) {
 
@@ -80,10 +80,10 @@
              * Initialise file manager if it is supported in this browser
              * The fileSystems API is used to store images prior to upload when operating offline
              */
-            if (fileManager.isSupported()) {
-                fileManager.init();
+            if (fileStore.isSupported()) {
+                fileStore.init();
                 if (!store || store.getRecordList().length === 0) {
-                    fileManager.deleteAllAttachments();
+                    fileStore.deleteAllAttachments();
                 }
             }
             // Create the form
@@ -218,7 +218,7 @@
         var texts, choices, record, saveResult, overwrite,
             count = 0,
             i,
-            media = ecFm.getCurrentFiles(),
+            media = fileManager.getCurrentFiles(),
             recordResult = {};
 
         draft = draft || getDraftStatus();
@@ -257,19 +257,19 @@
 
                         // Save any media
                         var getFileClosure = function(i) {
-                            ecFm.getFileUrl(media[i]).then(function(url) {
+                            fileManager.getFileUrl(media[i]).then(function(url) {
                                 media[i].dataUrl = url;
-                                fileManager.saveFile(media[i], dirname);
+                                fileStore.saveFile(media[i], dirname);
                             });
                         }
                         var dirname = "/" + form.instanceID;
                         if (media.length > 0) {
-                            fileManager.deleteDir(dirname);        // Remove any existing media
+                            fileStore.deleteDir(dirname);        // Remove any existing media
                             for (i = 0; i < media.length; i++) {
                                 if(!media[i].dataUrl) {
                                     getFileClosure(i, media[i]);
                                 } else {
-                                    fileManager.saveFile(media[i], dirname);
+                                    fileStore.saveFile(media[i], dirname);
                                 }
 
                                 count++;
@@ -423,7 +423,7 @@
      */
     function canSaveRecord() {
 
-        if (fileManager.isSupported()) {
+        if (fileStore.isSupported()) {
             console.log("Can Save record:");
             return true;
         } else {
@@ -502,8 +502,8 @@
                 instanceID = model.instanceID;
             }
 
-            if (fileManager.isSupported()) {
-                fileManager.deleteDir(instanceID);
+            if (fileStore.isSupported()) {
+                fileStore.deleteDir(instanceID);
             }
             if (store) {
                 store.removeRecord(recordName);
@@ -511,7 +511,7 @@
         }
 
         // Just to be sure delete all attachments
-        fileManager.deleteAllAttachments();
+        fileStore.deleteAllAttachments();
 
     }
 
@@ -630,19 +630,19 @@
 
         function gatherFiles(directory) {
 
-            //$fileNodes = ( fileManager ) ? model.$.find('[type="file"]').removeAttr('type') : [];
-	        $fileNodes = ( fileManager ) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
+            //$fileNodes = ( fileStore ) ? model.$.find('[type="file"]').removeAttr('type') : [];
+	        $fileNodes = ( fileStore ) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
 
 
             var todo = [];
-            if (fileManager) {
-                var xxx = fileManager.getAllAttachments();
+            if (fileStore) {
+                var xxx = fileStore.getAllAttachments();
                 $fileNodes.each(function () {
                     fileO = {
                         fileName: $(this).text()
                     };
 
-                    todo.push(fileManager.retrieveFile(directory, fileO));
+                    todo.push(fileStore.retrieveFile(directory, fileO));
 
                 }).toArray();
             }
@@ -908,8 +908,8 @@
 
         //remove filesystem folder after successful submission
         $(document).on('submissionsuccess', function (ev, recordName, instanceID) {
-            if (fileManager.isSupported()) {
-                fileManager.deleteDir(instanceID);
+            if (fileStore.isSupported()) {
+                fileStore.deleteDir(instanceID);
             }
             if (store) {
                 store.removeRecord(recordName);
@@ -1171,24 +1171,4 @@
 
     export default controller;
 
-    /*
-    module.exports = {
-        init: init,
-        saveRecord: saveRecord,
-        validate: validate,
-        finalise: finalise,
-        getXmlData: getXmlData,
-        initialiseForm: initialiseForm,
-        getInstanceName: getInstanceName,
-        hasChanged: hasChanged,
-        resetStartPoint: resetStartPoint,
-        submitQueue: submitQueue,
-        emptyQueue: emptyQueue,
-        getLanguages: getLanguages,
-        setLanguage: setLanguage,
-        nextPage: nextPage,
-        prevPage: prevPage,
-        divideIntoBatches: divideIntoBatches
-    };
-*/
 
