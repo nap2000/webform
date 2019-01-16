@@ -157,4 +157,32 @@ fileManager.isTooLarge = () => false;
  */
 fileManager.getMaxSizeReadable = () => `${5}MB`;
 
+/*
+ * Convert object to data url
+ */
+fileManager.getDataUrl = function( subject ) {
+	var error, reader;
+
+	return new Promise( resolve => {
+		if ( !subject ) {
+			resolve( null );
+		} else if ( typeof subject === 'object' ) {
+
+			reader = new FileReader();
+			reader.onload = function( e ) {
+				resolve( e.target.result );
+			};
+			reader.onerror = function( e ) {
+				reject( error );
+			};
+			reader.readAsDataURL( subject );
+
+		} else {
+			reject( new Error( 'Unknown error occurred' ) );
+		}
+	} );
+
+}
+
+
 export default fileManager;

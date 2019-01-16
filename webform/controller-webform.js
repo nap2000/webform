@@ -257,7 +257,7 @@
 
                         // Save any media
                         var getFileClosure = function(i) {
-                            fileManager.getFileUrl(media[i]).then(function(url) {
+                            fileManager.getDataUrl(media[i]).then(function(url) {
                                 media[i].dataUrl = url;
                                 fileStore.saveFile(media[i], dirname);
                             });
