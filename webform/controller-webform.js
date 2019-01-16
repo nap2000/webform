@@ -94,7 +94,7 @@
             if (recordName) {
                 form.recordName = recordName;
             }
-            
+
             if (loadErrors.length > 0) {
                 var msg = ( surveyData.instanceStr ) ? t('alert.loaderror.editadvice') : t('alert.loaderror.entryadvice');
                 gui.showLoadErrors(loadErrors, msg);

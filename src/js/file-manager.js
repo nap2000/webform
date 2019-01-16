@@ -11,6 +11,7 @@ import $ from 'jquery';
 
 import { getFilename, dataUriToBlobSync } from './utils';
 const fileManager = {};
+import fileStore from '../../webform/file-storage';
 import { t } from 'enketo/translator';
 
 var supported = typeof FileReader !== 'undefined',
@@ -51,7 +52,14 @@ fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
         if (file.dataUrl) {
             resolve(file.dataUrl);
         } else {
-            resolve(location.origin + "/" + subject);		// URL must be from the server
+	        fileStore.retrieveFile(dirname, file).then(function(f){
+	            if(f && f.blob) {
+		            resolve( URL.createObjectURL( f ) );
+                } else {
+		            resolve(location.origin + "/" + subject);		// URL must be from the server
+	            }
+            });
+
         }
         // end smap
         // reject( 'no!' );	// smap
