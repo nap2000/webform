@@ -360,10 +360,11 @@
         $alert.find( '.modal-header h3' ).text( heading );
         $alert.find( '.modal-body p' ).removeClass().addClass( cls ).html( message ).capitalizeStart();
 
-        $alert.modal( {
-            keyboard: true,
-            show: true
-        } );
+        $alert.find( '.modal-footer button' ).on( 'click', function() {
+		    $alert.hide();
+	    } );
+
+        $alert.show();
 
         $alert.on( 'hidden.bs.modal', function() {
             $alert.find( '.modal-header h3, .modal-body p' ).html( '' );
@@ -425,6 +426,7 @@
         if ( !errorMsg ) {
             $dialog.find( '.modal-body .alert-danger' ).hide();
         }
+        $('#recname').text(t('confirm.save.name'));
         $dialog.find( 'input, select, textarea' ).each( function() {
             var name = $( this ).attr( 'name' );
             $( this ).val( values[ name ] || '' );

@@ -61,10 +61,7 @@ class RankWidget extends Widget {
     }
 
     _reset() {
- 	this.originalInputValue = initValue;   // smap reset to loaded value
-    	if(initValue) {
-            value = initValue;      // smap
-	}
+ 	
     }
 
     get value() {
