@@ -171,7 +171,6 @@
             //$form = form.getView().$;
 	        $form = $( 'form.or' );
             $formprogress = $('.form-progress');
-            $('button#delete-form').button('disable');
 
             // smap save the initial starting point
             startEditData = form.getDataStr(true, true);
