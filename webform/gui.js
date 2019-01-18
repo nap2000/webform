@@ -21,7 +21,9 @@
     "use strict";
 
     import settings from '../src/js/settings';
-    import $ from 'jquery' ;
+
+    import $ from "jquery";
+
     import { print, fixGrid, styleToAll, styleReset, isGrid } from '../src/js/print';
     import { t } from 'enketo/translator';
 
@@ -429,7 +431,7 @@
         } );
 
         //instantiate dialog
-        $dialog.modal( 'show' );
+        $dialog.show();
 
         //set eventhanders
         $dialog.on( 'shown.bs.modal', function() {
@@ -443,13 +445,13 @@
                     values[ $( this ).attr( 'name' ) ] = $( this ).val().trim();
                 }
             } );
-            $dialog.modal( 'hide' );
+            $dialog.hide();
             reset();
             choices.posAction.call( undefined, values );
         } ).text( choices.posButton );
 
         $dialog.find( 'button.negative' ).on( 'click', function() {
-            $dialog.modal( 'hide' );
+            $dialog.hide();
             reset();
             choices.negAction.call();
         } ).text( choices.negButton );
@@ -641,13 +643,4 @@
 
     export default gui;
 
-    /*
-    module.exports = {
-        updateStatus: updateStatus,
-        pages: pages,
-        fillHeight: fillHeight,
-        showCacheUnsupported: showCacheUnsupported,
-        parseFormlist: parseFormlist
-    };
-    */
 

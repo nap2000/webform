@@ -13,7 +13,6 @@
 
     import fileManager from '../src/js/file-manager';
     import './plugin';
-    import '../lib/bootstrap'
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileStore, startEditData;
 
