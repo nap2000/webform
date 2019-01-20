@@ -42,6 +42,8 @@ fileManager.isWaitingForPermissions = () => false;
 fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
     let error;
 
+
+
     if ( !subject ) {
 
         resolve( null );
@@ -60,12 +62,18 @@ fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
 
     } else if ( typeof subject === 'object' ) {
 
-        if ( fileManager.isTooLarge( subject ) ) {
-            error = new Error( t( 'filepicker.toolargeerror', { maxSize: fileManager.getMaxSizeReadable() } ) );
-            reject( error );
-        } else {
-            resolve( URL.createObjectURL( subject ) );
-        }
+	    if ( subject.type.startsWith("image") || subject.type.startsWith("audio")
+		        || subject.type.startsWith("video") ) {
+
+		    if (fileManager.isTooLarge(subject)) {
+			    error = new Error(t('filepicker.toolargeerror', {maxSize: fileManager.getMaxSizeReadable()}));
+			    reject(error);
+		    } else {
+			    resolve(URL.createObjectURL(subject));
+		    }
+	    } else {
+	    	resolve( null );
+	    }
 
     } else {
 

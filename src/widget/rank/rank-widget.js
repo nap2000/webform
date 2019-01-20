@@ -61,11 +61,12 @@ class RankWidget extends Widget {
     }
 
     _reset() {
- 	
+
     }
 
     get value() {
         const result = sortable( this.list, 'serialize' );
+        console.log("rank value: " + result[ 0 ].container.value);
         return result[ 0 ].container.value;
     }
 

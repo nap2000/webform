@@ -64,10 +64,8 @@
             if(key.startsWith(FM_STORAGE_PREFIX)) {
                 var item = localStorage.getItem(key);
                 if(item) {
-                    console.log("Revoke URL: " + item);
                     window.URL.revokeObjectURL(item);
                 }
-                console.log("Delete item: " + key);
                 localStorage.removeItem(key);
             }
         }
@@ -120,7 +118,7 @@
         try {
             localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl);
         } catch(err) {
-             alert("Error: " + err.message);
+        	// alert("Error: " + err.message);  // disable error message as it should work if the user does an immediate send
         }
 
     };

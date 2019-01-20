@@ -789,19 +789,23 @@
                 $button.btnBusyState(true);
                 // this timeout is to slow down the GUI a bit, UX
                 setTimeout(function () {
-                    if (canSaveRecord()) {
-                        saveRecord();
-                    } else if (getDraftStatus()) {
-                        setDraftStatus(false);
-                        $button.btnBusyState(false);
-                        $button.text(t( 'formfooter.submit.btn' ));
-                        gui.alert('Your browser does not support saving media files');
-                    } else {
-                        form.validate();
-                        submitEditedRecord(closeAfterSending());
-                    }
-                    $button.btnBusyState(false);
-                    return false;
+	                if(surveyData.viewOnly) {
+		                window.open( '', '_self' ).close();
+	                } else {
+		                if (canSaveRecord()) {
+			                saveRecord();
+		                } else if (getDraftStatus()) {
+			                setDraftStatus(false);
+			                $button.btnBusyState(false);
+			                $button.text(t('formfooter.submit.btn'));
+			                gui.alert('Your browser does not support saving media files');
+		                } else {
+			                form.validate();
+			                submitEditedRecord(closeAfterSending());
+		                }
+		                $button.btnBusyState(false);
+		                return false;
+	                }
                 }, 100);
 
             });

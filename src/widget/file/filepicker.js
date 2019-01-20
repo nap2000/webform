@@ -47,17 +47,20 @@ class Filepicker extends Widget {
         this.fakeInput = widget.querySelector( '.fake-file-input' );
         this.downloadLink = widget.querySelector( '.btn-download' );
 
-        widget.querySelector( '.btn-reset' ).addEventListener( 'click', () => {
-            if ( ( this.originalInputValue || this.value ) ) {
-                dialog.confirm( t( 'filepicker.resetWarning', { item: t( 'filepicker.file' ) } ) )
-                    .then( confirmed => {
-                        if ( confirmed ) {
-                            this.originalInputValue = '';
-                        }
-                    } )
-                    .catch( () => {} );
-            }
-        } );
+	    if ( !this.props.readonly ) {   // smap only add reset if not readonly
+		    widget.querySelector('.btn-reset').addEventListener('click', () => {
+			    if ((this.originalInputValue || this.value)) {
+				    dialog.confirm(t('filepicker.resetWarning', {item: t('filepicker.file')}))
+					    .then(confirmed => {
+						    if (confirmed) {
+							    this.originalInputValue = '';
+						    }
+					    })
+					    .catch(() => {
+					    });
+			    }
+		    });
+	    }
 
         // Focus listener needs to be added synchronously
         that._focusListener();
