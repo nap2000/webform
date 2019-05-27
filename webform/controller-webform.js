@@ -238,7 +238,7 @@
             form.validate()
                 .then( function( valid ) {
                     if ( !valid ) {
-                        gui.alert('Form contains errors <br/>(please see fields marked in red)');
+                        gui.alert(t("alert.validationerror.msg"));
                         return;
                     } else {
                         var originalUrl = window.location.href.split("?");
@@ -359,7 +359,7 @@
         var name, record, saveResult, redirect, beforeMsg, callbacks, $alert;
         $form.trigger('beforesave');
         if (!form.isValid()) {
-            gui.alert('Form contains errors <br/>(please see fields marked in red)');
+            gui.alert(t("alert.validationerror.msg"));
             return;
         }
 
@@ -851,7 +851,7 @@
                     form.validate();
                     $button.btnBusyState(false);
                     if (!form.isValid()) {
-                        gui.alert('Form contains errors <br/>(please see fields marked in red)');
+                        gui.alert(t("alert.validationerror.msg"));
                         return;
                     }
                 }, 100);

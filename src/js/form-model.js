@@ -8,7 +8,8 @@ import types from './types';
 import event from './event';
 const REPEAT_COMMENT_PREFIX = 'repeat:/';
 const INSTANCE = /instance\(\s*(["'])((?:(?!\1)[A-z0-9.\-_]+))\1\s*\)/g;
-const OPENROSA = /(decimal-date-time\(|pow\(|indexed-repeat\(|format-date\(|coalesce\(|join\(|max\(|min\(|random\(|substr\(|int\(|uuid\(|regex\(|now\(|today\(|date\(|if\(|boolean-from-string\(|checklist\(|selected\(|selected-at\(|round\(|area\(|position\([^)])/;
+// smap add functions get_media()
+const OPENROSA = /(decimal-date-time\(|pow\(|indexed-repeat\(|format-date\(|coalesce\(|join\(|max\(|min\(|random\(|substr\(|int\(|uuid\(|regex\(|now\(|today\(|date\(|if\(|boolean-from-string\(|checklist\(|selected\(|selected-at\(|round\(|area\(|position\(|get_media\([^)])/;
 const OPENROSA_XFORMS_NS = 'http://openrosa.org/xforms';
 const JAVAROSA_XFORMS_NS = 'http://openrosa.org/javarosa';
 const ENKETO_XFORMS_NS = 'http://enketo.org/xforms';

@@ -84,9 +84,15 @@ const types = {
             const parts = x.split( 'T' );
             if ( parts.length === 2 ) {
                 return types.date.validate( parts[ 0 ] ) && types.time.validate( parts[ 1 ], false );
+            } else {                        // smap check by splitting o nspace
+	            const parts2 = x.split( ' ' );
+	            if ( parts2.length === 2 ) {
+		            return types.date.validate(parts2[0]) && types.time.validate(parts2[1], false);
+	            }
             }
 
-            return types.data.validate( parts[ 0 ] );
+            return true;        // smap validate as ok - validate is being applied to read onlys set by calculate it should not be
+            //return types.data.validate( parts[ 0 ] );
         },
         convert( x ) {
             let date = 'Invalid Date';
