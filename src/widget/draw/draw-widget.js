@@ -195,6 +195,7 @@ class DrawWidget extends Widget {
 
         const $input = this.$widget.find( 'input[type=file]' );
         const $fakeInput = this.$widget.find( '.fake-file-input' );
+        const $dynamicInput = this.$widget.parent().find( '.dynamic-input' );
 
         // show loaded file name or placeholder regardless of whether widget is supported
         this._showFileName( loadedFileName );
@@ -251,6 +252,28 @@ class DrawWidget extends Widget {
             } )
             .on( `change.${this.namespace}`, () => // For robustness, avoid any editing of filenames by user.
                 false );
+
+        // start smap - Add support for dynamic defaults
+        $dynamicInput
+            .on( `change.${this.namespace}`, function() {
+                // Get the file
+                const url = this.value;
+
+                if ( url ) {
+                    // Update UI
+                    that.pad.clear();
+                    that._loadFileIntoPad( url )
+                        .then( () => {
+                            that._updateValue.call( that );
+                            that._showFileName( url );
+                            that.enable();
+                        } );
+                } else {
+                    that._showFileName( null );
+                }
+            } );
+        // end smap
+
     }
 
     _showFileName( fileName ) {
@@ -350,7 +373,8 @@ class DrawWidget extends Widget {
                 return objectUrl;
             } )
             .catch( () => {
-                that._showFeedback( 'File could not be loaded (leave unchanged if already submitted and you want to preserve it).', 'error' );
+                that._showFeedback( t('filepicker.notFound', {item: t('filepicker.file')}) );
+                //that._showFeedback( 'File could not be loaded (leave unchanged if already submitted and you want to preserve it).', 'error' );
             } );
     }
 

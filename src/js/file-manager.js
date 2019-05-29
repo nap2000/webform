@@ -42,20 +42,20 @@ fileManager.isWaitingForPermissions = () => false;
 fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
     let error;
 
-
-
     if ( !subject ) {
 
         resolve( null );
 
     } else if ( typeof subject === 'string' ) {
-        if(fileStore.isSupported()) {
+	    if(subject.startsWith('http')) {                        // some random URL
+		    resolve(subject);
+	    } else if(fileStore.isSupported()) {
 	        var dirname = "/" + window.gLoadedInstanceID;
             var url = fileStore.getFile(subject, dirname);
             if(url) {
                 resolve(url);
             } else {
-	            resolve(location.origin + "/" + subject);		// URL must be from the server
+                resolve(location.origin + "/" + subject);		// URL must be from the server
             }
         }
 
