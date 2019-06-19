@@ -106,7 +106,9 @@
         var record;
         try {
             var x = localStorage.getItem(key);
-            record = JSON.parse(localStorage.getItem(key));
+            if(x && !x.startsWith('#') && !x.startsWith('/')) {
+                record = JSON.parse(localStorage.getItem(key));
+            }
             return record;
         } catch (e) {
             console.error('error with loading data from store: ' + e.message);
