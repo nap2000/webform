@@ -232,6 +232,7 @@ class Filepicker extends Widget {
                 htmlStr = '<video controls="controls"/>';
                 break;
             default:
+                return;     // smap no preview
                 break;
         }
 
