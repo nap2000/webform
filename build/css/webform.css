@@ -866,7 +866,7 @@ summary {
     box-sizing: border-box;
     border-radius: 0px;
     position: fixed;
-    z-index: 13;
+    z-index: 20000;     // smap
     top: -100px;
     margin: 0;
     padding: 0;
