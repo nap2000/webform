@@ -182,28 +182,7 @@
         var record, content, last, props;
 
         callbacks = ( typeof callbacks === 'undefined' || !callbacks ) ? {
-            complete: function( jqXHR, response ) {
-                // this event doesn't appear to be use anywhere
-                $( document ).trigger( 'submissioncomplete' );
-                _processOpenRosaResponse( jqXHR.status,
-                    props = {
-                        name: record.name,
-                        instanceID: record.instanceID,
-                        batches: record.batches,
-                        batchIndex: record.batchIndex,
-                        forced: record.forced
-                    } );
-                /**
-                 * ODK Aggregrate gets very confused if two POSTs are sent in quick succession,
-                 * as it duplicates 1 entry and omits the other but returns 201 for both...
-                 * so we wait for the previous POST to finish before sending the next
-                 */
-                var autoCloseVal = autoClose && (jqXHR.status == 201);
-                _uploadOne(undefined, autoCloseVal);
-            },
-            error: function( jqXHR, textStatus ) {
-                
-            },
+            error: function( jqXHR, textStatus ) {},
             success: function() {}
         } : callbacks;
         
@@ -271,14 +250,13 @@
         } else {
             /*
              * Closing of the window not suppoted in the browser if the script did not open the window
-             *
+             */
         	if ( autoClose ) {
         		 gui.alert( 'This form will now be closed!', 'Submission Successful!', 'success' );
                  setTimeout( function() {
                      window.open( '', '_self' ).close();
                  }, 3500 );
         	}
-        	*/
         }
     }
     
