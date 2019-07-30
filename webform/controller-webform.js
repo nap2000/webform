@@ -279,6 +279,11 @@
                         } else {
                             saveResult = writeRecord(recordName, record, draft, media);
                         }
+
+                        // Remove any settings associated with an instance
+                        surveyData.instanceStrToEditId = undefined;
+                        surveyData.assignmentId = undefined;
+                        surveyData.instanceStrToEdit = undefined;
                     }
                 } );
 
@@ -389,7 +394,7 @@
         prepareFormDataArray(
             record, {
                 success: function (formDataArr) {
-                    connection.uploadRecords(formDataArr, true, callbacks, closeAfterSending());
+                    connection.uploadRecords(formDataArr, true, callbacks, autoClose);
                 },
                 error: function () {
                     gui.alert('Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error');
