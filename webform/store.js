@@ -106,7 +106,7 @@
         var record;
         try {
             var x = localStorage.getItem(key);
-            if(x && !x.startsWith('#') && !x.startsWith('/')) {
+            if(x && x.trim().startsWith('{')) {
                 record = JSON.parse(localStorage.getItem(key));
             }
             return record;
