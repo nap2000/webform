@@ -91,11 +91,16 @@
     };
 
     store.setKey = function(key, value) {
-
-        localStorage.setItem(key, JSON.stringify(value));
-
+        localStorage.setItem(key, value);
     };
 
+    store.getKey = function(key) {
+        var value = localStorage.getItem(key);
+        if(value && value.charAt(0) === '"') {
+            value = value.replace(/"/g, '');     // Hack to cater for draft names being previously wrapped in quotes by being json stringified
+        }
+        return value;
+    };
 
     /**
      * Returns a form data record as an object. This is the only function that obtains records from the local storage.
@@ -193,18 +198,20 @@
 
                 // get record -
                 record = store.getRecord(key);
+                if(record) {
 
-                try {
-                    record.key = key;
-                    //=== true comparison breaks in Google Closure compiler.
-                    if (key !== excludeName && ( !finalOnly || !record.draft )) {
-                        if (record.form) {		// If there is a form then this should be record data (Smap)
-                            records.push(record);
-                        }
-                    }
-                } catch (e) {
-                    console.log('record found that was probably not in the expected JSON format' +
-                        ' (e.g. Firebug settings or corrupt record) (error: ' + e.message + '), record was ignored');
+	                try {
+		                record.key = key;
+		                //=== true comparison breaks in Google Closure compiler.
+		                if (key !== excludeName && (!finalOnly || !record.draft)) {
+			                if (record.form) {		// If there is a form then this should be record data (Smap)
+				                records.push(record);
+			                }
+		                }
+	                } catch (e) {
+		                console.log('record found that was probably not in the expected JSON format' +
+			                ' (e.g. Firebug settings or corrupt record) (error: ' + e.message + '), record was ignored');
+	                }
                 }
             }
         }

@@ -249,7 +249,7 @@
  
         } else {
             /*
-             * Closing of the window not suppoted in the browser if the script did not open the window
+             * Closing of the window not supported in the browser if the script did not open the window
              */
         	if ( autoClose ) {
         		 gui.alert( 'This form will now be closed!', 'Submission Successful!', 'success' );

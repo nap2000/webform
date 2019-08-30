@@ -48,7 +48,7 @@
 
             // Open an existing record if we need to
             if (fileStore.isSupported()) {
-                var recordName = store.getRecord("draft");	// Draft identifies the name of a draft record that is being opened
+                var recordName = store.getKey("draft");	// Draft identifies the name of a draft record that is being opened
                 if (recordName) {
 
                     var record = store.getRecord(recordName);
