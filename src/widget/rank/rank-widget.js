@@ -1,15 +1,24 @@
 import $ from 'jquery';
 import Widget from '../../js/widget';
 import support from '../../js/support';
+import events from '../../js/event';
 import sortable from 'html5sortable/dist/html5sortable.cjs';
 import { t } from 'enketo/translator';
 
+/**
+ * @extends Widget
+ */
 class RankWidget extends Widget {
-
+    /**
+     * @type string
+     */
     static get selector() {
-        return 'input.rank';
+        return '.question input.rank';
     }
 
+    /**
+     * @type boolean
+     */
     static get list() {
         return true;
     }
@@ -25,11 +34,12 @@ class RankWidget extends Widget {
         $( this.list )
             .toggleClass( 'rank-widget--empty', !loadedValue )
             .append( this.resetButtonHtml )
-            .append( `<div class="rank-widget__overlay"><span class="rank-widget__overlay__content">${startText}</span></div>` )
+            .append( `<div class="rank-widget__overlay"><span class="rank-widget__overlay__content" data-i18n="rankwidget.clickstart">${startText}</span></div>` )
             .on( 'click', function() {
                 if ( !that.element.disabled ) {
                     this.classList.remove( 'rank-widget--empty' );
                     that.originalInputValue = that.value;
+                    that.element.dispatchEvent( events.FakeFocus() );
                 }
             } );
 
@@ -52,7 +62,8 @@ class RankWidget extends Widget {
                 };
             }
         } )[ 0 ].addEventListener( 'sortupdate', () => {
-            that.originalInputValue = that.value;
+            this.originalInputValue = this.value;
+            this.element.dispatchEvent( events.FakeFocus() );
         } );
 
         if ( this.props.readonly ) {
@@ -60,10 +71,16 @@ class RankWidget extends Widget {
         }
     }
 
+    /**
+     * Resets widget
+     */
     _reset() {
 
     }
 
+    /**
+     * @type string
+     */
     get value() {
         const result = sortable( this.list, 'serialize' );
         console.log("rank value: " + result[ 0 ].container.value);
@@ -98,6 +115,9 @@ class RankWidget extends Widget {
         } );
     }
 
+    /**
+     * Disables widget
+     */
     disable() {
         $( this.element )
             .prop( 'disabled', true )
@@ -108,18 +128,22 @@ class RankWidget extends Widget {
         sortable( this.list, 'disable' );
     }
 
+    /**
+     * Enables widget
+     */
     enable() {
-        if ( this.props && !this.props.readonly ) {
-            $( this.element )
-                .prop( 'disabled', false )
-                .next( '.widget' )
-                .find( 'input, button' )
-                .prop( 'disabled', false );
+        $( this.element )
+            .prop( 'disabled', false )
+            .next( '.widget' )
+            .find( 'input, button' )
+            .prop( 'disabled', false );
 
-            sortable( this.list, 'enable' );
-        }
+        sortable( this.list, 'enable' );
     }
 
+    /**
+     * Updates widget
+     */
     update() {
         const value = this.element.value;
         // re-initalize sortable because the options may have changed
@@ -135,12 +159,17 @@ class RankWidget extends Widget {
 
     // Since we're overriding the setter we also have to overwrite the getter
     // https://stackoverflow.com/questions/28950760/override-a-setter-and-the-getter-must-also-be-overridden
+    /**
+     * @type string
+     */
     get originalInputValue() {
         return super.originalInputValue;
     }
 
     /**
      * This is the input that Enketo's engine listens on.
+     *
+     * @type string
      */
     set originalInputValue( value ) {
         super.originalInputValue = value;

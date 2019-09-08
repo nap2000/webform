@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import Widget from '../../js/widget';
 import fileManager from 'enketo/file-manager';
-import { getFilename, updateDownloadLink } from '../../js/utils';
-import event from '../../js/event';
+import { getFilename, updateDownloadLink, resizeImage, isNumber } from '../../js/utils';
+import events from '../../js/event';
 import { t } from 'enketo/translator';
 import TranslatedError from '../../js/translated-error';
 import dialog from 'enketo/dialog';
@@ -14,9 +14,13 @@ import { empty } from '../../js/dom-utils';
 /**
  * FilePicker that works both offline and online. It abstracts the file storage/cache away
  * with the injected fileManager.
+ *
+ * @extends Widget
  */
 class Filepicker extends Widget {
-
+    /**
+     * @type string
+     */
     static get selector() {
         return '.question:not(.or-appearance-draw):not(.or-appearance-signature):not(.or-appearance-annotate) input[type="file"]';
     }
@@ -25,7 +29,6 @@ class Filepicker extends Widget {
         const existingFileName = this.element.getAttribute( 'data-loaded-file-name' );
         const that = this;
 
-        this.element.disabled = true;
         this.element.classList.add( 'hide' );
         this.question.classList.add( 'with-media', 'clearfix' );
 
@@ -35,35 +38,26 @@ class Filepicker extends Widget {
                     <div class="file-feedback"></div>
                     <div class="file-preview"></div>
                 </div>` );
-        if ( !this.props.readonly ) {
-            fragment.querySelector( 'input' ).after( this.downloadButtonHtml );
-            fragment.querySelector( 'input' ).after( this.resetButtonHtml );
-        }
+
+        fragment.querySelector( 'input' ).after( this.downloadButtonHtml );
+        fragment.querySelector( 'input' ).after( this.resetButtonHtml );
 
         this.element.after( fragment );
+
+        this.disable();
+
         const widget = this.question.querySelector( '.widget' );
         this.feedback = widget.querySelector( '.file-feedback' );
         this.preview = widget.querySelector( '.file-preview' );
         this.fakeInput = widget.querySelector( '.fake-file-input' );
         this.downloadLink = widget.querySelector( '.btn-download' );
 
-	    if ( !this.props.readonly ) {   // smap only add reset if not readonly
-		    widget.querySelector('.btn-reset').addEventListener('click', () => {
-			    if ((this.originalInputValue || this.value)) {
-				    dialog.confirm(t('filepicker.resetWarning', {item: t('filepicker.file')}))
-					    .then(confirmed => {
-						    if (confirmed) {
-							    this.originalInputValue = '';
-						    }
-					    })
-					    .catch(() => {
-					    });
-			    }
-		    });
-	    }
+	if ( !this.props.readonly ) {   // smap only add reset if not readonly
+       	    that._setResetButtonListener( widget.querySelector( '.btn-reset' ) );
+	}
 
         // Focus listener needs to be added synchronously
-        that._focusListener();
+        that._setFocusListener();
 
         // show loaded file name or placeholder regardless of whether widget is supported
         this._showFileName( existingFileName );
@@ -72,7 +66,7 @@ class Filepicker extends Widget {
             this._showFeedback( t( 'filepicker.waitingForPermissions' ), 'warning' );
         }
 
-        // Monitor maxSize changes to update placeholder text. This facilitates asynchronous 
+        // Monitor maxSize changes to update placeholder text. This facilitates asynchronous
         // obtaining of max size from server without slowing down form loading.
         this._updatePlaceholder();
         $( this.element.closest( 'form.or' ) ).on( 'updateMaxSize', this._updatePlaceholder.bind( this ) );
@@ -80,8 +74,10 @@ class Filepicker extends Widget {
         fileManager.init()
             .then( () => {
                 that._showFeedback();
-                that._changeListener();
-                that.element.disabled = false;
+                that._setChangeListener();
+                if ( !that.props.readonly ) {
+                    that.enable();
+                }
                 if ( existingFileName ) {
                     fileManager.getFileUrl( existingFileName )
                         .then( url => {
@@ -100,11 +96,38 @@ class Filepicker extends Widget {
             } );
     }
 
+    /**
+     * Updates placeholder
+     */
     _updatePlaceholder() {
         this.fakeInput.setAttribute( 'placeholder', t( 'filepicker.placeholder', { maxSize: fileManager.getMaxSizeReadable() || '?MB' } ) );
     }
 
-    _changeListener() {
+    /**
+     * Click action of reset button
+     *
+     * @param {Element} resetButton
+     */
+    _setResetButtonListener( resetButton ) {
+        if ( resetButton ) {
+            resetButton.addEventListener( 'click', () => {
+                if ( ( this.originalInputValue || this.value ) ) {
+                    dialog.confirm( t( 'filepicker.resetWarning', { item: t( 'filepicker.file' ) } ) )
+                        .then( confirmed => {
+                            if ( confirmed ) {
+                                this.originalInputValue = '';
+                            }
+                        } )
+                        .catch( () => {} );
+                }
+            } );
+        }
+    }
+
+    /**
+     * Handles change listener
+     */
+    _setChangeListener() {
         const that = this;
 
         $( this.element )
@@ -139,32 +162,44 @@ class Filepicker extends Widget {
                 fileName = getFilename( file, postfix );
 
                 // Process the file
-                fileManager.getFileUrl( file, fileName )
-                    .then( url => {
-                        // Update UI
-                        that._showPreview( url, that.props.mediaType );
-                        that._showFeedback();
-                        that._showFileName( fileName );
-                        if ( loadedFileName && loadedFileName !== fileName ) {
-                            that.element.removeAttribute( 'data-loaded-file-name' );
-                        }
-                        that._updateDownloadLink( url, fileName );
-                        // Update record
-                        $( that.element ).trigger( 'change.propagate' );
+                // Resize the file. Currently will resize an image.
+                this._resizeFile( file, that.props.mediaType )
+                    .then( resizedFile => {
+                        // Put information in file element that file is resized
+                        // Put resizedDataURI that will be used by fileManager.getCurrentFiles to get blob synchronously
+                        event.target.dataset.resized = true;
+                        event.target.dataset.resizedDataURI = resizedFile.dataURI;
+                        file = resizedFile.blob;
                     } )
-                    .catch( error => {
-                        // Update record to clear any existing valid value
-                        $( that.element ).val( '' ).trigger( 'change.propagate' );
-                        // Update UI
-                        that._showFileName( '' );
-                        that._showPreview( null );
-                        that._showFeedback( error, 'error' );
-                        that._updateDownloadLink( '', '' );
+                    .catch( () => {} )
+                    .finally( () => {
+                        fileManager.getFileUrl( file, fileName )
+                            .then( url => {
+                                // Update UI
+                                that._showPreview( url, that.props.mediaType );
+                                that._showFeedback();
+                                that._showFileName( fileName );
+                                if ( loadedFileName && loadedFileName !== fileName ) {
+                                    that.element.removeAttribute( 'data-loaded-file-name' );
+                                }
+                                that._updateDownloadLink( url, fileName );
+                                // Update record
+                                $( that.element ).trigger( 'change.propagate' );
+                            } )
+                            .catch( error => {
+                                // Update record to clear any existing valid value
+                                $( that.element ).val( '' ).trigger( 'change.propagate' );
+                                // Update UI
+                                that._showFileName( '' );
+                                that._showPreview( null );
+                                that._showFeedback( error, 'error' );
+                                that._updateDownloadLink( '', '' );
+                            } );
                     } );
             } );
 
         this.fakeInput.addEventListener( 'click', event => {
-            /* 
+            /*
                 The purpose of this handler is to selectively propagate clicks on the fake
                 input to the underlying file input (to show the file picker window).
                 It blocks propagation if the filepicker has a value to avoid accidentally
@@ -187,25 +222,30 @@ class Filepicker extends Widget {
         } );
     }
 
-    _focusListener() {
-        const that = this;
-
-        // Handle focus on widget input
-        this.fakeInput.addEventListener( 'focus', () => {
-            that.element.dispatchEvent( event.FakeFocus() );
-        } );
-
+    /**
+     * Handle focus listener
+     */
+    _setFocusListener() {
         // Handle focus on original input (goTo functionality)
-        this.element.addEventListener( 'applyfocus', () => {
-            that.fakeInput.focus();
+        this.element.addEventListener( events.ApplyFocus().type, () => {
+            this.fakeInput.focus();
         } );
     }
 
+    /**
+     * Sets file name as value
+     *
+     * @param {string} fileName
+     */
     _showFileName( fileName ) {
         this.value = fileName;
         this.fakeInput.readOnly = !!fileName;
     }
 
+    /**
+     * @param {TranslatedError|Error} fb
+     * @param {string} [status]
+     */
     _showFeedback( fb, status ) {
         const message = fb instanceof TranslatedError ? t( fb.translationKey, fb.translationOptions ) :
             fb instanceof Error ? fb.message :
@@ -216,6 +256,10 @@ class Filepicker extends Widget {
         this.feedback.setAttribute( 'class', `file-feedback ${status}` );
     }
 
+    /**
+     * @param {string} url
+     * @param {string} mediaType
+     */
     _showPreview( url, mediaType ) {
         let htmlStr;
 
@@ -236,24 +280,84 @@ class Filepicker extends Widget {
                 break;
         }
 
-        if ( url ) {
+        if ( url && htmlStr ) {
             const fragment = document.createRange().createContextualFragment( htmlStr );
             fragment.querySelector( '*' ).src = url;
             this.preview.append( fragment );
         }
     }
 
+    /**
+     * @param {File} file - Image file to be resized
+     * @param {string} mediaType
+     * @return {Promise<Blob|File>} Resolves with blob, rejects with input file
+     */
+    _resizeFile( file, mediaType ) {
+        return new Promise( ( resolve, reject ) => {
+            if ( mediaType !== 'image/*' ) {
+                reject( file );
+            }
+
+            // file is image, resize it
+            if ( this.props && this.props.maxPixels ) {
+                resizeImage( file, this.props.maxPixels )
+                    .then( blob => {
+                        const reader = new FileReader();
+                        reader.addEventListener( 'load', function() {
+                            resolve( { blob, 'dataURI': reader.result } );
+                        }, false );
+                        reader.readAsDataURL( blob );
+                    } )
+                    .catch( () => {
+                        reject( file );
+                    } );
+            } else {
+                reject( file );
+            }
+        } );
+    }
+
+    /**
+     * @param {string} objectUrl
+     * @param {string} fileName
+     */
     _updateDownloadLink( objectUrl, fileName ) {
         updateDownloadLink( this.downloadLink, objectUrl, fileName );
     }
 
+    /**
+     * Disables widget
+     */
+    disable() {
+        this.element.disabled = true;
+        this.question.querySelector( '.btn-reset' ).disabled = true;
+    }
+
+    /**
+     * Enables widget
+     */
+    enable() {
+        this.element.disabled = false;
+        this.question.querySelector( '.btn-reset' ).disabled = false;
+    }
+
+    /**
+     * @type object
+     */
     get props() {
         const props = this._props;
         props.mediaType = this.element.getAttribute( 'accept' );
 
+        if ( this.element.dataset.maxPixels && isNumber( this.element.dataset.maxPixels ) ) {
+            props.maxPixels = parseInt( this.element.dataset.maxPixels, 10 );
+        }
+
         return props;
     }
 
+    /**
+     * @type string
+     */
     get value() {
         return this.fakeInput.value;
     }

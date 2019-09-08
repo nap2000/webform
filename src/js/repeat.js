@@ -1,15 +1,20 @@
 /**
- * Repeats module.
- * 
+ * Repeat module.
+ *
  * Two important concepts are used:
  * 1. The first XLST-added repeat view is cloned to serve as a template of that repeat.
  * 2. Each repeat series has a sibling .or-repeat-info element that stores info that is relevant to that series.
  *
  * Note that with nested repeats you may have many more series of repeats than templates, because a nested repeat
  * may have multiple series.
+ *
+ * @module repeat
  */
 
 import $ from 'jquery';
+import events from './event';
+import { t } from 'enketo/translator';
+import dialog from 'enketo/dialog';
 
 import config from 'enketo/config';
 const disableFirstRepeatRemoval = config.repeatOrdinals === true;
@@ -29,16 +34,20 @@ export default {
 
         $repeatInfos = this.form.view.$.find( '.or-repeat-info' );
         this.templates = {};
-        // Add repeat numbering elements, if repeat has form controls (not just calculations)
-        $repeatInfos.siblings( '.or-repeat' )
+        // Add repeat numbering elements
+        $repeatInfos
+            .siblings( '.or-repeat' )
+            .prepend( '<span class="repeat-number"></span>' )
+            // add empty class for calculation-only repeats
+            .addBack()
             .filter( function() {
-                // remove whitespace so we can use :empty css selector
+                // remove whitespace
                 if ( this.firstChild && this.firstChild.nodeType === 3 ) {
                     this.firstChild.textContent = '';
                 }
-                return !!this.querySelector( '.question' );
+                return !this.querySelector( '.question' );
             } )
-            .prepend( '<span class="repeat-number"></span>' );
+            .addClass( 'empty' );
         // Add repeat buttons
         $repeatInfos.filter( '*:not([data-repeat-fixed]):not([data-repeat-count])' )
             .append( '<button type="button" class="btn btn-default add-repeat-btn"><i class="icon icon-plus"> </i></button>' )
@@ -73,7 +82,7 @@ export default {
                     that.updateDefaultFirstRepeatInstance( null, this );
                 }
             } )
-            // If there is no repeat-count attribute, check how many repeat instances 
+            // If there is no repeat-count attribute, check how many repeat instances
             // are in the model, and update view if necessary.
             .each( that.updateViewInstancesFromModel.bind( this ) );
 
@@ -85,13 +94,24 @@ export default {
             return false;
         } );
         this.form.view.$.on( 'click', 'button.remove:enabled', function() {
-            //remove clone
-            that.remove( $( this ).closest( '.or-repeat' ) );
+            that.confirmDelete( this.closest( '.or-repeat' ) );
             //prevent default
             return false;
         } );
 
         this.countUpdate();
+    },
+    // Make this function overwritable
+    confirmDelete( repeatEl ) {
+        const that = this;
+        dialog.confirm( { heading: t( 'confirm.repeatremove.heading' ), msg: t( 'confirm.repeatremove.msg' ) } )
+            .then( confirmed => {
+                if ( confirmed ) {
+                    //remove clone
+                    that.remove( $( repeatEl ) );
+                }
+            } )
+            .catch( console.error );
     },
     /*
      * Obtains the absolute index of the provided repeat or repeat-info element
@@ -120,11 +140,24 @@ export default {
         }
         return count - 1;
     },
+    /*
+     * Obtains the absolute index of the provided repeat-info element
+     */
+    getInfoIndex( repeatInfo ) {
+        if ( !this.form.repeatsPresent ) {
+            return 0;
+        }
+        if ( !repeatInfo || !repeatInfo.classList.contains( 'or-repeat-info' ) ) {
+            return null;
+        }
+        const name = repeatInfo.dataset.name;
+        return [ ...repeatInfo.closest( 'form.or' ).querySelectorAll( `.or-repeat-info[data-name="${name}"]` ) ].indexOf( repeatInfo );
+    },
     /**
      * [updateViewInstancesFromModel description]
-     * @param  {[type]} idx           not used but part of jQuery.each
-     * @param   {Element} repeatInfo  repeatInfo element
-     * @return {[type]}            [description]
+     * @param {number} idx - not used but part of jQuery.each
+     * @param {Element} repeatInfo - repeatInfo element
+     * @return {number}
      */
     updateViewInstancesFromModel( idx, repeatInfo ) {
         const that = this;
@@ -150,9 +183,8 @@ export default {
     },
     /**
      * [updateDefaultFirstRepeatInstance description]
-     * @param  {[type]} idx             not use but part of jQeury.each
-     * @param   {Element} repeatInfo    repeatInfo element
-     * @return {[type]}            [description]
+     * @param {number} idx - not used but part of jQuery.each
+     * @param {Element} repeatInfo - repeatInfo element
      */
     updateDefaultFirstRepeatInstance( idx, repeatInfo ) {
         let repeatSeriesIndex;
@@ -174,19 +206,14 @@ export default {
     },
     /**
      * [updateRepeatInstancesFromCount description]
-     * @param  {[type]} idx             not use but part of jQeury.each
-     * @param   {Element} repeatInfo repeatInfo element
-     * @return {[type]}            [description]
+     *
+     * @param {number} idx - not used but part of jQuery.each
+     * @param {Element} repeatInfo - repeatInfo element
      */
     updateRepeatInstancesFromCount( idx, repeatInfo ) {
         const that = this;
         let $last;
-        let repCountNodes;
         let numRepsInCount;
-        let numRepsInView;
-        let toCreate;
-        let repPath;
-        let repIndex;
         const $repeatInfo = $( repeatInfo );
         const repCountPath = repeatInfo.dataset.repeatCount || '';
 
@@ -195,28 +222,22 @@ export default {
         }
 
         /*
-         * We cannot pass a context to model.evaluate() if the number or repeats in a series is zero.
+         * We cannot pass an .or-repeat context to model.evaluate() if the number or repeats in a series is zero.
          * However, but we do still need a context for nested repeats where the count of the nested repeat
-         * is determined in a node inside the parent repeat. To do so we use this method:
-         *
-         * 1. determine the index from the view (always 0 for not-nested-repeats)
-         * 2. obtain ALL repCount nodes from the model
-         * 3. select the correct node from the result array
-         * 
+         * is determined in a node inside the parent repeat. To do so we use the repeat comment in model as context.
          */
-        repPath = repeatInfo.dataset.name;
-        repIndex = this.getIndex( repeatInfo );
-        repCountNodes = this.form.model.evaluate( repCountPath, 'nodes', null, null, true );
+        const repPath = repeatInfo.dataset.name;
+        const repCountNode = this.form.model.evaluate( repCountPath, 'node', this.form.model.getRepeatCommentSelector( repPath ), this.getInfoIndex( repeatInfo ), true );
 
-        if ( repCountNodes.length && repCountNodes[ repIndex ] ) {
-            numRepsInCount = Number( repCountNodes[ repIndex ].textContent );
+        if ( repCountNode ) {
+            numRepsInCount = Number( repCountNode.textContent );
         } else {
             console.error( 'Unexpectedly, could not obtain repeat count node' );
         }
 
         numRepsInCount = isNaN( numRepsInCount ) ? 0 : numRepsInCount;
-        numRepsInView = $repeatInfo.siblings( `.or-repeat[name="${repPath}"]` ).length;
-        toCreate = numRepsInCount - numRepsInView;
+        const numRepsInView = $repeatInfo.siblings( `.or-repeat[name="${repPath}"]` ).length;
+        let toCreate = numRepsInCount - numRepsInView;
 
         if ( toCreate > 0 ) {
             that.add( repeatInfo, toCreate );
@@ -237,9 +258,8 @@ export default {
     /**
      * Checks whether repeat count value has been updated and updates repeat instances
      * accordingly.
-     * 
-     * @param  {[type]} updated [description]
-     * @return {[type]}         [description]
+     *
+     * @param {UpdatedDataNodes} updated - The object containing info on updated data nodes.
      */
     countUpdate( updated ) {
         let $repeatInfos;
@@ -247,11 +267,12 @@ export default {
         $repeatInfos = this.form.getRelatedNodes( 'data-repeat-count', '.or-repeat-info', updated );
         $repeatInfos.each( this.updateRepeatInstancesFromCount.bind( this ) );
     },
-    /**s
-     * clone a repeat group/node
-     * @param   {Element} repeatInfo repeatInfo element
-     * @param   {number=} count number of clones to create
-     * @return  {boolean}       [description]
+    /**
+     * Clone a repeat group/node.
+     *
+     * @param {Element} repeatInfo - A repeatInfo element.
+     * @param {number=} count - Number of clones to create.
+     * @return {boolean} Cloning success/failure outcome.
      */
     add( repeatInfo, count ) {
         let $repeats;
@@ -314,8 +335,8 @@ export default {
             // This is the index of the new repeat in relation to all other repeats of the same name,
             // even if they are in different series.
             repeatIndex = repeatIndex || this.getIndex( $clone[ 0 ] );
-            // This will trigger setting default values, calculations, readonly, relevancy, and automatic page flips.
-            $clone.trigger( 'addrepeat', [ repeatIndex, byCountUpdate ] );
+            // This will trigger setting default values, calculations, readonly, relevancy, language updates, and automatic page flips.
+            $clone[ 0 ].dispatchEvent( events.AddRepeat( [ repeatIndex, byCountUpdate ] ) );
             // Initialize widgets in clone after default values have been set
             if ( this.form.widgetsInitialized ) {
                 this.form.widgets.init( $clone, this.form.options );
@@ -359,7 +380,7 @@ export default {
             that.toggleButtons( repeatInfo );
             // Trigger the removerepeat on the next repeat or repeat-info(always present)
             // so that removerepeat handlers know where the repeat was removed
-            $next.trigger( 'removerepeat' );
+            $next[ 0 ].dispatchEvent( events.RemoveRepeat() );
             // Now remove the data node
             that.form.model.node( repeatPath, repeatIndex ).remove();
         } );

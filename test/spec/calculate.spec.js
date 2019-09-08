@@ -1,6 +1,12 @@
 import loadForm from '../helpers/load-form';
+import dialog from '../../src/js/fake-dialog';
+import events from '../../src/js/event';
 
 describe( 'calculate functionality', () => {
+
+    beforeAll( () => {
+        dialog.confirm = () => Promise.resolve( true );
+    } );
 
     it( 'updates inside multiple repeats when repeats become relevant', () => {
         const form = loadForm( 'repeat-relevant-calculate.xml' );
@@ -31,5 +37,30 @@ describe( 'calculate functionality', () => {
             done();
         }, 650 );
 
+    } );
+
+    it( 'updates a calculation for node if calc refers to node filtered with predicate', () => {
+        const form = loadForm( 'count-repeated-nodes.xml' );
+        form.init();
+
+        const text1 = form.view.html.querySelector( 'textarea[name="/repeat-group-comparison/REP/text1"]' );
+
+        text1.value = ' yes ';
+        text1.dispatchEvent( events.Change() );
+
+        expect( form.view.html.querySelector( 'input[name="/repeat-group-comparison/count2"]' ).value ).toEqual( '1' );
+
+    } );
+
+    it( 'does not calculate questions inside repeat instances created with repeat-count, if the repeat is not relevant', () => {
+        const form = loadForm( 'repeat-count-calculate-irrelevant.xml' );
+        form.init();
+
+        const calcs = form.model.xml.querySelectorAll( 'SHD_NO' );
+
+        expect( calcs.length ).toEqual( 3 );
+        expect( calcs[ 0 ].textContent ).toEqual( '' );
+        expect( calcs[ 1 ].textContent ).toEqual( '' );
+        expect( calcs[ 2 ].textContent ).toEqual( '' );
     } );
 } );

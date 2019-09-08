@@ -2,6 +2,7 @@ import loadForm from '../helpers/load-form';
 import $ from 'jquery';
 import forms from '../mock/forms';
 import event from '../../src/js/event';
+import dialog from '../../src/js/fake-dialog';
 
 describe( 'repeat functionality', () => {
 
@@ -10,10 +11,10 @@ describe( 'repeat functionality', () => {
 
     describe( 'cloning', () => {
         beforeEach( () => {
-
+            dialog.confirm = () => Promise.resolve( true );
         } );
 
-        it( 'removes the correct instance and HTML node when the "-" button is clicked (issue 170)', () => {
+        it( 'removes the correct instance and HTML node when the "-" button is clicked (issue 170)', ( done ) => {
             const form = loadForm( 'thedata.xml' );
             form.init();
             const repeatSelector = '.or-repeat[name="/thedata/repeatGroup"]';
@@ -27,12 +28,16 @@ describe( 'repeat functionality', () => {
             expect( form.model.node( nodePath, index ).getVal() ).toEqual( 'c3' );
 
             form.view.html.querySelectorAll( repeatSelector )[ index ].querySelector( 'button.remove' ).click();
-            expect( form.model.node( nodePath, index ).getVal() ).toEqual( undefined );
-            //check if it removed the correct data node
-            expect( form.model.node( nodePath, index - 1 ).getVal() ).toEqual( 'c2' );
-            //check if it removed the correct html node
-            expect( form.view.html.querySelectorAll( repeatSelector ).length ).toEqual( 2 );
-            expect( form.view.html.querySelectorAll( nodeSelector )[ index - 1 ].value ).toEqual( 'c2' );
+            setTimeout( () => {
+                expect( form.model.node( nodePath, index ).getVal() ).toEqual( undefined );
+                //check if it removed the correct data node
+                expect( form.model.node( nodePath, index - 1 ).getVal() ).toEqual( 'c2' );
+                //check if it removed the correct html node
+                expect( form.view.html.querySelectorAll( repeatSelector ).length ).toEqual( 2 );
+                expect( form.view.html.querySelectorAll( nodeSelector )[ index - 1 ].value ).toEqual( 'c2' );
+                done();
+            }, 10 );
+
         } );
 
         it( 'marks cloned invalid fields as valid', () => {
@@ -43,7 +48,7 @@ describe( 'repeat functionality', () => {
             const nodeSelector = 'input[name="/thedata/repeatGroup/nodeC"]';
             const node3 = form.view.html.querySelectorAll( nodeSelector )[ 2 ];
 
-            form.setInvalid( $( node3 ) );
+            form.setInvalid( node3 );
 
             expect( form.view.html.querySelectorAll( repeatSelector ).length ).toEqual( 3 );
             expect( node3.parentElement.classList.contains( 'invalid-constraint' ) ).toBe( true );
@@ -273,6 +278,34 @@ describe( 'repeat functionality', () => {
 
             expect( form.view.html.querySelectorAll( a )[ 1 ].querySelectorAll( b ).length ).toEqual( 2 );
         } );
+
+        it( 'and is able to use a relative repeat count path for top-level repeats', () => {
+            const f = loadForm( 'repeat-count-relative.xml' );
+            f.init();
+
+            f.view.html.querySelector( 'input[name="/data/count"]' ).value = 4;
+            f.view.html.querySelector( 'input[name="/data/count"]' ).dispatchEvent( event.Change() );
+
+            expect( f.view.html.querySelectorAll( '.or-repeat' ).length ).toEqual( 8 ); //4+4
+        } );
+
+        it( 'and is able to use a relative repeat count path for nested repeats', () => {
+            const f = loadForm( 'repeat-count-relative-nested.xml' );
+            f.init();
+
+            expect( f.view.html.querySelectorAll( '.or-repeat[name="/data/rep1"]' ).length ).toEqual( 2 );
+
+            const count1 = f.view.html.querySelectorAll( 'input[name="/data/rep1/txt"]' )[ 0 ];
+            count1.value = 6;
+            count1.dispatchEvent( event.Change() );
+
+            const count2 = f.view.html.querySelectorAll( 'input[name="/data/rep1/txt"]' )[ 1 ];
+            count2.value = 1;
+            count2.dispatchEvent( event.Change() );
+
+            expect( f.view.html.querySelectorAll( '.or-repeat[name="/data/rep1/rep2"]' ).length ).toEqual( 7 ); //6+1
+        } );
+
     } );
 
 
@@ -341,6 +374,14 @@ describe( 'repeat functionality', () => {
             it( 'works with nested repeats to get the index of a nested repeat in respect to the whole form', () => {
                 expect( form.repeats.getIndex( repeats[ index ] ) ).toEqual( index );
             } );
+        } );
+    } );
+
+    describe( 'repeats with repeat-count and only calculations', () => {
+        const form = loadForm( 'repeat-count-calc-only.xml' );
+        const errors = form.init();
+        it( 'loads without errors', () => {
+            expect( errors ).toEqual( [] );
         } );
     } );
 

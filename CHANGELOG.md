@@ -6,8 +6,195 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 [Unreleased]
 --------------------
 ##### Fixed
+- Analog scale widget layout messed up in Grid Theme on IE11.
+
+[5.7.0] - 2019-09-05
+--------------------
+##### Added
+- Support for "picker" appearance on range question (100% in enketo-transformer actually)
+
+##### Fixed
+- Datepicker widget cause infinite loops with certain custom extensions that update values programmatically.
+
+[5.6.0] - 2019-08-20
+--------------------
+##### Removed
+- ESRI ArcGIS geopicker (moved [here]https://github.com/enketo/enketo-arcgis-geo-widget)
+
+[5.5.2] - 2019-08-07
+--------------------
+##### Changed
+- Show warning if select_multiple option contains spaces in value.
+- Guidance hints are now displayed on screen as collapsible element.
+
+##### Fixed
+- Likert widget label in Grid Theme overlaps widget in print view.
+
+[5.5.1] - 2019-07-12
+--------------------
+##### Changed
+- Developer documentation update.
+- Major dependencies update.
+
+[5.5.0] - 2019-07-09
+--------------------
+##### Added 
+- Support for max-pixel attribute.
+
+##### Changed
+- Improvements to print style (group header size, opacity of disabled questions, line-height in Grid Theme)\
+- Improved print style of select minimal widget.
+
+##### Fixed
+- Long words break out of cell in Grid Theme.
+- Workaround for an iOS browser bug where a readonly date input is actually fully functional.
+
+[5.4.1] - 2019-06-10
+--------------------
+##### Fixed
+- Disabled analog-scale widget is still visible.
+- Tests in enketo-express fail due to npm packaging issue.
+
+[5.4.0] - 2019-06-05
+--------------------
+##### Added
+- An option to override the default XForm language during form instantiation.
+- Developer documentation.
+  
+##### Changed
+- Made preparations for apps to dynamically switch the language of non-form-defined strings.
+
+##### Fixed
+- Dependency/build issue with 'sortable not defined'.
+- Form control value getter for complex third-party widgets may get a false value.
+
+[5.3.0] - 2019-05-21
+--------------------
+##### Removed
+- Support for appearances "quick" and "quickcompact".
+
+##### Added
+- Support for appearances "columns", "columns-pack", "columns-n" all with an optional "no-buttons" modifier
+
+##### Fixed
+- Automatically enlarged multiline inputs cannot be manually resized to their original size.
+
+[5.2.8] - 2019-05-10
+--------------------
+##### Fixed
+- Analog scale widget without current value box, still firing excessive change events.
+- Distress widget mercury is not reset properly.
+
+[5.2.7] - 2019-05-09
+--------------------
+##### Fixed
+- Range, Analog Scale, Datetime, and Time widgets fire an unnecessary change event when a new value is set that is equal to the existing value.
+- Range widget fires an unnecessary change event when the value is empty, before the value is set, when the user clicks the widget.
+- Issue with datepickers in Grid Theme in Firefox in apps using Enketo Core (Enketo Express) where the reset button is rendered outside the cell.
+
+[5.2.6] - 2019-05-01
+--------------------
+##### Fixed
+- Draw widgets loose drawing (or last stroke(s) in drawing) on mobile devices if clicking hide-full-screen button or switching device orientation within 1.5 sec after last change.
+
+[5.2.4] - 2019-04-25
+--------------------
+##### Fixed
+- Some forms with repeats fail to load in Safari.
+
+[5.2.3] - 2019-04-24
+--------------------
+##### Fixed
+- Failing to clone repeats that only contain calculations.
+- Select one calculations not updating correctly.
+- Irrelevant calculations inside non-first repeat instances run upon load.
+- Range widgets do not work on touchscreen devices.
+- Date strings without timezone component are not always converted correctly in timezones that have DST.
+- Hand-typed/pasted dates with spaces or invalid characters are kept shown to user, but are not stored in model.
+
+[5.2.2] - 2019-04-01
+--------------------
+##### Changed
+- Hide reset button when question is readonly.
+
+##### Fixed
+- Readonly Draw/Signature widget updates with empty file when canvas looses focus. 
+- Readonly Select Minimal widget is not readonly.
+- Readonly File widget becomes writeable if it becomes relevant.
+
+[5.2.1] - 2019-03-26
+--------------------
+##### Changed
+- The restriction on crossing paths in the geoshape widget was removed.
+
+##### Fixed
+- Radiobutton unselect functionality can cause infinite loops with certain custom extensions that update values programmatically.
+
+[5.2.0] - 2019-03-19
+---------------------
+##### Added
+- A configurable option to provide a maximum character length of a text field.
+
+##### Fixed
+- The output in an itemset option label is not populated upon load.
+
+[5.1.3] - 2019-02-26
+---------------------
+##### Changed
+- Partial rewrite of events.
+- Improved accuracy of progress tracker.
+
+##### Fixed
+- On touchscreen devices, the draw widget download functionality does not work, and clicking the Draw button empties the canvas.
+- XForms using geopoint, geotrace, geoshape, time, date, datetime, select minimal, rank, autocomplete calculations **without form control** (advanced) fail to load.
+- Some widgets (such as all geo widgets) do not update view if a calculation changes the underlying value.
+
+[5.1.1] - 2019-02-21
+---------------------
+##### Fixed
+- Calculations using advanced count(/path/to/repeat/node1[text()="something"]) aren't recalculated when a node1 changes.
+- Exception occurs when appearance 'horizontal' is added to group (which has no support for this appearance).
+- If the window in an online-only multi-page form is resized, while a drawing is on a currently-not-shown page, the submission results in an empty drawing.
+
+[5.1.0] - 2019-02-18
+---------------------
+##### Changed
+- Readonly draw widgets no longer show drawings on grey background in Grid Theme, nor apply an opaqueness filter.
+- Repeat deletion with "-" button now requires confirmation.
+
+##### Fixed
+- Loading image from record may show error even if it was loaded successfully.
+- Generic file upload not working (cannot set property 'src' of null).
+
+[5.0.5] - 2019-02-07
+---------------------
+##### Fixed
+- New repeats are always shown in default language.
+- Relative repeat-counts not working.
+
+[5.0.4] - 2019-01-10
+---------------------
+##### Fixed
+- Loading a form with a readonly file input throws an exception.
+- Times and datetimes with meridian notation are set to empty in the model for times between 12:00 AM and 1:00 AM, and between 12:00 PM and 1:00 PM.
+
+[5.0.3] - 2019-01-07
+--------------------
+##### Fixed
+- Too much delay in saving drawings/signatures/annotations.
+- Slider in vertical range widget not aligned properly in Grid Theme.
+- Analog scale widget min/max labels not position properly in Grid Theme.
+
+[5.0.2] - 2019-01-07
+--------------------
+##### Changed
+- Fewer model updates during drawing using draw/signature/annotate widgets (performance).
+  
+##### Fixed
 - Loading error in Pages mode when a page has no label.
 - Itemsets not populating if inside an irrelevant group upon load.
+- Download link not working for Draw/Signature/Annotate widgets.
+- Broken autocomplete widget in Safari and all iOS browsers.
 
 [5.0.1] - 2018-12-20
 --------------------

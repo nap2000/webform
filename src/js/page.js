@@ -1,5 +1,7 @@
 /**
  * Pages module.
+ *
+ * @module pages
  */
 
 import $ from 'jquery';
@@ -8,9 +10,23 @@ import config from 'enketo/config';
 import 'jquery-touchswipe';
 
 export default {
+    /**
+     * @type boolean
+     * @default
+     */
     active: false,
+    /**
+     * @type Array|jQuery
+     * @default
+     */
     $current: [],
+    /**
+     * @type jQuery
+     */
     $activePages: $(),
+    /**
+     * @type function
+     */
     init() {
         if ( !this.form ) {
             throw new Error( 'Repeats module not correctly instantiated with form property.' );
@@ -52,10 +68,14 @@ export default {
             }*/
         }
     },
-    // flips to the page provided as jQueried parameter or the page containing
-    // the jQueried element provided as parameter
-    // alternatively, (e.g. if a top level repeat without field-list appearance is provided as parameter)
-    // it flips to the page contained with the jQueried parameter;
+    /**
+     * flips to the page provided as jQueried parameter or the page containing
+     * the jQueried element provided as parameter
+     * alternatively, (e.g. if a top level repeat without field-list appearance is provided as parameter)
+     * it flips to the page contained with the jQueried parameter;
+     *
+     * @param {jQuery} $e
+     */
     flipToPageContaining( $e ) {
         let $closest;
 
@@ -68,6 +88,9 @@ export default {
         }
         this.$toc.parent().find( '.pages-toc__overlay' ).click();
     },
+    /**
+     * sets button handlers
+     */
     _setButtonHandlers() {
         const that = this;
         // Make sure eventhandlers are not duplicated after resetting form.
@@ -96,6 +119,9 @@ export default {
             return false;
         } );
     },
+    /**
+     * sets swipe handlers
+     */
     _setSwipeHandlers() {
         if ( config.swipePage === false ) {
             return;
@@ -118,10 +144,10 @@ export default {
                 if ( phase === 'start' ) {
                     /*
                      * Triggering blur will fire a change event on the currently focused form control
-                     * This will trigger validation and is required to block page navigation on swipe 
+                     * This will trigger validation and is required to block page navigation on swipe
                      * with form.pageNavigationBlocked
                      * The only potential problem with this approach is that the threshold (250ms)
-                     * may theoretically not be sufficient to ensure validation is completed to 
+                     * may theoretically not be sufficient to ensure validation is completed to
                      * set form.pageNavigationBlocked to true. The edge case will be very slow devices
                      * and/or amazingly complex constraint expressions.
                      */
@@ -130,6 +156,9 @@ export default {
             }
         } );
     },
+    /**
+     * sets toc handlers
+     */
     _setTocHandlers() {
         const that = this;
         this.$toc
@@ -144,33 +173,38 @@ export default {
                 that.$toc.parent().find( '#toc-toggle' ).prop( 'checked', false );
             } );
     },
+    /**
+     * sets repeat handlers
+     */
     _setRepeatHandlers() {
-        const that = this;
         // TODO: can be optimized by smartly updating the active pages
-        this.form.view.$
-            .on( 'addrepeat.pagemode', ( event, index, byCountUpdate ) => {
-                that._updateAllActive();
-                // Don't flip if the user didn't create the repeat with the + button.
-                // or if is the default first instance created during loading.
-                // except if the new repeat is actually first page in the form.
-                if ( !byCountUpdate || that.$activePages[ 0 ] === event.target ) {
-                    that.flipToPageContaining( $( event.target ) );
+        this.form.view.html.addEventListener( events.AddRepeat().type, event => {
+            const byCountUpdate = event.detail ? event.detail[ 1 ] : undefined;
+            this._updateAllActive();
+            // Don't flip if the user didn't create the repeat with the + button.
+            // or if is the default first instance created during loading.
+            // except if the new repeat is actually first page in the form.
+            if ( !byCountUpdate || this.$activePages[ 0 ] === event.target ) {
+                this.flipToPageContaining( $( event.target ) );
+            }
+        } );
+        this.form.view.html.addEventListener( events.RemoveRepeat().type, event => {
+            // if the current page is removed
+            // note that that.$current will have length 1 even if it was removed from DOM!
+            if ( this.$current.closest( 'html' ).length === 0 ) {
+                this._updateAllActive();
+                let $target = $( event.target ).prev();
+                if ( $target.length === 0 ) {
+                    $target = $( event.target );
                 }
-            } )
-            .on( 'removerepeat.pagemode', event => {
-                // if the current page is removed
-                // note that that.$current will have length 1 even if it was removed from DOM!
-                if ( that.$current.closest( 'html' ).length === 0 ) {
-                    that._updateAllActive();
-                    let $target = $( event.target ).prev();
-                    if ( $target.length === 0 ) {
-                        $target = $( event.target );
-                    }
-                    // is it best to go to previous page always?
-                    that.flipToPageContaining( $target );
-                }
-            } );
+                // is it best to go to previous page always?
+                this.flipToPageContaining( $target );
+            }
+        } );
     },
+    /**
+     * sets branch handlers
+     */
     _setBranchHandlers() {
         const that = this;
         // TODO: can be optimized by smartly updating the active pages
@@ -185,16 +219,24 @@ export default {
                 that._toggleButtons();
             } );
     },
+    /**
+     * sets language change handlers
+     */
     _setLangChangeHandlers() {
-        const that = this;
-        this.form.view.$
-            .on( 'changelanguage.pagemode', () => {
-                that._updateToc();
+        this.form.view.html
+            .addEventListener( events.ChangeLanguage().type, () => {
+                this._updateToc();
             } );
     },
+    /**
+     * @return {jQuery} current page
+     */
     _getCurrent() {
         return this.$current;
     },
+    /**
+     * @param {jQuery} $all
+     */
     _updateAllActive( $all ) {
         $all = $all || this.form.view.$.find( '[role="page"]' );
         this.$activePages = $all.filter( function() {
@@ -202,18 +244,29 @@ export default {
             return $this.closest( '.disabled' ).length === 0 &&
                 ( $this.is( '.question' ) || $this.find( '.question:not(.disabled)' ).length > 0 ||
                     // or-repeat-info is only considered a page by itself if it has no sibling repeats
-                    // When there are siblings repeats, we use CSS trickery to show the + button underneath the last 
+                    // When there are siblings repeats, we use CSS trickery to show the + button underneath the last
                     // repeat.
                     ( $this.is( '.or-repeat-info' ) && $this.siblings( '.or-repeat' ).length === 0 ) );
         } );
         this._updateToc();
     },
+    /**
+     * @param {number} currentIndex
+     * @return {jQuery} Previous page
+     */
     _getPrev( currentIndex ) {
         return this.$activePages[ currentIndex - 1 ];
     },
+    /**
+     * @param {number} currentIndex
+     * @return {jQuery} Next page
+     */
     _getNext( currentIndex ) {
         return this.$activePages[ currentIndex + 1 ];
     },
+    /**
+     * @return {number} Current page index
+     */
     _getCurrentIndex() {
         return this.$activePages.index( this.$current );
     },
@@ -251,6 +304,9 @@ export default {
                 return true;
             } );
     },
+    /**
+     * Switches to previous page
+     */
     _prev() {
         const currentIndex = this._getCurrentIndex();
         const prev = this._getPrev( currentIndex );
@@ -259,12 +315,21 @@ export default {
             this._flipTo( prev, currentIndex - 1 );
         }
     },
+    /**
+     * @param {Element} pageEl
+     */
     _setToCurrent( pageEl ) {
         const $n = $( pageEl );
         $n.addClass( 'current hidden' );
         this.$current = $n.removeClass( 'hidden' )
             .parentsUntil( '.or', '.or-group, .or-group-data, .or-repeat' ).addClass( 'contains-current' ).end();
     },
+    /**
+     * Switches to a page
+     *
+     * @param {Element} pageEl
+     * @param {number} newIndex
+     */
     _flipTo( pageEl, newIndex ) {
         // if there is a current page
         if ( this.$current.length > 0 && this.$current.closest( 'html' ).length === 1 ) {
@@ -283,13 +348,23 @@ export default {
             pageEl.dispatchEvent( events.PageFlip() );
         }
     },
+    /**
+     * Switches to first page
+     */
     _flipToFirst() {
         this._flipTo( this.$activePages[ 0 ] );
     },
+    /**
+     * Switches to last page
+     */
     _flipToLast() {
         this._flipTo( this.$activePages.last()[ 0 ] );
     },
-
+    /**
+     * Focuses on first question and scrolls it into view
+     *
+     * @param {Element} pageEl
+     */
     _focusOnFirstQuestion( pageEl ) {
         //triggering fake focus in case element cannot be focused (if hidden by widget)
         $( pageEl )
@@ -305,6 +380,11 @@ export default {
 
         pageEl.scrollIntoView();
     },
+    /**
+     * Updates status of navigation buttons
+     *
+     * @param {number} index
+     */
     _toggleButtons( index ) {
         const i = index || this._getCurrentIndex(),
             next = this._getNext( i ),
@@ -313,6 +393,9 @@ export default {
         this.$btnPrev.add( this.$btnFirst ).toggleClass( 'disabled', !prev );
         this.$formFooter.toggleClass( 'end', !next );
     },
+    /**
+     * Updates Table of Contents
+     */
     _updateToc() {
         if ( this.$toc.length ) {
             // regenerate complete ToC from first enabled question/group label of each page
@@ -336,6 +419,12 @@ export default {
             this.$toc.closest( '.pages-toc' ).removeClass( 'hide' );
         }
     },
+    /**
+     * Builds Table of Contents
+     *
+     * @param {Array<object>} tocItems
+     * @return {Array<Element>}
+     */
     _getTocHtmlFragment( tocItems ) {
         const items = document.createDocumentFragment();
         tocItems.forEach( item => {

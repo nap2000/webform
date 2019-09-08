@@ -1,4 +1,3 @@
-/* global Buffer */
 /**
  * When using enketo-core in your own app, you'd want to replace
  * this build file with one of your own in your project root.
@@ -81,7 +80,6 @@ module.exports = grunt => {
         karma: {
             options: {
                 singleRun: true,
-                reporters: [ 'dots' ],
                 configFile: 'test/karma.conf.js',
                 customLaunchers: {
                     ChromeHeadlessNoSandbox: {
@@ -147,11 +145,11 @@ module.exports = grunt => {
 
     /*grunt.loadNpmTasks( 'grunt-sass' );*/
 
-    grunt.registerTask( 'transforms', 'Creating forms.json', function() {
+    grunt.registerTask( 'transforms', 'Creating forms.js', function() {
         const forms = {};
         const done = this.async();
         const jsonStringify = require( 'json-pretty' );
-        const formsJsonPath = 'test/mock/forms.js';
+        const formsJsPath = 'test/mock/forms.js';
         const xformsPaths = grunt.file.expand( {}, 'test/forms/*.xml' );
         const transformer = require( 'enketo-transformer' );
 
@@ -168,7 +166,7 @@ module.exports = grunt => {
                     } );
             } ), Promise.resolve() )
             .then( () => {
-                grunt.file.write( formsJsonPath, `export default ${jsonStringify( forms )};` );
+                grunt.file.write( formsJsPath, `export default ${jsonStringify( forms )};` );
                 done();
             } );
     } );

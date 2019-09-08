@@ -1,5 +1,7 @@
 /**
- * Simple file manager with cross-browser support. That uses the FileReader
+ * @module fileManager
+ *
+ * @description Simple file manager with cross-browser support. That uses the FileReader
  * to create previews. Can be replaced with a more advanced version that
  * obtains files from storage.
  *
@@ -19,25 +21,36 @@ var supported = typeof FileReader !== 'undefined',
     notSupportedAdvisoryMsg = '';
 
 /**
- * Initialize the file manager .
- * @return {[type]} promise boolean or rejection with Error
+ * @static
+ * @function init
+ *
+ * @description Initialize the file manager.
+ *
+ * @return {Promise|boolean|Error} promise boolean or rejection with Error
  */
-fileManager.init = () => Promise.resolve( true );
+fileManager.init = () => { return Promise.resolve( true ); };
 
 /**
- * Whether the filemanager is waiting for user permissions
- * @return {Boolean} [description]
+ * @static
+ * @function isWaitingForPermissions
+ *
+ * @description Whether the filemanager is waiting for user permissions
+ *
+ * @return {boolean} [description]
  */
-fileManager.isWaitingForPermissions = () => false;
+fileManager.isWaitingForPermissions = () => { return false; };
 
 /**
- * Obtains a URL that can be used to show a preview of the file when used
+ * @static
+ * @function getFileUrl
+ *
+ * @description Obtains a URL that can be used to show a preview of the file when used
  * as a src attribute.
  *
  * It is meant for media previews and media downloads.
  *
- * @param  {?string|Object} subject File or filename in local storage
- * @return {[type]}         promise url string or rejection with Error
+ * @param  {?string|Object} subject - File or filename in local storage
+ * @return {Promise|string|Error} promise url string or rejection with Error
  */
 fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
     let error;
@@ -98,6 +111,13 @@ fileManager.getObjectUrl = subject => fileManager.getFileUrl( subject )
         return url;
     } );
 
+/**
+ * @static
+ * @function urlToBlob
+ *
+ * @param {string} url - url to get
+ * @return {Promise} promise of XMLHttpRequesting given url
+ */
 fileManager.urlToBlob = url => {
     const xhr = new XMLHttpRequest();
 
@@ -112,8 +132,12 @@ fileManager.urlToBlob = url => {
 };
 
 /**
- * Obtain files currently stored in file input elements of open record
- * @return {[File]} array of files
+ * @static
+ * @function getCurrentFiles
+ *
+ * @description Obtain files currently stored in file input elements of open record
+ *
+ * @return {Array.File} array of files
  */
 fileManager.getCurrentFiles = () => {
     const files = [];
@@ -140,6 +164,11 @@ fileManager.getCurrentFiles = () => {
             // TODO: in the future, when browser support increase we can invoke
             // the File constructor to do this.
             newFilename = getFilename( file, this.dataset.filenamePostfix );
+
+            // If file is resized, get Blob representation of data URI
+            if ( this.dataset.resized && this.dataset.resizedDataURI ) {
+                file = dataUriToBlobSync( this.dataset.resizedDataURI );
+            }
             file = new Blob( [ file ], {
                 type: file.type
             } );
@@ -153,17 +182,24 @@ fileManager.getCurrentFiles = () => {
 };
 
 /**
- * Placeholder function to check if file size is acceptable.
+ * @static
+ * @function isTooLarge
  *
- * @param  {Blob}  file [description]
- * @return {Boolean}      [description]
+ * @description Placeholder function to check if file size is acceptable.
+ *
+ * @return {boolean} whether file is too large
  */
-fileManager.isTooLarge = () => false;
+fileManager.isTooLarge = () => { return false; };
 
 /**
- * Replace with function that determines max size published in OpenRosa server response header.
+ * @static
+ * @function getMaxSizeReadable
+ *
+ * @description Replace with function that determines max size published in OpenRosa server response header.
+ *
+ * @return {string} human radable maximiym size
  */
-fileManager.getMaxSizeReadable = () => `${5}MB`;
+fileManager.getMaxSizeReadable = () => { return `${5}MB`; };
 
 /*
  * Convert object to data url

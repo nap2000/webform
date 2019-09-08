@@ -3,16 +3,24 @@ import Widget from '../../js/widget';
 import support from '../../js/support';
 import { time as timeFormat } from '../../js/format';
 import types from '../../js/types';
-import event from '../../js/event';
+import events from '../../js/event';
 import './timepicker';
 import '../../js/dropdown.jquery';
 
+/**
+ * @extends Widget
+ */
 class TimepickerExtended extends Widget {
-
+    /**
+     * @type string
+     */
     static get selector() {
-        return 'input[type="time"]:not([readonly])';
+        return '.question input[type="time"]:not([readonly])';
     }
 
+    /**
+     * @return {boolean}
+     */
     static condition() {
         return !support.touch || !support.inputTypes.time;
     }
@@ -50,20 +58,17 @@ class TimepickerExtended extends Widget {
         // reset button
         resetBtn.addEventListener( 'click', this._reset.bind( this ) );
 
-        // pass widget focus event
-        this.fakeTimeI.addEventListener( 'focus', () => {
-            this.element.dispatchEvent( event.FakeFocus() );
-        } );
-
         // handle original input focus
-        this.element.addEventListener( 'applyfocus', () => {
+        this.element.addEventListener( events.ApplyFocus().type, () => {
             this.fakeTimeI.focus();
         } );
-
     }
 
+    /**
+     * Resets widget
+     */
     _reset() {
-        const ev = this.originalInputValue ? event.Change() : null;
+        const ev = this.originalInputValue ? events.Change() : null;
         if ( ev || this.value ) {
             this.value = '';
             //this.originalInputValue = '';
@@ -71,13 +76,21 @@ class TimepickerExtended extends Widget {
         }
     }
 
+    /**
+     * Updates widget
+     */
     update() {
-        $( this.element )
-            .next( '.widget' )
-            .find( 'input' )
-            .timepicker( 'setTime', this.element.value );
+        if ( this.element.value !== this.value ) {
+            $( this.element )
+                .next( '.widget' )
+                .find( 'input' )
+                .timepicker( 'setTime', this.element.value );
+        }
     }
 
+    /**
+     * @type string
+     */
     get value() {
         return this.fakeTimeI.value;
     }

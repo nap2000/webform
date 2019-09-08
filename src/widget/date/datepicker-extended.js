@@ -2,7 +2,6 @@ import Widget from '../../js/widget';
 import support from '../../js/support';
 import $ from 'jquery';
 import types from '../../js/types';
-import event from '../../js/event';
 import { isNumber, getPasteData } from '../../js/utils';
 import 'bootstrap-datepicker';
 import '../../js/dropdown.jquery';
@@ -10,13 +9,19 @@ import '../../js/dropdown.jquery';
 /**
  * Extends eternicode's bootstrap-datepicker without changing the original.
  * https://github.com/eternicode/bootstrap-datepicker
+ * @extends Widget
  */
 class DatepickerExtended extends Widget {
-
+    /**
+     * @type string
+     */
     static get selector() {
-        return 'input[type="date"]:not([readonly])';
+        return '.question input[type="date"]:not([readonly])';
     }
 
+    /**
+     * @type boolean
+     */
     static condition() {
         const badSamsung = /GT-P31[0-9]{2}.+AppleWebKit\/534\.30/;
 
@@ -69,8 +74,9 @@ class DatepickerExtended extends Widget {
 
     /**
      * Creates fake date input elements
-     * @param  {string} format the date format
-     * @return {jQuery}        the jQuery-wrapped fake date input element
+     *
+     * @param {string} format - The date format
+     * @return {jQuery} The jQuery-wrapped fake date input element
      */
     _createFakeDateInput( format ) {
         const $dateI = $( this.element );
@@ -86,7 +92,7 @@ class DatepickerExtended extends Widget {
     /**
      * Copy manual changes that were not detected by bootstrap-datepicker (one without pressing Enter) to original date input field
      *
-     * @param { jQuery } $fakeDateI Fake date input element
+     * @param {jQuery} $fakeDateI - Fake date input element
      */
     _setChangeHandler( $fakeDateI ) {
         const settings = this.settings;
@@ -96,7 +102,7 @@ class DatepickerExtended extends Widget {
             let value = e.type === 'paste' ? getPasteData( e ) : this.value;
 
             if ( value.length > 0 ) {
-                // Note: types.date.convert considers numbers to be a number of days since the epoch 
+                // Note: types.date.convert considers numbers to be a number of days since the epoch
                 // as this is what the XPath evaluator may return.
                 // For user-entered input, we want to consider a Number value to be incorrect, expect for year input.
                 if ( isNumber( value ) && settings.format !== 'yyyy' ) {
@@ -107,18 +113,19 @@ class DatepickerExtended extends Widget {
                 }
             }
 
-            // Here we have to do something unusual to prevent native inputs from automatically 
+            $fakeDateI.val( this._toDisplayDate( convertedValue ) ).datepicker( 'update' );
+
+            // Here we have to do something unusual to prevent native inputs from automatically
             // changing 2012-12-32 into 2013-01-01
             // convertedValue is '' for invalid 2012-12-32
-            if ( convertedValue === '' || this.originalInputValue !== convertedValue ) {
-                if ( e.type === 'paste' ) {
-                    e.stopImmediatePropagation();
-                }
-                this.originalInputValue = convertedValue;
-                this.element.blur();
+            if ( convertedValue === '' && e.type === 'paste' ) {
+                e.stopImmediatePropagation();
             }
 
-            $fakeDateI.val( this._toDisplayDate( convertedValue ) ).datepicker( 'update' );
+            // Avoid triggering unnecessary change events as they mess up sensitive custom applications (OC)
+            if ( this.originalInputValue !== convertedValue ) {
+                this.originalInputValue = convertedValue;
+            }
 
             return false;
         } );
@@ -127,7 +134,7 @@ class DatepickerExtended extends Widget {
     /**
      * Reset button handler
      *
-     * @param { jQuery } $fakeDateI Fake date input element
+     * @param {jQuery} $fakeDateI - Fake date input element
      */
     _setResetHandler( $fakeDateI ) {
         $fakeDateI.next( '.btn-reset' ).on( 'click', () => {
@@ -141,24 +148,30 @@ class DatepickerExtended extends Widget {
      * Handler for focus events.
      * These events on the original input are used to check whether to display the 'required' message
      *
-     * @param { jQuery } $fakeDateI Fake date input element
+     * @param {jQuery} $fakeDateI - Fake date input element
      */
     _setFocusHandler( $fakeDateI ) {
-        // Handle focus on widget
-        $fakeDateI.on( 'focus', () => {
-            this.element.dispatchEvent( event.FakeFocus() );
-        } );
         // Handle focus on original input (goTo functionality)
         $( this.element ).on( 'applyfocus', () => {
             $fakeDateI[ 0 ].focus();
         } );
     }
 
-    _toActualDate( date ) {
+    /**
+     * @param {string} [date]
+     * @return string
+     */
+    _toActualDate( date = '' ) {
+        date = date.trim();
         return date && this.settings.format === 'yyyy' && date.length < 5 ? `${date}-01-01` : ( date && this.settings.format === 'yyyy-mm' && date.length < 8 ? `${date}-01` : date );
     }
 
-    _toDisplayDate( date ) {
+    /**
+     * @param {string} [date]
+     * @return string
+     */
+    _toDisplayDate( date = '' ) {
+        date = date.trim();
         return date && this.settings.format === 'yyyy' ? date.substring( 0, 4 ) : ( this.settings.format === 'yyyy-mm' ? date.substring( 0, 7 ) : date );
     }
 
@@ -166,10 +179,16 @@ class DatepickerExtended extends Widget {
         this.value = this.element.value;
     }
 
+    /**
+     * @type string
+     */
     get displayedValue() {
         return this.question.querySelector( '.widget input' ).value;
     }
 
+    /**
+     * @type string
+     */
     get value() {
         return this._toActualDate( this.displayedValue );
     }

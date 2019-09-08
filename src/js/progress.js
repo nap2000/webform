@@ -1,39 +1,61 @@
 /**
  * Progress module.
+ *
+ * @module progress
  */
 
-import $ from 'jquery';
+import events from './event';
 
 /**
  * Maintains progress state of user traversing through form, using
- * currently focused input || last changed input as current location.
+ * currently focused input or the last changed input as the indicator for the current location.
  */
 export default {
+    /**
+     * @type number
+     */
     status: 0,
+    /**
+     * @type Element
+     */
     lastChanged: null,
-    $all: null,
+    /**
+     * @type Array<Element>
+     */
+    all: null,
+    /**
+     * Updates total
+     */
     updateTotal() {
-        this.$all = this.form.view.$.find( '.question' ).not( '.disabled, .or-appearance-comment, .or-appearance-dn' ).filter( function() {
-            return $( this ).parentsUntil( '.or', '.disabled' ).length === 0;
-        } );
+        this.all = [ ...this.form.view.html.querySelectorAll( '.question:not(.disabled):not(.or-appearance-comment):not(.or-appearance-dn):not(.readonly)' ) ]
+            .filter( question => !question.closest( '.disabled' ) );
     },
-    // updates rounded % value of progress and triggers event if changed
+    /**
+     * Updates rounded % value of progress and triggers event if changed.
+     *
+     * @param {Element} el
+     */
     update( el ) {
         let status;
 
-        if ( !this.$all || !el ) {
+        if ( !this.all || !el ) {
             this.updateTotal();
         }
 
         this.lastChanged = el || this.lastChanged;
-        status = Math.round( ( ( this.$all.index( $( this.lastChanged ).closest( '.question' ) ) + 1 ) * 100 ) / this.$all.length );
+        if ( this.lastChanged ) {
+            status = Math.round( ( ( this.all.indexOf( this.lastChanged.closest( '.question' ) ) + 1 ) * 100 ) / this.all.length );
+        }
 
         // if the current el was removed (inside removed repeat), the status will be 0 - leave unchanged
         if ( status > 0 && status !== this.status ) {
             this.status = status;
-            this.form.view.$.trigger( 'progressupdate.enketo', status );
+            this.form.view.html.dispatchEvent( events.ProgressUpdate( status ) );
         }
     },
+    /**
+     * @return {string} status
+     */
     get() {
         return this.status;
     }

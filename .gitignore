@@ -30,3 +30,11 @@ npm-debug.log
 build/js/
 test/mock/forms.js
 temp
+node_modules/
+build/css/
+build/js/
+test/mock/forms.js
+test-coverage/
+temp
+.DS_Store
+Thumbs.db

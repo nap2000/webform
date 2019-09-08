@@ -3,15 +3,23 @@ import support from '../../js/support';
 import { elementDataStore as data } from '../../js/dom-utils';
 
 /**
- * For now, the whole purpose of this widget is to show a native month picker on 
+ * For now, the whole purpose of this widget is to show a native month picker on
  * MOBILE devices with browsers that support it.
+ *
+ * @extends Widget
  */
 class DatepickerMobile extends Widget {
-
+    /**
+     * @type string
+     */
     static get selector() {
         return '.or-appearance-month-year input[type="date"]';
     }
 
+    /**
+     * @param {Element} element
+     * @return {boolean}
+     */
     static condition( element ) {
         // Do not instantiate if DatepickerExtended was instantiated on element or if non-mobile device is used.
         return !data.has( element, 'DatepickerExtended' ) && support.touch;
@@ -32,6 +40,9 @@ class DatepickerMobile extends Widget {
         }
     }
 
+    /**
+     * @type string
+     */
     get value() {
         return this.widgetInput.value ? `${this.widgetInput.value}-01` : '';
     }
@@ -41,6 +52,9 @@ class DatepickerMobile extends Widget {
         this.widgetInput.value = toSet;
     }
 
+    /**
+     * Updates value
+     */
     update() {
         this.value = this.originalInputValue;
     }

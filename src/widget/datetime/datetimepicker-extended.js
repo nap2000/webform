@@ -3,18 +3,25 @@ import support from '../../js/support';
 import $ from 'jquery';
 import { time as timeFormat } from '../../js/format';
 import types from '../../js/types';
+import events from '../../js/event';
 import '../../js/extend';
 import 'bootstrap-datepicker';
 import '../time/timepicker';
 import '../../js/dropdown.jquery';
 
-
+/**
+ * @extends Widget
+ */
 class DatetimepickerExtended extends Widget {
-
+    /**
+     * @type string
+     */
     static get selector() {
-        return 'input[type="datetime"]:not([readonly])';
+        return '.question input[type="datetime"]:not([readonly])';
     }
-
+    /**
+     * @return {boolean}
+     */
     static condition() {
         const badSamsung = /GT-P31[0-9]{2}.+AppleWebKit\/534\.30/;
 
@@ -86,9 +93,11 @@ class DatetimepickerExtended extends Widget {
                 this.$fakeTimeI.val( '' ).trigger( event );
             }
         } );
-
     }
 
+    /**
+     * @return {Element} fake date input
+     */
     _createFakeDateInput() {
         const $fakeDate = $(
             '<div class="date">' +
@@ -98,6 +107,9 @@ class DatetimepickerExtended extends Widget {
         return $fakeDate.find( 'input' );
     }
 
+    /**
+     * @return {Element} fake time input
+     */
     _createFakeTimeInput() {
         const $fakeTime = $(
                 `<div class="timepicker">
@@ -108,14 +120,12 @@ class DatetimepickerExtended extends Widget {
         return $fakeTime.find( 'input' );
     }
 
+    /**
+     * @param {jQuery} $els
+     */
     _setFocusHandler( $els ) {
-        const that = this;
-        // Handle focus on widget.
-        $els.on( 'focus', () => {
-            $( that.element ).trigger( 'fakefocus' );
-        } );
         // Handle focus on original input (goTo functionality)
-        $( this.element ).on( 'applyfocus', () => {
+        this.element.addEventListener( events.ApplyFocus().type, () => {
             $els.eq( 0 ).focus();
         } );
     }
@@ -123,14 +133,20 @@ class DatetimepickerExtended extends Widget {
     update() {
         const $dateTimeI = $( this.element );
         const val = ( $dateTimeI.val().length > 0 ) ? new Date( $dateTimeI.val() ).toISOLocalString() : '';
-        const vals = val.split( 'T' );
-        const dateVal = vals[ 0 ];
-        const timeVal = ( vals[ 1 ] && vals[ 1 ].length > 4 ) ? vals[ 1 ].substring( 0, 5 ) : '';
 
-        this.$fakeDateI.datepicker( 'setDate', dateVal );
-        this.$fakeTimeI.timepicker( 'setTime', timeVal );
+        if ( val !== this.value ) {
+            const vals = val.split( 'T' );
+            const dateVal = vals[ 0 ];
+            const timeVal = ( vals[ 1 ] && vals[ 1 ].length > 4 ) ? vals[ 1 ].substring( 0, 5 ) : '';
+
+            this.$fakeDateI.datepicker( 'setDate', dateVal );
+            this.$fakeTimeI.timepicker( 'setTime', timeVal );
+        }
     }
 
+    /**
+     * @type string
+     */
     get value() {
         if ( this.$fakeDateI.val().length > 0 && this.$fakeTimeI.val().length > 3 ) {
             const d = this.$fakeDateI.val().split( '-' );
@@ -144,9 +160,9 @@ class DatetimepickerExtended extends Widget {
 
     set value( value ) {
         /*
-          Loaded or default datetime values remain untouched until they are edited. This is done to preserve 
+          Loaded or default datetime values remain untouched until they are edited. This is done to preserve
           the timezone information (especially for instances-to-edit) if the values are not edited (the
-          original entry may have been done in a different time zone than the edit). However, 
+          original entry may have been done in a different time zone than the edit). However,
           values shown in the widget should reflect the local time representation of that value.
          */
         const val = value ? new Date( value ).toISOLocalString() : '';
