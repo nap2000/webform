@@ -6569,7 +6569,8 @@ fieldset[disabled] .draw-widget__body__canvas {
 .range-widget__current {
   padding-bottom: 10px;
   vertical-align: middle;
-  line-height: 98.5px; }
+  line-height: 98.5px;
+    min-height: 108.5px;}
 .range-widget__ticks {
   height: 20px;
   box-sizing: border-box;
