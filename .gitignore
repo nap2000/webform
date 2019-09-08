@@ -3,6 +3,7 @@
 /node_modules/enketo-xpathjs/*
 !/node_modules/enketo-xpathjs/src
 /lib/xpath
+lib/xpath
 /build/js
 /test/mock/forms.json
 temp
