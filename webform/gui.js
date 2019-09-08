@@ -367,7 +367,7 @@
         $alert.show();
 
         $alert.on( 'hidden.bs.modal', function() {
-            $alert.find( '.modal-header h3, .modal-body p' ).html( '' );
+            $alert.find( '.modal-body h4, .modal-body p' ).html( '' );
             clearInterval( timer );
         } );
 
@@ -420,7 +420,7 @@
         $dialog = $( '#dialog-confirm');
 
         //write content into confirmation dialog
-        $dialog.find( '.modal-header h3' ).text( heading );
+        $dialog.find( '.modal-body h4' ).text( heading );
         $dialog.find( '.modal-body .msg' ).html( msg ).capitalizeStart();
         $dialog.find( '.modal-body .alert-danger' ).html( errorMsg ).show();
         if ( !errorMsg ) {
