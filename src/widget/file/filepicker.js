@@ -157,7 +157,7 @@ class Filepicker extends Widget {
 
                 // Get the file
                 file = event.target.files[ 0 ];
-                postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`;
+                postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;    // smap milliseconds
                 event.target.dataset.filenamePostfix = postfix;
                 fileName = getFilename( file, postfix );
 
