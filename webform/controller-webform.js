@@ -203,7 +203,11 @@
             record = store.getRecord(recordName);
             if (record && record.data) {
                 store.setKey("draft", recordName);
-                window.location.replace(record.form);
+                var url = record.form;
+                if(window.location.search == "?debug=yes") {     // Hack to keep debugging
+                    url += "?debug=yes";
+                }
+                window.location.replace(url);
             }
 
         }
