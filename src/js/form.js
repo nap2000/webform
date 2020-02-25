@@ -1,10 +1,12 @@
 import { FormModel } from './form-model';
 import $ from 'jquery';
 import { toArray, parseFunctionFromExpression, stripQuotes, getFilename } from './utils';
+import { getXPath } from './dom-utils';
 import { t } from 'enketo/translator';
 import config from 'enketo/config';
 import inputHelper from './input';
 import repeatModule from './repeat';
+import tocModule from './toc';
 import pageModule from './page';
 import relevantModule from './relevant';
 import itemsetModule from './itemset';
@@ -215,6 +217,7 @@ Form.prototype.init = function() {
         that.view.html.dispatchEvent( events.Removed( event.detail ) );
     } );
 
+    this.toc = this.addModule( tocModule );
     this.pages = this.addModule( pageModule );
     this.langs = this.addModule( languageModule );
     this.progress = this.addModule( progressModule );
@@ -421,7 +424,7 @@ Form.prototype.setAllVals = function( $group, groupIndex ) {
         .forEach( element => {
             try {
                 var value = element.textContent;
-                var name = that.model.getXPath( element, 'instance' );
+                var name = getXPath( element, 'instance' );
                 const index = that.model.node( name ).getElements().indexOf( element );
                 const control = that.input.find( name, index );
                 if ( control ) {
@@ -745,7 +748,7 @@ Form.prototype.setEventHandlers = function() {
         this.progress.update( event.target );
     } );
 
-    this.model.events.addEventListener( 'dataupdate', event => {
+    this.model.events.addEventListener( events.DataUpdate().type, event => {
         that.evaluationCascade.forEach( fn => {
             fn.call( that, event.detail );
         }, true );
@@ -933,7 +936,7 @@ Form.prototype.pathToAbsolute = function( targetPath, contextPath ) {
     // index is irrelevant (no positions in returned path)
     target = this.model.evaluate( targetPath, 'node', contextPath, 0, true );
 
-    return this.model.getXPath( target, 'instance', false );
+    return getXPath( target, 'instance', false );
 };
 
 /**
@@ -1045,7 +1048,7 @@ Form.prototype.getGoToTarget = function( path ) {
     }
 
     // Convert to absolute path, while maintaining positions.
-    path = this.model.getXPath( modelNode, 'instance', true );
+    path = getXPath( modelNode, 'instance', true );
 
     // Not inside a cloned repeat.
     target = this.view.html.querySelector( `[name="${path}"]` );
@@ -1070,9 +1073,9 @@ Form.prototype.getGoToTarget = function( path ) {
 };
 
 /**
- * Scrolls to a HTML Element, flips to the page it is on and focuses on the nearest form control.
+ * Scrolls to an HTML question or group element, flips to the page it is on and focuses on the nearest form control.
  *
- * @param {HTMLElement} target - A HTML element to scroll to
+ * @param {HTMLElement} target - An HTML question or group element to scroll to
  * @return {boolean} whether target found
  */
 Form.prototype.goToTarget = function( target ) {
@@ -1104,6 +1107,6 @@ Form.prototype.goToTarget = function( target ) {
  * @type string
  * @default
  */
-Form.requiredTransformerVersion = '1.34.0';
+Form.requiredTransformerVersion = '1.35.0';
 
 export { Form, FormModel };

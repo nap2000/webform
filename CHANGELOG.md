@@ -3,8 +3,39 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-[Unreleased]
+[5.9.0] - 2019-10-23
+---------------------
+##### Changed
+- Now using native datetime picker on mobile browsers.
+
+##### Fixed
+- Option labels break in middle of word instead of a space.
+- Readonly native date/time/datetime picker in iOS is fully functional when it should not be (re-introduced bug in iOS13).
+- Exception in geo widget (though may not have had negative consequences).
+
+[5.8.0] - 2019-10-04
 --------------------
+##### Added
+- Rating widget!
+
+##### Changed
+- ToC now matches ODK Collect and shows all questions hierarchically.
+
+##### Fixed
+- time/datetime with time between 12:00 and 13:00 not set to PM.
+- time picker in datetime shows empty value if the default value of datetime is at midnight.
+- AM/PM notation broken in time/datetime picker for non-english languages.
+
+[5.7.2] - 2019-09-11
+--------------------
+##### Changed
+- Dependencies (maintenance).
+
+[5.7.1] - 2019-09-09
+--------------------
+##### Changed
+- XPath functions `decimal-time()` and `decimal-date-time()` now use maximum precision instead of rounding to 3 decimals.
+
 ##### Fixed
 - Analog scale widget layout messed up in Grid Theme on IE11.
 
