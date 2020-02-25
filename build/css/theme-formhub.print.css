@@ -2,21 +2,21 @@
 /** end radiobuttons and checkboxes */
 /** CORE **/
 * {
-  float: none; }
+    float: none; }
 
 body {
-  display: block;
-  overflow: visible;
-  background: none; }
-  body .main {
+    display: block;
+    overflow: visible;
+    background: none; }
+body .main {
     overflow: visible;
     display: block;
     margin: 0;
     padding: 0; }
-    body .main .paper {
-      padding: 3px;
-      display: block; }
-  body .paper {
+body .main .paper {
+    padding: 3px;
+    display: block; }
+body .paper {
     overflow: visible;
     border: none;
     margin: 0; }
@@ -35,7 +35,7 @@ body {
 .notification,
 .paper #submit-form,
 h4::before {
-  display: none !important; }
+    display: none !important; }
 
 .or .hint,
 .or .or-appearance-no-print,
@@ -48,72 +48,73 @@ h4::before {
 .or button,
 .or .invalid-required .or-required-msg.active,
 .or .invalid-constraint .or-constraint-msg.active {
-  display: none; }
+    display: none; }
 
 .or:not(.print-relevant-only) .or-branch.disabled {
-  display: block; }
+    display: block; }
 
 .or input[type="file"] {
-  visibility: hidden; }
+    visibility: hidden; }
 
 .or input[type="number"] {
-  appearance: textfield !important;
-  -moz-appearance: textfield !important;
-  -webkit-appearance: textfield !important;
-  -ms-appearance: textfield !important; }
+    appearance: textfield !important;
+    -moz-appearance: textfield !important;
+    -webkit-appearance: textfield !important;
+    -ms-appearance: textfield !important; }
 
 h3 {
-  font-size: 19.2px; }
+    font-size: 24px; }
 
-h4 {
-  font-size: 15.6px; }
+h4,
+h4 > .question-label {
+    font-size: 18px; }
 
 label,
 legend,
 .trigger,
-.note {
-  font-size: 12px; }
+.readonly {
+    font-size: 12px; }
 
 .question-label,
 .option-label,
 label.geo {
-  font-size: 12px; }
+    font-size: 12px; }
 
 .question input:not([type=radio]):not([type=checkbox]) {
-  font-size: 12px; }
+    font-size: 12px; }
 
 .or h2,
 .or h3,
 .or h4,
 .or .required {
-  color: black; }
+    color: black; }
 
 .or h3,
 .or h4 {
-  margin: 0; }
+    margin: 0; }
 
 .or .question {
-  margin-bottom: 0; }
+    margin-bottom: 0; }
 
 .or legend {
-  margin-bottom: 5px; }
-  .or legend ~ label {
+    margin-bottom: 5px; }
+.or legend ~ label {
     padding: 0; }
-  .or legend span:not(.or-output) {
+.or legend span:not(.or-output) {
     display: block; }
 
-.or .note,
+.or .readonly,
 .or .trigger {
-  font-weight: normal;
-  background: none;
-  color: black;
-  padding: 5px 5px 12px 5px; }
+    font-weight: normal;
+    background: none;
+    color: black;
+    padding: 5px 5px 12px 5px; }
 
 .or .required {
-  float: right; }
+    float: right; }
 
 .or .or-repeat {
-  background: none; }
+    background: none; }
 
 .or input[type=text],
 .or input[type=tel],
@@ -123,94 +124,82 @@ label.geo {
 .or input[type=file],
 .or input[type=date],
 .or input[type=time],
-.or input[type=datetime],
+.or input[type=datetime-local],
 .or input[type=number],
 .or select,
 .or textarea {
-  border-radius: 0px;
-  box-shadow: none;
-  appearance: none;
-  -moz-appearance: none;
-  -webkit-appearance: none;
-  -ms-appearance: none;
-  border: none;
-  background: none;
-  border-bottom: 1px solid black; }
+    border-radius: 0px;
+    box-shadow: none;
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    -ms-appearance: none;
+    border: none;
+    background: none;
+    border-bottom: 1px solid black; }
 
 .or input[type="file"] {
-  display: none !important; }
+    display: none !important; }
 
-.or .or-hint.active,
-.or .or-hint.or-form-print.active {
-  color: black;
-  display: block;
-  padding-top: 5px;
-  margin-top: 0;
-  line-height: 1em; }
+.or .or-hint.active {
+    color: black;
+    display: block;
+    padding-top: 5px;
+    margin-top: 0;
+    line-height: 1em; }
 
-.or .or-hint.or-form-print.active {
-  border: 1px dotted black;
-  padding: 1px;
-  margin-top: 5px;
-  font-size: 10px; }
+.or .or-hint.or-form-guidance.active {
+    border: 1px dotted black;
+    padding: 1px;
+    margin-top: 5px; }
+.or .or-hint.or-form-guidance.active summary {
+    display: none; }
 
 .invalid-constraint,
 .invalid-required {
-  background: none;
-  border: 1px solid red; }
+    background: none;
+    border: 1px solid red; }
 
 .geopicker.widget {
-  margin-top: 10px; }
-  .geopicker.widget .geo-inputs {
+    margin-top: 10px; }
+.geopicker.widget .geo-inputs {
     width: 100%; }
-    .geopicker.widget .geo-inputs label.geo {
-      display: inline-block;
-      width: 25%;
-      padding: 0 !important;
-      margin: 7px 0 0 0 !important; }
-      .geopicker.widget .geo-inputs label.geo:nth-of-type(3), .geopicker.widget .geo-inputs label.geo:nth-of-type(4) {
-        vertical-align: top;
-        margin-top: 0;
-        padding-top: 12px;
-        font-size: inherit;
-        border-top: none;
-        font-size: auto; }
-      .geopicker.widget .geo-inputs label.geo.kml {
-        display: none; }
-      .geopicker.widget .geo-inputs label.geo input {
-        width: 100% !important;
-        margin-top: 8px !important;
-        padding-top: 0px !important; }
-  .geopicker.widget .points {
+.geopicker.widget .geo-inputs label.geo {
+    display: inline-block;
+    width: 25%;
+    padding: 0 !important;
+    margin: 7px 0 0 0 !important; }
+.geopicker.widget .geo-inputs label.geo:nth-of-type(3), .geopicker.widget .geo-inputs label.geo:nth-of-type(4) {
+    vertical-align: top;
+    margin-top: 0;
+    padding-top: 12px;
+    font-size: inherit;
+    border-top: none;
+    font-size: auto; }
+.geopicker.widget .geo-inputs label.geo.kml {
     display: none; }
-  .geopicker.widget .search-bar {
+.geopicker.widget .geo-inputs label.geo input {
+    width: 100% !important;
+    margin-top: 8px !important;
+    padding-top: 0px !important; }
+.geopicker.widget .points {
     display: none; }
-  .geopicker.widget .leaflet-popup-pane,
-  .geopicker.widget .leaflet-control {
+.geopicker.widget .search-bar {
     display: none; }
-
-.esri-geopicker.widget .esri-ui-top-left {
-  display: none; }
-
-.esri-geopicker.widget .btn[name="geodetect"] {
-  display: none !important; }
-
-.esri-geopicker.widget .interaction-blocker {
-  display: none !important; }
-
-.esri-geopicker.widget .map-canvas-wrapper:not(.hide-map) {
-  display: block !important; }
+.geopicker.widget .leaflet-popup-pane,
+.geopicker.widget .leaflet-control {
+    display: none; }
 
 .bootstrap-select:before, .bootstrap-select:after {
-  content: " ";
-  display: table; }
+    content: " ";
+    display: table; }
 
 .bootstrap-select:after {
-  clear: both; }
+    clear: both; }
 
 .bootstrap-select .dropdown-toggle {
-  display: none; }
-  .bootstrap-select .dropdown-toggle ~ .dropdown-menu {
+    display: none; }
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu {
     /*IE10*/
     display: -ms-flexbox;
     display: -webkit-flex;
@@ -228,91 +217,103 @@ label.geo {
     border: none;
     box-shadow: none;
     list-style-type: circle;
-    max-height: none; }
-    .bootstrap-select .dropdown-toggle ~ .dropdown-menu li,
-    .bootstrap-select .dropdown-toggle ~ .dropdown-menu li.active {
-      flex: 1;
-      min-width: 30%;
-      display: inline-block;
-      margin-right: 20px; }
-    .bootstrap-select .dropdown-toggle ~ .dropdown-menu a {
-      background: none;
-      color: black; }
+    max-height: none;
+    padding-top: 0;
+    min-width: auto; }
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li,
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li.active {
+    flex: 1;
+    min-width: 30%;
+    display: inline-block;
+    margin-right: 8px; }
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li .option-wrapper,
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li.active .option-wrapper {
+    white-space: normal;
+    padding: 0; }
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li .option-wrapper label,
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li.active .option-wrapper label {
+    padding-left: 4px !important; }
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li .option-wrapper label .option-label,
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu li.active .option-wrapper label .option-label {
+    word-break: break-word; }
+.bootstrap-select .dropdown-toggle ~ .dropdown-menu a {
+    background: none;
+    color: black; }
 
 .datalist.widget {
-  display: none; }
+    display: none; }
 
 .or-appearance-likert .option-wrapper > label .option-label {
-  border-top: 1px solid black; }
+    border-top: 1px solid black; }
 
 .question.or-appearance-compact input:checked ~ img,
 .question.or-appearance-quickcompact input:checked ~ img {
-  border-color: black; }
+    border-color: black; }
 
 .or-appearance-distress .slider-vertical .slider {
-  border: none; }
+    border: none; }
 
 .or-appearance-distress .bulb {
-  display: none; }
+    display: none; }
 
 .or-appearance-distress .slider-handle {
-  border: 1px solid black; }
+    border: 1px solid black; }
 
 .or-appearance-distress .slider-vertical .slider-track {
-  border: 1px solid black; }
+    border: 1px solid black; }
 
 .or-appearance-analog-scale:not(.or-appearance-horizontal) {
-  display: flex !important;
-  flex-wrap: wrap; }
+    display: flex !important;
+    flex-wrap: wrap; }
 
 .or-appearance-analog-scale .scale__ticks {
-  display: none; }
+    display: none; }
 
 .or-appearance-analog-scale .slider-vertical .slider-track {
-  border-right: 1px solid black;
-  margin-left: -8.5px; }
+    border-right: 1px solid black;
+    margin-left: -8.5px; }
 
 .or-appearance-analog-scale .slider-horizontal .slider-track {
-  border-bottom: 1px solid black;
-  margin-top: -10px; }
+    border-bottom: 1px solid black;
+    margin-top: -10px; }
 
 .or-appearance-analog-scale .slider-handle {
-  border: 1px solid black; }
+    border: 1px solid black; }
 
 .or-appearance-analog-scale .slider-vertical .slider-handle {
-  margin-left: -1px; }
+    margin-left: -1px; }
 
 .or-appearance-analog-scale .slider-horizontal .slider-handle {
-  margin-top: -1px; }
+    margin-top: -1px; }
 
 .or-appearance-analog-scale .slider-vertical .min-label {
-  margin-top: 10px; }
+    margin-top: 10px; }
 
 .draw-widget__colorpicker {
-  display: none; }
+    display: none; }
 
 .or-appearance-comment.hide {
-  display: block !important; }
+    display: block !important; }
 
 .pages.or.print-relevant-only .disabled[role="page"] {
-  display: none; }
+    display: none; }
 
 .pages.or [role="page"] {
-  display: inherit; }
+    display: inherit; }
 
 .pages.or .or-group,
 .pages.or .or-group-data,
 .pages.or .or-repeat {
-  display: inherit; }
+    display: inherit; }
 
 .question {
-  page-break-inside: avoid; }
+    page-break-inside: avoid; }
 
 h3,
 h4 {
-  page-break-after: avoid; }
-  h3 + .question,
-  h4 + .question {
+    page-break-after: avoid; }
+h3 + .question,
+h4 + .question {
     page-break-before: avoid; }
 
 /*.page-break {
@@ -324,27 +325,43 @@ h4 {
     border-bottom: none;
     page-break-after: always !important;
 }*/
+[type=range]:not(.empty)::-webkit-slider-thumb {
+    border-color: black !important; }
+
+[type=range]:not(.empty)::-moz-range-thumb {
+    border-color: black !important; }
+
+[type=range]:not(.empty)::-ms-thumb {
+    border-color: black !important; }
+
 .question input[type=radio], .question input[type=checkbox] {
-  -webkit-print-color-adjust: exact;
-  color-adjust: exact;
-  border-color: black;
-  border-width: 1px; }
-  .question input[type=radio]:checked, .question input[type=checkbox]:checked {
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    border-color: black;
+    border-width: 1px; }
+.question input[type=radio]:checked, .question input[type=checkbox]:checked {
     border-color: black; }
 
 .question input[type=checkbox]:checked {
-  border-color: black;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHN0cm9rZT0ndHJhbnNwYXJlbnQnIGZpbGw9J2JsYWNrJyB3aWR0aD0nMzInIGhlaWdodD0nMzInIHZpZXdCb3g9JzAgMCAzMiAzMic+PHBhdGggZD0nTTI1LjEgMTIuNWwtMy40LTMuMy04IDgtMi45LTMtMy40IDMuNCA2LjMgNi4zeicvPjwvc3ZnPg==");
-  background-size: 20px 20px;
-  background-position: -3px;
-  background-position: -1px; }
+    border-color: black;
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20stroke%3D%27transparent%27%20fill%3D%27black%27%20width%3D%2732%27%20height%3D%2732%27%20viewBox%3D%270%200%2032%2032%27%3E%3Cpath%20d%3D%27M25.1%2012.5l-3.4-3.3-8%208-2.9-3-3.4%203.4%206.3%206.3z%27%2F%3E%3C%2Fsvg%3E");
+    background-size: 20px 20px;
+    background-position: -3px;
+    background-position: -1px; }
 
 .question input[type=radio]:checked {
-  border-color: black;
-  background-image: radial-gradient(4px, black 0%, black 99%, transparent 100%); }
+    border-color: black;
+    background-image: radial-gradient(4px, black 0%, black 99%, transparent 100%); }
 
 .bootstrap-select .option-wrapper > label {
-  padding-left: 35px !important; }
+    padding-left: 35px !important; }
 
 [dir="rtl"] .bootstrap-select .option-wrapper > label {
-  padding-right: 35px !important; }
+    padding-right: 35px !important; }
+
+@media print {
+    .vex,
+    .vex-overlay {
+        display: none; }
+    .ios-iframe-bug-wrap {
+        position: static; } }

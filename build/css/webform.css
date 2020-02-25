@@ -1295,3 +1295,9 @@ button.close {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+.or-form-guidance.active {
+    margin: 5px 0;
+    color: #ce4f07; }
+.or-form-guidance.active summary {
+    color: #888888; }

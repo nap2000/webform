@@ -363,7 +363,7 @@ class DrawWidget extends Widget {
      */
     _updateValue() {
         const now = new Date();
-        const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}`;
+        const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;   // smap get milliseconds
         this.element.dataset.filenamePostfix = postfix;
         // Note that this.element has become a text input.
         this.originalInputValue = this.props.filename;
