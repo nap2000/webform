@@ -220,8 +220,19 @@
         var texts, choices, record, saveResult, overwrite,
             count = 0,
             i,
-            media = fileManager.getCurrentFiles(),
+            media = fileManager.getCurrentFiles(),      // Recently added
+            media2 = getMedia(),                        // Converted into data URLs
             recordResult = {};
+
+        // Add any data URLS
+        if(media2.length > 0) {
+            for(i = 0; i < media2.length; i++) {
+                if(media2[i].dataUrl && media2[i].dataUrl.indexOf("blob:") != 0) {
+                    media.push(media2[i]);
+                }
+
+            }
+        }
 
         draft = draft || getDraftStatus();
         console.log('saveRecord called with recordname:' + recordName, 'confirmed:' + confirmed, "error:" + error + 'draft:' + draft);
@@ -548,24 +559,33 @@
             var postfix = $media.parent().find('input[type="file"]').data("filename-postfix");
             postfix = postfix || '';
 
-            for (i = 0; i < elem.files.length; i++) {
-                filename = elem.files[i].name;
-
-                // Add postfix
-                filenameParts = filename.split( '.' );
-                if ( filenameParts.length > 1 ) {
-                    filenameParts[ filenameParts.length - 2 ] += postfix;
-                } else if ( filenameParts.length === 1 ) {
-                    filenameParts[ 0 ] += postfix;
-                }
-                filename = filenameParts.join( '.' );
-
+            if(elem.files.length == 0 && $preview.length > 0) {
                 mediaArray.push({
-                    fileName: filename,
-                    //file: elem.files[i],              // Update media issue
+                    //fileName: $media.attr("data-loaded-file-name"),
+                    name: $media.attr("data-loaded-file-name"),
                     dataUrl: $preview.attr("src"),
-                    size: elem.files[i].size
+                    size: $preview.attr("src").length
                 });
+            } else {
+                for (i = 0; i < elem.files.length; i++) {
+                    filename = elem.files[i].name;
+
+                    // Add postfix
+                    filenameParts = filename.split('.');
+                    if (filenameParts.length > 1) {
+                        filenameParts[filenameParts.length - 2] += postfix;
+                    } else if (filenameParts.length === 1) {
+                        filenameParts[0] += postfix;
+                    }
+                    filename = filenameParts.join('.');
+
+                    mediaArray.push({
+                        fileName: filename,
+                        //file: elem.files[i],              // Update media issue
+                        dataUrl: $preview.attr("src"),
+                        size: elem.files[i].size
+                    });
+                }
             }
         });
 
@@ -696,11 +716,11 @@
                         if(media[fileIndex].blob) {
                             blob = media[fileIndex].blob;
                             name = media[fileIndex].fileName;
-                        // Commented out 14/1/2019 during upgrade
-                        //} else if (media[fileIndex].dataUrl) {
-                        //    // immediate send data is still in dataUrl -- not any more it seems
-                        //    blob = dataURLtoBlob(media[fileIndex].dataUrl);
-                        //    name = media[fileIndex].name;
+                        // Commented out 14/1/2019 during upgrade - uncommented 25/2/2020
+                        } else if (media[fileIndex].dataUrl) {
+                            // immediate send data is still in dataUrl -- not any more it seems
+                            blob = dataURLtoBlob(media[fileIndex].dataUrl);
+                            name = media[fileIndex].name;
                         } else {
                             // Assume the media file is the blob
                             blob = media[fileIndex];
