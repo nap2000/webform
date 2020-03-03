@@ -252,10 +252,12 @@
              * Closing of the window not supported in the browser if the script did not open the window
              */
         	if ( autoClose ) {
+        	    console.debug("Auto close");
         		 gui.alert( 'This form will now be closed!', 'Submission Successful!', 'success' );
                  setTimeout( function() {
-                     window.open( '', '_self' ).close();
-                 }, 3500 );
+                     window.onbeforeunload = undefined;
+                     window.history.back();
+                 }, 1000 );
         	}
         }
     }

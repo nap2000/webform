@@ -426,7 +426,7 @@
      */
     function closeAfterSending() {
 
-        if (surveyData.assignmentId) {
+        if (surveyData.assignmentId || surveyData.closeAfterSending) {
             console.log("Close after saving");
             return true;
         } else {
