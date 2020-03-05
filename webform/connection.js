@@ -249,15 +249,16 @@
  
         } else {
             /*
-             * Closing of the window not supported in the browser if the script did not open the window
+             * Refresh the window
              */
         	if ( autoClose ) {
         	    console.debug("Auto close");
-        		 gui.alert( 'This form will now be closed!', 'Submission Successful!', 'success' );
-                 setTimeout( function() {
-                     window.onbeforeunload = undefined;
-                     window.history.back();
-                 }, 1000 );
+                window.location.reload();
+        		// gui.alert( 'This form will now be closed!', 'Submission Successful!', 'success' );
+                // setTimeout( function() {
+                //     window.onbeforeunload = undefined;
+                //     window.location.reload();
+                // }, 1000 );
         	}
         }
     }
