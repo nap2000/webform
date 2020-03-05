@@ -79,24 +79,6 @@ body {
     margin: 45px -45px -45px -45px;
 }
 
-.enketo-power {
-    position: relative;
-    left: 50%;
-    margin: 30px 0 0 -100px;
-    width: 200px;
-    font-size: 14px;
-    line-height: 23px;
-    text-align: center;
-}
-.enketo-power a {
-    font-style: italic;
-}
-.enketo-power img {
-    float: none;
-    vertical-align: top;
-    width: 48px;
-}
-
 
 /*! normalize.css v3.0.0 | MIT License | git.io/normalize */
 html {
@@ -308,28 +290,10 @@ summary {
     margin-bottom: 40px;
     text-align: center;
 }
-.form-footer .enketo-power {
+.form-footer {
     left: auto;
     margin: -20px 0 40px 0;
     width: 100%;
-}
-
-@media screen and (min-width: 720px) {
-    .form-footer .enketo-power {
-        position: absolute;
-        bottom: -90px;
-        right: 5px;
-        width: auto;
-    }
-}
-
-@media screen and (max-width: 719px) {
-    .enketo-power {
-        position: absolute;
-        bottom: -40px;
-        right: 5px;
-        width: auto;
-    }
 }
 
 .preview-header {
