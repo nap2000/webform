@@ -253,12 +253,8 @@
              */
         	if ( autoClose ) {
         	    console.debug("Auto close");
+                window.onbeforeunload = undefined;
                 window.location.reload();
-        		// gui.alert( 'This form will now be closed!', 'Submission Successful!', 'success' );
-                // setTimeout( function() {
-                //     window.onbeforeunload = undefined;
-                //     window.location.reload();
-                // }, 1000 );
         	}
         }
     }

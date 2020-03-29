@@ -398,6 +398,14 @@ export default {
         this.$btnNext.add( this.$btnLast ).toggleClass( 'disabled', !next );
         this.$btnPrev.add( this.$btnFirst ).toggleClass( 'disabled', !prev );
         this.$formFooter.toggleClass( 'end', !next );
+
+        // smap
+        if(next) {
+            $('#submit-form').hide();
+        } else {
+            $('#submit-form').show();
+        }
+        // end smap
     },
     /**
      * Updates Table of Contents
