@@ -515,9 +515,9 @@ summary {
     outline: 0;
 }
 .modal.fade .modal-dialog {
-    -webkit-transform: translate(0, -25%);
+    /*-webkit-transform: translate(0, -25%);
     -ms-transform: translate(0, -25%);
-    transform: translate(0, -25%);
+    transform: translate(0, -25%);  smap */
     -webkit-transition: -webkit-transform 0.3s ease-out;
     -moz-transition: -moz-transform 0.3s ease-out;
     -o-transition: -o-transform 0.3s ease-out;
@@ -586,8 +586,8 @@ summary {
 }
 
 .modal-footer {
-    margin-top: 15px;
-    padding: 19px 20px 20px;
+    margin-top: 5px;
+    padding: 9px 10px 10px;
     text-align: right;
     border-top: 1px solid #e5e5e5;
 }

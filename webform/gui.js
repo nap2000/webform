@@ -25,7 +25,7 @@
     import $ from "jquery";
 
     import { print, fixGrid, styleToAll, styleReset, isGrid } from '../src/js/print';
-    import { t } from 'enketo/translator';
+    import { t } from '../src/js/translator';
 
     var nav, pages, updateStatus, feedbackBar,
         supportLink = '<a href="mailto:' + settings[ 'supportEmail' ] + '">' + settings[ 'supportEmail' ] + '</a>';

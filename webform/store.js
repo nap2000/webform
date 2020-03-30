@@ -282,23 +282,6 @@
 
     export default store;
 
-    /*
-    module.exports = {
-        isSupported: isSupported,
-        isWritable: isWritable,
-        getForbiddenKeys: getForbiddenKeys,
-        getRecord: getRecord,
-        setRecord: setRecord,
-        removeRecord: removeRecord,
-        getFormList: getFormList,
-        getRecordList: getRecordList,
-        getExportStr: getExportStr,
-        getSurveyRecords: getSurveyRecords,
-        getSurveyDataArr: getSurveyDataArr,
-        setKey : setKey
-
-    };
-*/
 
 
 

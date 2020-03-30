@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Formula Error",
             "msg": "A formula evaluation error occurred. Please contact __emailLink__ with this error:"
+        },
+        "file_storage": {
+            "no_fs": "Storage of large attachments is not supported by your browser. Hence if you are adding media files larger than 2 Megabytes do not save as draft.  Also if you are offline when you submit the data these attachements may not be sent. "
         }
     },
     "confirm": {

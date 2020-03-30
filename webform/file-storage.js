@@ -1,6 +1,20 @@
-
+    /*
+     *  File storage of attachments
+     * Use IndexedDB and fall back to local storage
+     */
     "use strict";
 
+    var fileStore = {};
+
+    /*
+     * Variables for indexedDB Storage
+     */
+    let webformDbVersion = 1;
+    var db;                     // indexedDb
+
+    /*
+     * Variables for fall back local storage
+     */
     var FM_STORAGE_PREFIX = "fs::";
 
     var maxSize,
@@ -8,19 +22,18 @@
         currentQuotaUsed = null,
         currentDir,
         filesystemReady,
-        fs,
-        DEFAULTBYTESREQUESTED = 100 * 1024 * 1024;
+        fs;
 
-    let fileStore = {};
+    //var supported = typeof window.indexedDB !== 'undefined';
+    var supported = false;  // test - remove
 
-    var supported = typeof FileReader !== 'undefined';
-
-    // Check for support for file systems API (Chrome only)
-    /*
-     window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-     window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
-     fileStorageSupported = ( typeof window.requestFileSystem !== 'undefined' && typeof window.resolveLocalFileSystemURL !== 'undefined' && typeof navigator.webkitPersistentStorage !== 'undefined' );
+    /**
+     * Whether filemanager is supported in browser
+     * @return {Boolean}
      */
+    fileStore.isSupported = function() {
+        return supported;
+    }
 
     /**
      * Initialize the file manager .
@@ -29,22 +42,25 @@
     fileStore.init = function() {
         return new Promise((resolve, reject) => {
 
-	        // Initialise fileSystem storage if it is supported
-	        if (supported) {
-		        resolve(true);
-	        } else {
-		        reject(new Error('FileReader not supported.'));
-	        }
+            var request = window.indexedDB.open("webform",  webformDbVersion);
+
+            request.onerror = function(event) {
+                reject();
+            };
+
+            request.onsuccess = function(event) {
+                db = event.target.result;
+
+                db.onerror = function(event) {
+                    // Generic error handler for all errors targeted at this database's
+                    // requests!
+                    console.error("Database error: " + event.target.errorCode);
+                };
+
+                resolve();
+            };
 
         });
-    }
-
-    /**
-     * Whether filemanager is supported in browser
-     * @return {Boolean}
-     */
-    fileStore.isSupported = function() {
-        return supported;
     }
 
     /**

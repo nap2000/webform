@@ -2,7 +2,7 @@
     "use strict";
 
     let controller = {};
-    import { t } from 'enketo/translator';
+    import { t }  from '../src/js/translator';
 
     import { Form } from '../src/js/form';
     import { FormModel } from '../src/js/form-model';
@@ -77,14 +77,20 @@
 
             /*
              * Initialise file manager if it is supported in this browser
-             * The fileSystems API is used to store images prior to upload when operating offline
+             * The fileSystems API is used to store attachments prior to upload when operating offline
              */
             if (fileStore.isSupported()) {
                 fileStore.init();
                 if (!store || store.getRecordList().length === 0) {
                     fileStore.deleteAllAttachments();
                 }
+            } else {
+                gui.alert('Warning: Storage of large attachments is not supported by your browser. ' +
+                    'Hence if you are adding media files larger than 2 MB do not save the survey as draft.  ' +
+                    'Also if you are offline when you submit the data these attachments may not be sent.',
+                    undefined, 'normal', undefined );
             }
+
             // Create the form
             formSelector = 'form.or:eq(0)';
             form = new Form(formSelector, surveyData);
@@ -520,9 +526,8 @@
                 instanceID = model.instanceID;
             }
 
-            if (fileStore.isSupported()) {
-                fileStore.deleteDir(instanceID);
-            }
+            fileStore.deleteDir(instanceID);
+
             if (store) {
                 store.removeRecord(recordName);
             }
