@@ -47,7 +47,7 @@
             surveyData.instanceStr = surveyData.instanceStrToEdit || null;
 
             // Open an existing record if we need to
-            if (fileStore.isSupported()) {
+            if (store.isSupported()) {
                 var recordName = store.getKey("draft");	// Draft identifies the name of a draft record that is being opened
                 if (recordName) {
 
@@ -447,7 +447,7 @@
      */
     function canSaveRecord() {
 
-        if (fileStore.isSupported()) {
+        if (store.isSupported()) {
             console.log("Can Save record:");
             return true;
         } else {

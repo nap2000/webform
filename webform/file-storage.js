@@ -24,8 +24,7 @@
         filesystemReady,
         fs;
 
-    //var supported = typeof window.indexedDB !== 'undefined';
-    var supported = false;  // test - remove
+    var supported = typeof window.indexedDB !== 'undefined';
 
     /**
      * Whether filemanager is supported in browser
