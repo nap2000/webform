@@ -104,7 +104,7 @@
     };
 
     /*
-     * TODO
+     *
      */
     fileStore.getAllAttachments = function () {
         var files = [];
@@ -208,14 +208,11 @@
                 reject(reason);
             });
         });
-        
+
     };
 
-    /**
-     * TODO
-     * Obtains specified files from a specified directory (asynchronously)
-     * @param {string}                              directoryName   directory to look in for files
-     * @param {{newName: string, fileName: string}} file           object of file properties
+    /*
+     * Obtains blob for specified file
      */
     fileStore.retrieveFile = function(dirname, file) {
 
@@ -227,40 +224,29 @@
 
 	        var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + file.fileName;
 
-            /*
-             * Try idb first
-             */
-            var transaction = db.transaction([mediaStoreName], "readonly");
-            var objectStore = transaction.objectStore(mediaStoreName);
-            var request = objectStore.get(item);
-            request.onsuccess = function(event) {
-                // Do something with the request.result!
-                console.log("Result is " + request.result);
-            };
+	        fileStore.getFile(file.fileName, dirname).then(function(objectUrl){
+                var blob;
 
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', objectUrl, true);
+                xhr.responseType = 'blob';
+                xhr.onreadystatechange = function (e) {
 
+                    if (xhr.readyState !== 4) {
+                        return;
+                    }
 
-	        var objectUrl = localStorage.getItem(key);
-	        var blob;
+                    if (this.status == 200) {
+                        updatedFile.blob = this.response;
+                        updatedFile.size = this.response.size;
+                        resolve(updatedFile);
+                    } else {
+                        resolve(updatedFile);
+                    }
+                };
+                xhr.send(null);
+	        });
 
-	        var xhr = new XMLHttpRequest();
-	        xhr.open('GET', objectUrl, true);
-	        xhr.responseType = 'blob';
-	        xhr.onreadystatechange = function (e) {
-
-		        if (xhr.readyState !== 4) {
-			        return;
-		        }
-
-		        if (this.status == 200) {
-			        updatedFile.blob = this.response;
-			        updatedFile.size = this.response.size;
-			        resolve(updatedFile);
-		        } else {
-			        resolve(updatedFile);
-		        }
-	        };
-	        xhr.send(null);
 
         });
 
