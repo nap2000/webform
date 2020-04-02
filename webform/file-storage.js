@@ -6,17 +6,6 @@
 
     var fileStore = {};
 
-    /*
-     * Variables for indexedDB Storage
-     */
-    let webformDbVersion = 1;
-    var db;                     // indexedDb
-
-    /*
-     * Variables for fall back local storage
-     */
-    var FM_STORAGE_PREFIX = "fs::";
-
     var maxSize,
         currentQuota = null,
         currentQuotaUsed = null,
@@ -24,61 +13,89 @@
         filesystemReady,
         fs;
 
-    var supported = typeof window.indexedDB !== 'undefined';
+    /*
+     * Variables for indexedDB Storage
+     */
+    let webformDbVersion = 3;
+    let databaseName = "webform";
+    let mediaStoreName = "media";
+    var db;                     // indexedDb
+    var mediaStore;
+    var idbSupported = typeof window.indexedDB !== 'undefined';
+
+    /*
+     * Variables for fall back local storage
+     */
+    var FM_STORAGE_PREFIX = "fs::";
 
     /**
-     * Whether filemanager is supported in browser
+     * Return true if indexedDB is supported
+     * No need to check for support of local storage this is checked by "store"
      * @return {Boolean}
      */
     fileStore.isSupported = function() {
-        return supported;
-    }
+        return idbSupported;
+    };
 
     /**
-     * Initialize the file manager .
+     * Initialize indexdDb
      * @return {[type]} promise boolean or rejection with Error
      */
     fileStore.init = function() {
         return new Promise((resolve, reject) => {
 
-            var request = window.indexedDB.open("webform",  webformDbVersion);
+            if(idbSupported) {
+                var request = window.indexedDB.open(databaseName, webformDbVersion);
 
-            request.onerror = function(event) {
-                reject();
-            };
-
-            request.onsuccess = function(event) {
-                db = event.target.result;
-
-                db.onerror = function(event) {
-                    // Generic error handler for all errors targeted at this database's
-                    // requests!
-                    console.error("Database error: " + event.target.errorCode);
+                request.onerror = function (event) {
+                    reject();
                 };
 
+                request.onsuccess = function (event) {
+                    db = event.target.result;
+
+                    db.onerror = function (event) {
+                        // Generic error handler for all errors targeted at this database's
+                        // requests!
+                        console.error("Database error: " + event.target.errorCode);
+                    };
+
+                    resolve();
+                };
+
+                request.onupgradeneeded = function(event) {
+                    var db = event.target.result;
+
+                    mediaStore = db.createObjectStore("media");
+                };
+
+            } else {
                 resolve();
-            };
+            }
 
         });
-    }
+    };
 
-    /**
-     * Whether the filemanager is waiting for user permissions
-     * @return {Boolean} [description]
+
+
+    /*
+     * TODO
      */
-    fileStore.isWaitingForPermissions = function() {
-        return false;
-    }
-
-
     fileStore.deleteAllAttachments = function() {
 
         console.log("delete all local storage");
 
-        for (var key in localStorage){
-            if(key.startsWith(FM_STORAGE_PREFIX)) {
+        if(idbSupported) {
+            //  TODO Empty indexdb database
+
+        }
+
+        // For backward compatability local storage will be emptied even of idb is supported
+        // Empty backup local storage
+        for (var key in localStorage) {
+            if (key.startsWith(FM_STORAGE_PREFIX)) {
                 var item = localStorage.getItem(key);
-                if(item) {
+                if (item) {
                     window.URL.revokeObjectURL(item);
                 }
                 localStorage.removeItem(key);
@@ -86,6 +103,9 @@
         }
     };
 
+    /*
+     * TODO
+     */
     fileStore.getAllAttachments = function () {
         var files = [];
         for (var key in localStorage) {
@@ -97,19 +117,29 @@
     }
 
 
+    /*
+     * TODO
+     */
     fileStore.getCurrentQuota = function() {
         return currentQuota;
     };
 
+    /*
+     * TODO
+     */
     fileStore.getCurrentQuotaUsed = function() {
         return currentQuotaUsed;
     };
 
 
+    /*
+     * TODO
+     */
     fileStore.deleteDir = function(name) {
 
         if(typeof name !== "undefined") {
             console.log("delete directory: " + name);
+
 
             for (var key in localStorage) {
                 if (key.startsWith(FM_STORAGE_PREFIX + "/" + name)) {
@@ -126,34 +156,66 @@
         }
     };
 
-
+    /*
+     * Save an attachment to idb
+     */
     fileStore.saveFile = function(media, dirname) {
 
         console.log("save file: " + media.name + " : " + dirname);
-        try {
-            localStorage.setItem(FM_STORAGE_PREFIX + dirname + "/" + media.name, media.dataUrl);
-        } catch(err) {
-        	// alert("Error: " + err.message);  // disable error message as it should work if the user does an immediate send
-        }
+
+        var transaction = db.transaction([mediaStoreName], "readwrite");
+        transaction.onerror = function(event) {
+            // Don't forget to handle errors!
+            alert("Error: failed to save " + media.name);
+        };
+
+        var objectStore = transaction.objectStore(mediaStoreName);
+        var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + dirname + "/" + media.name);
 
     };
 
+    /*
+     * Get a file rom idb or local storage
+     */
     fileStore.getFile = function(name, dirname) {
 
-	    console.log("get file: " + FM_STORAGE_PREFIX + dirname + "/" + name);
-	    try {
-		    return localStorage.getItem(FM_STORAGE_PREFIX + dirname + "/" + name);
-	    } catch(err) {
-		    alert("Error: " + err.message);
-	    }
+        return new Promise((resolve, reject) => {
+            var key = FM_STORAGE_PREFIX + dirname + "/" + name;
 
+            console.log("get file: " + key);
+
+            /*
+             * Try idb first
+             */
+            getFileFromIdb(key).then(function (file) {
+
+                if (file) {
+                    resolve(file);
+
+                } else {
+
+                    /*
+                     * Fallback to local storage for backward compatability
+                     */
+                    try {
+                        resolve(localStorage.getItem(FM_STORAGE_PREFIX + dirname + "/" + name));
+                    } catch (err) {
+                        reject("Error: " + err.message);
+                    }
+                }
+
+            }).catch(function (reason) {
+                reject(reason);
+            });
+        });
+        
     };
 
     /**
+     * TODO
      * Obtains specified files from a specified directory (asynchronously)
      * @param {string}                              directoryName   directory to look in for files
      * @param {{newName: string, fileName: string}} file           object of file properties
-     * TODO DELETE!!!!!
      */
     fileStore.retrieveFile = function(dirname, file) {
 
@@ -164,6 +226,20 @@
 	        };
 
 	        var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + file.fileName;
+
+            /*
+             * Try idb first
+             */
+            var transaction = db.transaction([mediaStoreName], "readonly");
+            var objectStore = transaction.objectStore(mediaStoreName);
+            var request = objectStore.get(item);
+            request.onsuccess = function(event) {
+                // Do something with the request.result!
+                console.log("Result is " + request.result);
+            };
+
+
+
 	        var objectUrl = localStorage.getItem(key);
 	        var blob;
 
@@ -189,6 +265,39 @@
         });
 
     };
+
+    /*
+     * Local functions
+     * May be called from a location that has not intialised fileStore (ie fileManager)
+     */
+    function getFileFromIdb(key) {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                fileStore.init().then(function () {
+                    resolve(completeGetFileRequest(key));
+                });
+            } else {
+                resolve(completeGetFileRequest(key));
+            }
+        });
+    }
+
+    function completeGetFileRequest(key) {
+        return new Promise((resolve, reject) => {
+            var transaction = db.transaction([mediaStoreName], "readonly");
+            var objectStore = transaction.objectStore(mediaStoreName);
+            var request = objectStore.get(key);
+
+            request.onerror = function(event) {
+                reject("Error getting file");
+            };
+
+            request.onsuccess = function (event) {
+                resolve(request.result);
+            };
+        });
+    }
+
 
     export default fileStore;
 

@@ -29,8 +29,6 @@
             window.onbeforeunload = function () {
                 if (hasChanged()) {
                     return "You have unsaved changes. Are you sure you want to leave?";
-                } else if(fileStore.getAllAttachments().length > 0) {
-                    return "Some of the saved results that have not been submitted contain attached files.  These will be lost if you leave. Are you sure you want to leave?";
                 }
             };
 
@@ -80,10 +78,12 @@
              * The fileSystems API is used to store attachments prior to upload when operating offline
              */
             if (fileStore.isSupported()) {
-                fileStore.init();
-                if (!store || store.getRecordList().length === 0) {
-                    fileStore.deleteAllAttachments();
-                }
+                fileStore.init().then(function(){
+                    if (!store || store.getRecordList().length === 0) {
+                        fileStore.deleteAllAttachments();
+                    }
+                });
+
             } else {
                 gui.alert('Warning: Storage of large attachments is not supported by your browser. ' +
                     'Hence if you are adding media files larger than 2 MB do not save the survey as draft.  ' +
@@ -1155,7 +1155,7 @@
     function hasChanged() {
         if (typeof form !== "undefined") {
             var latestData = form.getDataStr(true, true);
-            return (startEditData != latestData);
+            return (latestData && startEditData != latestData);
         } else {
             // return false as something has gone wrong with this form and the user should be able to exit (should be prevented from happening)
             return false;

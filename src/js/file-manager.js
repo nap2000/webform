@@ -64,12 +64,14 @@ fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
 		    resolve(subject);
 	    } else if(fileStore.isSupported()) {
 	        var dirname = "/" + window.gLoadedInstanceID;
-            var url = fileStore.getFile(subject, dirname);
-            if(url) {
-                resolve(url);
-            } else {
-                resolve(location.origin + "/" + subject);		// URL must be from the server
-            }
+            fileStore.getFile(subject, dirname).then(function(url){
+                if(url) {
+                    resolve(url);
+                } else {
+                    resolve(location.origin + "/" + subject);		// URL must be from the server
+                }
+            });
+
         }
 
 
