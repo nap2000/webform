@@ -104,35 +104,6 @@
     };
 
     /*
-     *
-     */
-    fileStore.getAllAttachments = function () {
-        var files = [];
-        for (var key in localStorage) {
-            if (key.startsWith(FM_STORAGE_PREFIX)) {
-                files.push(key);
-            }
-        }
-        return files;
-    }
-
-
-    /*
-     * TODO
-     */
-    fileStore.getCurrentQuota = function() {
-        return currentQuota;
-    };
-
-    /*
-     * TODO
-     */
-    fileStore.getCurrentQuotaUsed = function() {
-        return currentQuotaUsed;
-    };
-
-
-    /*
      * TODO
      */
     fileStore.deleteDir = function(name) {
@@ -170,7 +141,7 @@
         };
 
         var objectStore = transaction.objectStore(mediaStoreName);
-        var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + dirname + "/" + media.name);
+        var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + "/" + dirname + "/" + media.name);
 
     };
 
@@ -180,7 +151,7 @@
     fileStore.getFile = function(name, dirname) {
 
         return new Promise((resolve, reject) => {
-            var key = FM_STORAGE_PREFIX + dirname + "/" + name;
+            var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + name;
 
             console.log("get file: " + key);
 
@@ -198,7 +169,7 @@
                      * Fallback to local storage for backward compatability
                      */
                     try {
-                        resolve(localStorage.getItem(FM_STORAGE_PREFIX + dirname + "/" + name));
+                        resolve(localStorage.getItem(key));
                     } catch (err) {
                         reject("Error: " + err.message);
                     }
@@ -222,35 +193,48 @@
 		        fileName: file.fileName
 	        };
 
-	        var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + file.fileName;
-
 	        fileStore.getFile(file.fileName, dirname).then(function(objectUrl){
-                var blob;
+
+	            updatedFile.blob = fileStore.dataURLtoBlob(objectUrl);
+	            updatedFile.size = updatedFile.blob.size;
+	            resolve(updatedFile);
+	            /*
+	            var blob;
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', objectUrl, true);
                 xhr.responseType = 'blob';
                 xhr.onreadystatechange = function (e) {
 
-                    if (xhr.readyState !== 4) {
-                        return;
-                    }
-
-                    if (this.status == 200) {
-                        updatedFile.blob = this.response;
-                        updatedFile.size = this.response.size;
-                        resolve(updatedFile);
-                    } else {
-                        resolve(updatedFile);
+                    if (xhr.readyState == 4) {
+                        if (this.status == 200) {
+                            updatedFile.blob = this.response;
+                            updatedFile.size = this.response.size;
+                            resolve(updatedFile);
+                        } else {
+                            resolve(updatedFile);
+                        }
                     }
                 };
                 xhr.send(null);
+                */
+
 	        });
 
 
         });
 
     };
+
+    // From: http://stackoverflow.com/questions/6850276/how-to-convert-dataurl-to-file-object-in-javascript
+    fileStore.dataURLtoBlob = function(dataurl) {
+        var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], {type: mime});
+    }
 
     /*
      * Local functions

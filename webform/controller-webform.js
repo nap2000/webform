@@ -281,7 +281,7 @@
                                 fileStore.saveFile(media[i], dirname);
                             });
                         }
-                        var dirname = "/" + form.instanceID;
+                        var dirname = form.instanceID;
                         if (media.length > 0) {
                             fileStore.deleteDir(dirname);        // Remove any existing media
                             for (i = 0; i < media.length; i++) {
@@ -666,7 +666,6 @@
 
             var todo = [];
             if (fileStore) {
-                var xxx = fileStore.getAllAttachments();
                 $fileNodes.each(function () {
                     fileO = {
                         fileName: $(this).text()
@@ -722,7 +721,7 @@
                         // Commented out 14/1/2019 during upgrade - uncommented 25/2/2020
                         } else if (media[fileIndex].dataUrl) {
                             // immediate send data is still in dataUrl -- not any more it seems
-                            blob = dataURLtoBlob(media[fileIndex].dataUrl);
+                            blob = fileStore.dataURLtoBlob(media[fileIndex].dataUrl);
                             name = media[fileIndex].name;
                         } else {
                             // Assume the media file is the blob
@@ -742,16 +741,6 @@
                 callbacks.success(recordPrepped);
             }
 
-        }
-
-        // From: http://stackoverflow.com/questions/6850276/how-to-convert-dataurl-to-file-object-in-javascript
-        function dataURLtoBlob(dataurl) {
-            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new Blob([u8arr], {type: mime});
         }
 
         if (immediate) {
