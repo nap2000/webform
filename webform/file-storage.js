@@ -77,47 +77,47 @@
     };
 
 
-
     /*
-     * TODO
+     * Delete all media with the specified prefix
+     * Assumes db has been initialised
+     * An explicit boolean "all" is added in case the function is called accidnetially with an undefined directory
      */
-    fileStore.deleteAllAttachments = function() {
+    fileStore.delete = function(dirname, all) {
 
-        console.log("delete all local storage");
+        if(typeof dirname !== "undefined" || all) {
 
-        if(idbSupported) {
-            //  TODO Empty indexdb database
-
-        }
-
-        // For backward compatability local storage will be emptied even of idb is supported
-        // Empty backup local storage
-        for (var key in localStorage) {
-            if (key.startsWith(FM_STORAGE_PREFIX)) {
-                var item = localStorage.getItem(key);
-                if (item) {
-                    window.URL.revokeObjectURL(item);
-                }
-                localStorage.removeItem(key);
+            if(dirname) {
+                console.log("delete directory: " + dirname);
+            } else {
+                console.log("delete all attachments");
             }
-        }
-    };
 
-    /*
-     * TODO
-     */
-    fileStore.deleteDir = function(name) {
+            var prefix = FM_STORAGE_PREFIX + "/" + dirname;
 
-        if(typeof name !== "undefined") {
-            console.log("delete directory: " + name);
+            // indexeddb first
+            var objectStore = db.transaction([mediaStoreName], "readwrite").objectStore(mediaStoreName);
+            objectStore.openCursor().onsuccess = function(event) {
+                var cursor = event.target.result;
+                if (cursor) {
+                    if (all || cursor.key.startsWith(prefix)) {     // Don't need to check the key if all is set as everything in the data store is a media URL
+                        if(cursor.value) {
+                            window.URL.revokeObjectURL(cursor.value);
+                        }
+                        var request = objectStore.delete(cursor.key);
+                        request.onsuccess = function (event) {
+                            console.log("Delete: " + cursor.key);
+                        };
+                        cursor.continue();
+                    }
+                }
+            };
 
-
+            // Delete any entries in localstorage
             for (var key in localStorage) {
-                if (key.startsWith(FM_STORAGE_PREFIX + "/" + name)) {
+                if ((all && key.startsWith(FM_STORAGE_PREFIX)) || key.startsWith()) {
 
                     var item = localStorage.getItem(key);
                     if(item) {
-                        console.log("Revoke URL: " + item);
                         window.URL.revokeObjectURL(item);
                     }
                     console.log("Delete item: " + key);
@@ -151,12 +151,13 @@
     fileStore.getFile = function(name, dirname) {
 
         return new Promise((resolve, reject) => {
+
             var key = FM_STORAGE_PREFIX + "/" + dirname + "/" + name;
 
             console.log("get file: " + key);
 
             /*
-             * Try idb first
+             * Try indxeddb first
              */
             getFileFromIdb(key).then(function (file) {
 
@@ -164,10 +165,7 @@
                     resolve(file);
 
                 } else {
-
-                    /*
-                     * Fallback to local storage for backward compatability
-                     */
+                     // Fallback to local storage for backward compatability
                     try {
                         resolve(localStorage.getItem(key));
                     } catch (err) {
@@ -194,31 +192,9 @@
 	        };
 
 	        fileStore.getFile(file.fileName, dirname).then(function(objectUrl){
-
 	            updatedFile.blob = fileStore.dataURLtoBlob(objectUrl);
 	            updatedFile.size = updatedFile.blob.size;
 	            resolve(updatedFile);
-	            /*
-	            var blob;
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', objectUrl, true);
-                xhr.responseType = 'blob';
-                xhr.onreadystatechange = function (e) {
-
-                    if (xhr.readyState == 4) {
-                        if (this.status == 200) {
-                            updatedFile.blob = this.response;
-                            updatedFile.size = this.response.size;
-                            resolve(updatedFile);
-                        } else {
-                            resolve(updatedFile);
-                        }
-                    }
-                };
-                xhr.send(null);
-                */
-
 	        });
 
 

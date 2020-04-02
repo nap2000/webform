@@ -80,7 +80,7 @@
             if (fileStore.isSupported()) {
                 fileStore.init().then(function(){
                     if (!store || store.getRecordList().length === 0) {
-                        fileStore.deleteAllAttachments();
+                        fileStore.delete(undefined, true);
                     }
                 });
 
@@ -283,7 +283,7 @@
                         }
                         var dirname = form.instanceID;
                         if (media.length > 0) {
-                            fileStore.deleteDir(dirname);        // Remove any existing media
+                            fileStore.delete(dirname, false);        // Remove any existing media
                             for (i = 0; i < media.length; i++) {
                                 if(!media[i].dataUrl) {
                                     getFileClosure(i, media[i]);
@@ -526,7 +526,7 @@
                 instanceID = model.instanceID;
             }
 
-            fileStore.deleteDir(instanceID);
+            fileStore.delete(instanceID, false);
 
             if (store) {
                 store.removeRecord(recordName);
@@ -534,7 +534,7 @@
         }
 
         // Just to be sure delete all attachments
-        fileStore.deleteAllAttachments();
+        fileStore.delete(undefined, true);
 
     }
 
@@ -667,6 +667,7 @@
             var todo = [];
             if (fileStore) {
                 $fileNodes.each(function () {
+
                     fileO = {
                         fileName: $(this).text()
                     };
@@ -932,7 +933,7 @@
         //remove filesystem folder after successful submission
         $(document).on('submissionsuccess', function (ev, recordName, instanceID) {
             if (fileStore.isSupported()) {
-                fileStore.deleteDir(instanceID);
+                fileStore.delete(instanceID, false);
             }
             if (store) {
                 store.removeRecord(recordName);
