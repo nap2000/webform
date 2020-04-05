@@ -63,7 +63,7 @@ fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
 	    if(subject.startsWith('http')) {                        // some random URL
 		    resolve(subject);
 	    } else if(fileStore.isSupported()) {
-	        var dirname = "/" + window.gLoadedInstanceID;
+	        var dirname = window.gLoadedInstanceID;
             fileStore.getFile(subject, dirname).then(function(url){
                 if(url) {
                     resolve(url);
