@@ -104,7 +104,7 @@ export default {
     // Make this function overwritable
     confirmDelete( repeatEl ) {
         const that = this;
-        dialog.confirm( { heading: t( 'confirm.repeatremove.heading' ), msg: t( 'confirm.repeatremove.msg' ) } )
+        dialog.confirm( t( 'confirm.default.heading' ) ) // smap
             .then( confirmed => {
                 if ( confirmed ) {
                     //remove clone
