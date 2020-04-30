@@ -252,9 +252,7 @@
              * Refresh the window
              */
         	if ( autoClose ) {
-        	    console.debug("Auto close");
-                window.onbeforeunload = undefined;
-                window.location.reload();
+        	    refreshForm();
         	}
         }
     }
@@ -636,6 +634,12 @@
             console.log( 'success!' );
         };
         return callbacks;
+    }
+
+    function refreshForm() {
+        console.debug("Refresh Form");
+        window.onbeforeunload = undefined;
+        window.location.reload(true);
     }
 
     export default connection;
