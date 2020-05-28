@@ -7835,8 +7835,10 @@ input[type="checkbox"] {
     margin: 0 auto 20px auto;
     left: auto;
     width: 100%;
+    bottom: -85px; /* smap */
     line-height: 25px; }
 .form-footer .enketo-power img {
+    bottom: -95px;  /* smap */
     width: 51px; }
 
 .pages ~ .form-footer .form-footer__content__main-controls {

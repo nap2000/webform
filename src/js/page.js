@@ -399,11 +399,11 @@ export default {
         this.$btnPrev.add( this.$btnFirst ).toggleClass( 'disabled', !prev );
         this.$formFooter.toggleClass( 'end', !next );
 
-        // smap
+        // smap hide the submit form button and powered by enketo logo except on last page
         if(next) {
-            $('#submit-form').hide();
+            $('#submit-form, .enketo-power, .draft').hide();
         } else {
-            $('#submit-form').show();
+            $('#submit-form, .enketo-power, .draft').show();
         }
         // end smap
     },

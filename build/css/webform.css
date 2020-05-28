@@ -221,12 +221,21 @@ summary {
 .form-footer .main-controls .previous-page {
     position: absolute;
     left: 20px;
-    bottom: 45px;
+    width: 100px;
+    min-height: 20px;
+    bottom: 0px;
+    color: white;
+    filter: brightness(120%);
 }
+
 .form-footer .main-controls .next-page {
     position: absolute;
     right: 20px;
-    bottom: 45px;
+    width: 100px;
+    min-height: 20px;
+    bottom: 0px;
+    color: white;
+    filter: brightness(120%);
 }
 
 .jump-nav {
