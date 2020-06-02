@@ -482,6 +482,9 @@
 
         if ( uploadResult.fail.length > 0 ) {
             msg = '';
+            if(props.response) {
+                msg += props.response + '<br />';
+            }
             //console.debug('upload failed');
             if ( currentOnlineStatus !== false ) {
                 for ( i = 0; i < uploadResult.fail.length; i++ ) {
