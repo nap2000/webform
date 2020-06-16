@@ -60,9 +60,7 @@
     		url;
     	
         if ( record.accessKey ) {
-            // replace the per record key with the sssion key
-            dynamic = "/key/" + gStore.getKey("_sessionkey");
-            //dynamic = "/key/" + record.accessKey;
+            dynamic = "/key/" + record.accessKey;       // Access ky is used to authenticate to the server on submission
         }
 
         if ( !record.instanceStrToEditId ) {
@@ -96,7 +94,8 @@
     }
 
     /*
-     * Get a new key and update the record
+     * Get a new update key and update the record
+     * This will be required if the key in dynamic_users table has expired and been deleted
      */
     function getNewKey(record) {
 		$.ajax({
@@ -104,7 +103,6 @@
 			dataType: 'json',
 			cache: false,
 			success: function(data) {
-				gStore.setKey("_sessionkey", data.key);
 				if(record.name == 'iframe_record') {
 					// Update the web page access key
 					surveyData.key = data.key;
@@ -239,14 +237,13 @@
                     uploadOngoingBatchIndex = null;
                     callbacks.complete( jqXHR, response );
                 },
-                error: function(jqXHR, response) {  
+                error: function(jqXHR, response) {
                 	if(jqXHR.status == 401) {
                     	getNewKey(record);		// Get a new access key
                     }
                 	callbacks.error();
                 },
                 success: function () {
-                    gStore.setKey("_sessionkey", record.accessKey);     // Update the session key
                     callbacks.success
                 }
             } );
