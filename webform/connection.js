@@ -60,7 +60,9 @@
     		url;
     	
         if ( record.accessKey ) {
-            dynamic = "/key/" + record.accessKey;
+            // replace the per record key with the sssion key
+            dynamic = "/key/" + gStore.getKey("_sessionkey");
+            //dynamic = "/key/" + record.accessKey;
         }
 
         if ( !record.instanceStrToEditId ) {
@@ -102,7 +104,7 @@
 			dataType: 'json',
 			cache: false,
 			success: function(data) {
-				// TODO update the record
+				gStore.setKey("_sessionkey", data.key);
 				if(record.name == 'iframe_record') {
 					// Update the web page access key
 					surveyData.key = data.key;
@@ -237,16 +239,18 @@
                     uploadOngoingBatchIndex = null;
                     callbacks.complete( jqXHR, response );
                 },
-                error: function(jqXHR, response) {
-                	var recordInError = record;
+                error: function(jqXHR, response) {  
                 	if(jqXHR.status == 401) {
-                    	getNewKey(recordInError);		// Get a new access key
+                    	getNewKey(record);		// Get a new access key
                     }
                 	callbacks.error();
                 },
-                success: callbacks.success
+                success: function () {
+                    gStore.setKey("_sessionkey", record.accessKey);     // Update the session key
+                    callbacks.success
+                }
             } );
- 
+
         } else {
             /*
              * Refresh the window
@@ -375,7 +379,7 @@
                 },
                 401: {
                     success: false,
-                    msg: "Authorisation expired. Refresh your browser. " 
+                    msg: "Authorisation expired. Refresh your browser. "
                 },
                 403: {
                     success: false,
