@@ -1,5 +1,4 @@
 enketo-core Smap Fork
-================
 
 A fork of Enketo Core. Unless you are working with the Smap Server specifically you should probably be forking the original enketo-core repository.
 
