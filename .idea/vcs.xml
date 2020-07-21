@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/bootstrap-slider" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/jquery-touchswipe" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/jquery-xpath" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/text" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/xpath" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/xpath/lib/yuicompressor" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/widget/date/bootstrap3-datepicker" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/widget/time/bootstrap3-timepicker" vcs="Git" />
+  </component>
+</project>

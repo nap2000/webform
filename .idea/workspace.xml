@@ -1,0 +1,926 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="6f327aeb-bf59-46a9-9fa9-44036497c49d" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/lib/xpath/build/parser.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.min.js" beforeDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/.tmp/" />
+    <ignored path="$PROJECT_DIR$/temp/" />
+    <ignored path="$PROJECT_DIR$/tmp/" />
+    <ignored path="$PROJECT_DIR$/.idea/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webform/controller-webform.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="450">
+              <caret line="40" column="48" selection-start-line="40" selection-start-column="48" selection-end-line="40" selection-end-column="48" />
+              <folding>
+                <element signature="e#49#91#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/webform/connection.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="58">
+              <caret line="75" column="8" lean-forward="true" selection-start-line="75" selection-start-column="8" selection-end-line="75" selection-end-column="8" />
+              <folding>
+                <element signature="e#672#696#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webform/store.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1440">
+              <caret line="96" column="15" selection-start-line="96" selection-start-column="10" selection-end-line="96" selection-end-column="15" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>.side-slider</find>
+      <find>footer</find>
+      <find>previous</find>
+      <find>starts</find>
+      <find>in</find>
+      <find>parameterButton</find>
+      <find>return control.dataset.typeXml.toLowerCase()</find>
+      <find>Not allowed to</find>
+      <find>flv</find>
+      <find>/key</find>
+      <find>uploadRecords</find>
+      <find>_uploadOne</find>
+      <find>submitOneForced</find>
+      <find>uploadOngoingID</find>
+      <find>Not allowed to post data to this data server</find>
+      <find>getNewKe</find>
+      <find>setRecord</find>
+      <find>gStore</find>
+      <find>getKe</find>
+      <find>getNewKey</find>
+      <find>getNew</find>
+      <find>gui.alert('Warning: Storage of large attachments is not supported</find>
+      <find>getSubmissionUrl</find>
+      <find>_sessionkey</find>
+      <find>sessionk</find>
+      <find>form.recordName = recordName;</find>
+      <find>p_auto_annotate</find>
+      <find>or-appearance-columns</find>
+      <find>columns</find>
+      <find>custom_reports</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>Webform</replace>
+      <replace>fileStore</replace>
+      <replace>fileManager</replace>
+    </replaceStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$</dir>
+    </dirStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/locales/sw/translation-combined.json" />
+        <option value="$PROJECT_DIR$/locales/sw/translation.json" />
+        <option value="$PROJECT_DIR$/locales/vi/translation-combined.json" />
+        <option value="$PROJECT_DIR$/locales/vi/translation.json" />
+        <option value="$PROJECT_DIR$/locales/zh/translation-combined.json" />
+        <option value="$PROJECT_DIR$/locales/zh/translation.json" />
+        <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/main-webform.js" />
+        <option value="$PROJECT_DIR$/lib/file-manager/src/file-manager.js" />
+        <option value="$PROJECT_DIR$/src/js/form.js" />
+        <option value="$PROJECT_DIR$/src/js/settings.js" />
+        <option value="$PROJECT_DIR$/Gruntfile.js" />
+        <option value="$PROJECT_DIR$/src/widget/geo/geopicker.js" />
+        <option value="$PROJECT_DIR$/app.js" />
+        <option value="$PROJECT_DIR$/src/js/translator.js" />
+        <option value="$PROJECT_DIR$/build/js/webform-bundle.js" />
+        <option value="$PROJECT_DIR$/webform/plugin.js" />
+        <option value="$PROJECT_DIR$/lib/bootstrap.js" />
+        <option value="$PROJECT_DIR$/src/widget/time/bootstrap3-timepicker/spec/js/libs/bootstrap/dist/js/bootstrap.js" />
+        <option value="$PROJECT_DIR$/src/widget/compact/compactpicker.js" />
+        <option value="$PROJECT_DIR$/src/widget/horizontal-choices/horizontalchoices.js" />
+        <option value="$PROJECT_DIR$/lib/jquery.js" />
+        <option value="$PROJECT_DIR$/lib/jquery-modal/jquery.modal.js" />
+        <option value="$PROJECT_DIR$/build/js/enketo-bundle.js" />
+        <option value="$PROJECT_DIR$/src/widget/rank/rank-widget.js" />
+        <option value="$PROJECT_DIR$/src/js/types.js" />
+        <option value="$PROJECT_DIR$/src/widget/datetime/datetimepicker-extended.js" />
+        <option value="$PROJECT_DIR$/lib/xpath/build.xml" />
+        <option value="$PROJECT_DIR$/lib/xpath/src/engine.js" />
+        <option value="$PROJECT_DIR$/src/js/form-model.js" />
+        <option value="$PROJECT_DIR$/build/webFormTest.html" />
+        <option value="$PROJECT_DIR$/src/js/language.js" />
+        <option value="$PROJECT_DIR$/build/css/formhub.css" />
+        <option value="$PROJECT_DIR$/src/widget/file/filepicker.js" />
+        <option value="$PROJECT_DIR$/src/widget/draw/draw-widget.js" />
+        <option value="$PROJECT_DIR$/webform/store.js" />
+        <option value="$PROJECT_DIR$/locales/en/translation.json" />
+        <option value="$PROJECT_DIR$/webform/gui.js" />
+        <option value="$PROJECT_DIR$/webform/file-storage.js" />
+        <option value="$PROJECT_DIR$/src/js/file-manager.js" />
+        <option value="$PROJECT_DIR$/src/js/repeat.js" />
+        <option value="$PROJECT_DIR$/build/css/theme-formhub.print.css" />
+        <option value="$PROJECT_DIR$/src/js/page.js" />
+        <option value="$PROJECT_DIR$/build/css/webform.css" />
+        <option value="$PROJECT_DIR$/build/css/theme-formhub.css" />
+        <option value="$PROJECT_DIR$/src/js/input.js" />
+        <option value="$PROJECT_DIR$/docs/js_input.js.html" />
+        <option value="$PROJECT_DIR$/webform/controller-webform.js" />
+        <option value="$PROJECT_DIR$/webform/connection.js" />
+        <option value="$PROJECT_DIR$/build/css/grid.css" />
+        <option value="$PROJECT_DIR$/build/css/grid-print.css" />
+      </list>
+    </option>
+  </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6" fullScreen="true">
+    <option name="width" value="1280" />
+    <option name="height" value="800" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+              <item name="build" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+              <item name="build" type="462c0819:PsiDirectoryNode" />
+              <item name="css" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="HbShouldOpenHtmlAsHb" value="" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="editor.config.ad.shown" value="true" />
+    <property name="js-jscs-nodeInterpreter" value="$USER_HOME$/.nvm/versions/node/v6.10.0/bin/node" />
+    <property name="js.buildTools.grunt.grunt-cli.package" value="" />
+    <property name="js.eslint.eslintPackage" value="" />
+    <property name="jsx.switch.disabled" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path" value="node" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/build/css/webform_orig.css" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/build/css" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="controller-webform.js" type="NodeJSConfigurationType" temporary="true" path-to-js-file="$PROJECT_DIR$/webform/controller-webform.js" working-dir="$PROJECT_DIR$/webform">
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="js.build_tools.grunt">
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Node.js.controller-webform.js" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="6f327aeb-bf59-46a9-9fa9-44036497c49d" name="Default" comment="" />
+      <created>1489792257263</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1489792257263</updated>
+      <workItem from="1489792259733" duration="7990000" />
+      <workItem from="1489807598264" duration="27369000" />
+      <workItem from="1489921100598" duration="11691000" />
+      <workItem from="1489988666715" duration="6783000" />
+      <workItem from="1490072611747" duration="2623000" />
+      <workItem from="1490173627664" duration="1141000" />
+      <workItem from="1495050448292" duration="5392000" />
+      <workItem from="1495201656058" duration="6112000" />
+      <workItem from="1495223675993" duration="4798000" />
+      <workItem from="1495309680030" duration="4269000" />
+      <workItem from="1497985290624" duration="7559000" />
+      <workItem from="1498033279116" duration="1580000" />
+      <workItem from="1498641182259" duration="1336000" />
+      <workItem from="1499765457177" duration="5532000" />
+      <workItem from="1499844052992" duration="1122000" />
+      <workItem from="1499846736831" duration="5793000" />
+      <workItem from="1499924838767" duration="597000" />
+      <workItem from="1500013891764" duration="33000" />
+      <workItem from="1500013953872" duration="6087000" />
+      <workItem from="1500124401805" duration="10250000" />
+      <workItem from="1500542728603" duration="3079000" />
+      <workItem from="1501329737392" duration="507000" />
+      <workItem from="1501493682200" duration="279000" />
+      <workItem from="1502098026349" duration="841000" />
+      <workItem from="1502725018863" duration="1070000" />
+      <workItem from="1503994582585" duration="421000" />
+      <workItem from="1504517405631" duration="1143000" />
+      <workItem from="1504635686416" duration="204000" />
+      <workItem from="1505295701678" duration="539000" />
+      <workItem from="1505627963653" duration="478000" />
+      <workItem from="1505952364558" duration="682000" />
+      <workItem from="1506143290742" duration="541000" />
+      <workItem from="1506398508806" duration="5940000" />
+      <workItem from="1506576055791" duration="589000" />
+      <workItem from="1506578621034" duration="2807000" />
+      <workItem from="1507777898689" duration="388000" />
+      <workItem from="1507778478038" duration="5942000" />
+      <workItem from="1508133341566" duration="343000" />
+      <workItem from="1509162955684" duration="519000" />
+      <workItem from="1509333826947" duration="43000" />
+      <workItem from="1512944456514" duration="2943000" />
+      <workItem from="1520604825193" duration="487000" />
+      <workItem from="1520624778069" duration="597000" />
+      <workItem from="1521141727056" duration="361000" />
+      <workItem from="1521630775815" duration="36000" />
+      <workItem from="1523429402222" duration="798000" />
+      <workItem from="1523457509921" duration="595000" />
+      <workItem from="1524034072338" duration="234000" />
+      <workItem from="1524122789032" duration="879000" />
+      <workItem from="1524672290105" duration="27236000" />
+      <workItem from="1525780240639" duration="208000" />
+      <workItem from="1526740359372" duration="1232000" />
+      <workItem from="1527320117929" duration="459000" />
+      <workItem from="1527714824393" duration="1246000" />
+      <workItem from="1527928216206" duration="3159000" />
+      <workItem from="1528212672557" duration="398000" />
+      <workItem from="1528539207783" duration="7536000" />
+      <workItem from="1530895859792" duration="2081000" />
+      <workItem from="1531765691519" duration="35000" />
+      <workItem from="1531919905798" duration="110000" />
+      <workItem from="1532072517558" duration="282000" />
+      <workItem from="1533623090565" duration="8436000" />
+      <workItem from="1533882726740" duration="2623000" />
+      <workItem from="1534586522524" duration="299000" />
+      <workItem from="1534830502810" duration="883000" />
+      <workItem from="1535724981285" duration="502000" />
+      <workItem from="1537879836066" duration="1187000" />
+      <workItem from="1538259593671" duration="280000" />
+      <workItem from="1539041211670" duration="164000" />
+      <workItem from="1539752319700" duration="21940000" />
+      <workItem from="1540088782468" duration="3232000" />
+      <workItem from="1546218879135" duration="1106000" />
+      <workItem from="1546812993328" duration="65609000" />
+      <workItem from="1548075519205" duration="7000" />
+      <workItem from="1548193362197" duration="4465000" />
+      <workItem from="1548673263834" duration="658000" />
+      <workItem from="1549861499669" duration="204000" />
+      <workItem from="1550309485293" duration="506000" />
+      <workItem from="1550460994884" duration="978000" />
+      <workItem from="1551939667181" duration="456000" />
+      <workItem from="1552539963149" duration="597000" />
+      <workItem from="1553131242433" duration="455000" />
+      <workItem from="1553202201603" duration="492000" />
+      <workItem from="1558937124079" duration="4955000" />
+      <workItem from="1558997552020" duration="15969000" />
+      <workItem from="1559685215832" duration="994000" />
+      <workItem from="1560252471143" duration="228000" />
+      <workItem from="1560853062522" duration="32000" />
+      <workItem from="1560853142286" duration="1897000" />
+      <workItem from="1561274660018" duration="173000" />
+      <workItem from="1561694257396" duration="111000" />
+      <workItem from="1561942853692" duration="368000" />
+      <workItem from="1562709455688" duration="107000" />
+      <workItem from="1562721122675" duration="3788000" />
+      <workItem from="1566638234472" duration="2299000" />
+      <workItem from="1567076681390" duration="3651000" />
+      <workItem from="1567291417145" duration="2612000" />
+      <workItem from="1567901409845" duration="4341000" />
+      <workItem from="1568937716871" duration="295000" />
+      <workItem from="1572048281847" duration="6236000" />
+      <workItem from="1572489826252" duration="14000" />
+      <workItem from="1580789369894" duration="1346000" />
+      <workItem from="1581038538158" duration="407000" />
+      <workItem from="1581387751038" duration="591000" />
+      <workItem from="1581739351757" duration="173000" />
+      <workItem from="1582091397010" duration="233000" />
+      <workItem from="1582363637063" duration="1701000" />
+      <workItem from="1582669326418" duration="9685000" />
+      <workItem from="1583732879941" duration="2717000" />
+      <workItem from="1584327349989" duration="548000" />
+      <workItem from="1585170637361" duration="1008000" />
+      <workItem from="1585524022724" duration="2965000" />
+      <workItem from="1585531244489" duration="3949000" />
+      <workItem from="1585778542793" duration="15000" />
+      <workItem from="1585778583806" duration="12653000" />
+      <workItem from="1585818715013" duration="4989000" />
+      <workItem from="1586037623594" duration="1801000" />
+      <workItem from="1586124188983" duration="2425000" />
+      <workItem from="1586302803177" duration="8000" />
+      <workItem from="1586386145440" duration="488000" />
+      <workItem from="1588204796210" duration="670000" />
+      <workItem from="1589409900531" duration="4582000" />
+      <workItem from="1589493532628" duration="274000" />
+      <workItem from="1589952796782" duration="6000" />
+      <workItem from="1589953029785" duration="785000" />
+      <workItem from="1590015276293" duration="307000" />
+      <workItem from="1590624764021" duration="322000" />
+      <workItem from="1591066358199" duration="872000" />
+      <workItem from="1592260090349" duration="10655000" />
+      <workItem from="1592356527271" duration="43000" />
+      <workItem from="1593869633804" duration="919000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="425610000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="0" width="1280" height="800" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.23101777" />
+      <window_info id="Structure" order="1" weight="0.24959612" />
+      <window_info id="MaxCompute Job Explorer" order="2" />
+      <window_info id="MaxCompute Project Explorer" order="3" />
+      <window_info id="npm" order="4" side_tool="true" />
+      <window_info id="Project Explorer" order="5" weight="0.16639742" />
+      <window_info id="Job Explorer" order="6" />
+      <window_info id="Grunt " order="7" side_tool="true" />
+      <window_info id="Favorites" order="8" side_tool="true" />
+      <window_info id="DB Browser" order="9" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.47807637" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.329582" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Debug Logs" order="8" />
+      <window_info anchor="bottom" id="Version Control" order="9" weight="0.22630835" />
+      <window_info anchor="bottom" id="MaxCompute Job" order="10" />
+      <window_info anchor="bottom" id="Execute Anonymous" order="11" />
+      <window_info anchor="bottom" id="Terminal" order="12" />
+      <window_info anchor="bottom" id="Salesforce" order="13" />
+      <window_info anchor="bottom" id="Console" order="14" />
+      <window_info anchor="bottom" id="MaxCompute Console" order="15" />
+      <window_info anchor="bottom" id="DB Execution Console" order="16" />
+      <window_info anchor="bottom" id="Docker" order="17" show_stripe_button="false" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="FAQ Robot" order="3" weight="0.32956383" />
+    </layout>
+    <layout-to-restore>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24071082" />
+      <window_info id="Structure" order="1" weight="0.24959612" />
+      <window_info id="MaxCompute Job Explorer" order="2" />
+      <window_info id="MaxCompute Project Explorer" order="3" />
+      <window_info id="npm" order="4" side_tool="true" />
+      <window_info id="Project Explorer" order="5" weight="0.16639742" />
+      <window_info id="Job Explorer" order="6" />
+      <window_info id="Grunt " order="7" side_tool="true" />
+      <window_info id="Favorites" order="8" side_tool="true" />
+      <window_info id="DB Browser" order="9" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.22630835" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.329582" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Debug Logs" order="8" />
+      <window_info anchor="bottom" id="Version Control" order="9" visible="true" weight="0.22630835" />
+      <window_info anchor="bottom" id="MaxCompute Job" order="10" />
+      <window_info anchor="bottom" id="Execute Anonymous" order="11" />
+      <window_info anchor="bottom" id="Terminal" order="12" />
+      <window_info anchor="bottom" id="Salesforce" order="13" />
+      <window_info anchor="bottom" id="Console" order="14" />
+      <window_info anchor="bottom" id="MaxCompute Console" order="15" />
+      <window_info anchor="bottom" id="DB Execution Console" order="16" />
+      <window_info anchor="bottom" id="Docker" order="17" show_stripe_button="false" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="FAQ Robot" order="3" />
+    </layout-to-restore>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/widget/horizontal-choices/horizontalchoices.js" />
+    <entry file="file://$PROJECT_DIR$/lib/file-manager/src/file-manager.js" />
+    <entry file="file://$PROJECT_DIR$/src/widget/compact/compactpicker.js" />
+    <entry file="file://$PROJECT_DIR$/src/widget/select-mobile/selectpicker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="14" column="13" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
+          <folding>
+            <element signature="e#0#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/select-desktop/selectpicker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="199">
+          <caret line="26" column="22" selection-start-line="26" selection-start-column="22" selection-end-line="26" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/dropdown.jquery.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="49" selection-start-line="49" selection-end-line="49" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/bootstrap-slider/js/bootstrap-slider.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3502" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/jquery-modal/jquery.modal.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" column="6" selection-start-line="12" selection-start-column="6" selection-end-line="12" selection-end-column="6" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/rank/rank-widget.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="453">
+          <caret line="64" column="5" selection-start-line="64" selection-start-column="5" selection-end-line="64" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/widgets-controller.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-842">
+          <caret line="119" column="23" selection-start-line="119" selection-start-column="23" selection-end-line="119" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/widget.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="136" column="13" selection-start-line="136" selection-start-column="13" selection-end-line="136" selection-end-column="13" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/widgets.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="34" selection-start-line="13" selection-start-column="34" selection-end-line="13" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#42#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/analog-scale/analog-scalepicker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="93">
+          <caret line="28" selection-start-line="28" selection-end-line="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/locales/en/translation-combined.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="4185" selection-start-column="4185" selection-end-column="4185" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/datetime/datetimepicker-extended.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1680">
+          <caret line="120" column="5" selection-start-line="120" selection-start-column="5" selection-end-line="120" selection-end-column="5" />
+          <folding>
+            <element signature="e#0#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/types.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="613">
+          <caret line="83" column="28" selection-start-line="83" selection-start-column="28" selection-end-line="83" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/xpath/build.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="29" column="32" selection-start-line="29" selection-start-column="32" selection-end-line="29" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/extend.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/input.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3030">
+          <caret line="202" column="46" selection-start-line="202" selection-start-column="46" selection-end-line="202" selection-end-column="64" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/form.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7335">
+          <caret line="510" column="36" selection-start-line="510" selection-start-column="36" selection-end-line="510" selection-end-column="36" />
+          <folding>
+            <element signature="e#0#41#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/file/filepicker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3120">
+          <caret line="216" column="5" selection-start-line="216" selection-start-column="5" selection-end-line="216" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/geo/geopicker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="145">
+          <caret line="653" lean-forward="true" selection-start-line="653" selection-end-line="653" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.dom.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2216">
+          <caret line="10831" column="4" selection-start-line="10831" selection-start-column="4" selection-end-line="10831" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Gruntfile.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" selection-start-line="14" selection-end-line="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/language.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="30" selection-start-line="30" selection-end-line="30" />
+          <folding>
+            <element signature="e#94#143#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/js/enketo-bundle.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3238">
+          <caret line="28130" column="51" selection-start-line="28130" selection-start-column="51" selection-end-line="28130" selection-end-column="51" />
+          <folding>
+            <element signature="n#style#0;n#progress#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/toc.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1521" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/draw/draw-widget.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="134">
+          <caret line="359" selection-start-line="359" selection-end-line="359" />
+          <folding>
+            <element signature="e#0#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/form-model.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="20" column="14" selection-start-line="20" selection-start-column="14" selection-end-line="20" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#41#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/jquery.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="109">
+          <caret line="9118" column="21" selection-start-line="9118" selection-start-column="21" selection-end-line="9118" selection-end-column="21" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es2015.promise.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="26" column="4" selection-start-line="26" selection-start-column="4" selection-end-line="26" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/spec/repeat.spec.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="13" column="12" selection-start-line="13" selection-start-column="12" selection-end-line="13" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/locales/en/translation.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1905">
+          <caret line="127" column="12" selection-start-line="127" selection-start-column="5" selection-end-line="127" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/gui.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5895">
+          <caret line="398" column="4" selection-start-line="398" selection-start-column="4" selection-end-line="398" selection-end-column="4" />
+          <folding>
+            <element signature="e#711#753#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="243">
+          <caret line="26" column="11" selection-start-line="26" selection-start-column="11" selection-end-line="26" selection-end-column="11" />
+          <folding>
+            <element signature="e#158#205#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/css/theme-formhub.print.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="348">
+          <caret line="24" column="32" selection-start-line="24" selection-start-column="32" selection-end-line="24" selection-end-column="32" />
+          <folding>
+            <element signature="e#8270#8575#2" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/file-storage.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2190">
+          <caret line="146" selection-start-line="146" selection-end-line="146" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/xpath/lib/yuicompressor/tests/dataurl-base64-noquotes.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="51426" selection-start-line="15" selection-start-column="51426" selection-end-line="15" selection-end-column="51426" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/css/theme-formhub.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="117450">
+          <caret line="7830" column="8" selection-start-line="7830" selection-start-column="8" selection-end-line="7830" selection-end-column="8" />
+          <folding>
+            <element signature="e#47634#49509#2" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/xpath/src/engine.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="82395">
+          <caret line="5493" column="8" selection-start-line="5493" selection-start-column="8" selection-end-line="5493" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/page.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="907">
+          <caret line="405" column="50" selection-start-line="405" selection-start-column="50" selection-end-line="405" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/file-manager.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="907">
+          <caret line="71" column="13" selection-start-line="71" selection-start-column="13" selection-end-line="71" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/repeat.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="893">
+          <caret line="101" column="27" selection-start-line="101" selection-start-column="27" selection-end-line="101" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/controller-webform.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="40" column="48" selection-start-line="40" selection-start-column="48" selection-end-line="40" selection-end-column="48" />
+          <folding>
+            <element signature="e#49#91#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/store.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1440">
+          <caret line="96" column="15" selection-start-line="96" selection-start-column="10" selection-end-line="96" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/css/webform.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="19" column="24" lean-forward="true" selection-start-line="19" selection-start-column="24" selection-end-line="19" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/css/plain.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="254" column="32" selection-start-line="254" selection-start-column="32" selection-end-line="254" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/css/formhub.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="728" column="32" selection-start-line="728" selection-start-column="32" selection-end-line="728" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/css/grid-print.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="613">
+          <caret line="869" column="1" selection-start-line="869" selection-start-column="1" selection-end-line="869" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/css/grid.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="613">
+          <caret line="5982" column="1" selection-start-line="5982" selection-start-column="1" selection-end-line="5982" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/connection.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="58">
+          <caret line="75" column="8" lean-forward="true" selection-start-line="75" selection-start-column="8" selection-end-line="75" selection-end-column="8" />
+          <folding>
+            <element signature="e#672#696#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
