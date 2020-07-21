@@ -53,32 +53,24 @@ fileManager.isWaitingForPermissions = () => { return false; };
  * @param  {?string|object} subject - File or filename in local storage
  * @return {Promise|string|Error} promise url string or rejection with Error
  */
-fileManager.getFileUrl = subject => {
-    return new Promise( ( resolve, reject ) => {
+fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
         let error;
 
         if ( !subject ) {
             resolve( null );
         } else if ( typeof subject === 'string' ) {
-            // TODO obtain from storage as http URL or objectURL
-            // or from model for default binary files
-
-            // Very crude URL checker which is fine for now,
-            // because at this point we don't expect anything other than jr://
-            if ( URL_RE.test( subject ) ) {
+	    if(subject.startsWith('http')) {                        // some random URL
                 resolve( subject );
+	    } else if(fileStore.isSupported()) {
+	        var dirname = window.gLoadedInstanceID;
+            fileStore.getFile(subject, dirname).then(function(url){
+                if(url) {
+                    resolve(url);
             } else {
-                reject( 'no!' );
+                    resolve(location.origin + "/" + subject);		// URL must be from the server
             }
-        } else if ( typeof subject === 'object' ) {
-            if ( fileManager.isTooLarge( subject ) ) {
-                error = new Error( t( 'filepicker.toolargeerror', { maxSize: fileManager.getMaxSizeReadable() } ) );
-                reject( error );
-            } else {
-                resolve( URL.createObjectURL( subject ) );
-            }
-        } else {
-            reject( new Error( 'Unknown error occurred' ) );
+            });
+
         }
 
 

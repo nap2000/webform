@@ -4425,12 +4425,11 @@ module.exports = (function(){
 				fn: function(dt)
 				{
 					var MS_IN_DAY = 1000 * 60 * 60 * 24;
-					var PRECISION = 1000;
 					var d = dt.toDate();
 					var dec;
 
 					if ( d.toString() !== 'Invalid Date' ) {
-						dec = Math.round(d.getTime() * PRECISION / MS_IN_DAY) / PRECISION;
+						dec = d.getTime() / MS_IN_DAY;
 					} else {
 						dec = Number.NaN;
 					}
@@ -4456,7 +4455,6 @@ module.exports = (function(){
 					// and conversion here, manually.
 					var	m = time.toString().match( /^(\d\d):(\d\d):(\d\d)(\.\d\d?\d?)?(\+|-)(\d\d):(\d\d)$/ );
 					//var ERR = new Error('Invalid time format provided.');
-					var PRECISION = 1000;
 					var dec;
 					
 					if ( m && 
@@ -4473,7 +4471,7 @@ module.exports = (function(){
 						if ( d.toString() === 'Invalid Date' ){
 							dec = Number.NaN;
 						} else {
-							dec =  Math.round( (d.getSeconds() / 3600 + d.getMinutes() / 60 + d.getHours() )* PRECISION / 24) / PRECISION;
+							dec =  (d.getSeconds() / 3600 + d.getMinutes() / 60 + d.getHours() ) / 24;
 						}
 					} else {
 						dec = Number.NaN;
