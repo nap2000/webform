@@ -76,7 +76,7 @@
         "publish-please": "^5.5.1",
         "rimraf": "^3.0.2",
         "rollup": "^2.18.2",
-        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-commonjs": "10.1.x",
         "rollup-plugin-istanbul": "^2.0.1",
         "rollup-plugin-json": "4.0.x",
         "rollup-plugin-node-resolve": "5.2.x",
