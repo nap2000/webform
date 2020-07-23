@@ -4,7 +4,7 @@
 
 @font-face {
     font-family: 'OpenSansRegular';
-    src: url("/fonts/OpenSans-Regular-webfont.woff") format("woff"), url("/fonts/OpenSans-Regular-webfont.ttf") format("truetype"), url("/fonts/OpenSans-Regular-webfont.svg#OpenSansRegular") format("svg");
+    src: url("../fonts/OpenSans-Regular-webfont.woff") format("woff"), url("../fonts/OpenSans-Regular-webfont.ttf") format("truetype"), url("../fonts/OpenSans-Regular-webfont.svg#OpenSansRegular") format("svg");
     font-weight: normal;
     font-style: normal;
 }
@@ -1274,3 +1274,7 @@ button.close {
     color: #ce4f07; }
 .or-form-guidance.active summary {
     color: #888888; }
+
+
+strong {
+    font-weight: bold; }
