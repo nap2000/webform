@@ -4,6 +4,7 @@
 !/node_modules/enketo-xpathjs/src
 /lib/xpath
 lib/xpath
+package-lock.json
 /build/js
 /test/mock/forms.json
 temp
