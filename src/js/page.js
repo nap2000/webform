@@ -47,8 +47,9 @@ export default {
                 } );
 
             if ( allPages.length > 0 || allPages[ 0 ].classList.contains( 'or-repeat' ) ) {
-                // const formWrapper = this.form.view.html.parentNode;  // smap
-                // this.$formFooter = $( formWrapper.querySelector( '.form-footer' ) );  // smap
+                //const formWrapper = this.form.view.html.parentNode;  // smap
+                //this.$formFooter = $( formWrapper.querySelector( '.form-footer' ) );  // smap
+                this.$formFooter = $('.form-footer');       // smap
                 this.$btnFirst = this.$formFooter.find( '.first-page' );
                 this.$btnPrev = this.$formFooter.find( '.previous-page' );
                 this.$btnNext = this.$formFooter.find( '.next-page' );
