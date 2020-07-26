@@ -3,6 +3,8 @@ npm-debug.log
 build/css/
 build/js/
 test/mock/forms.js
+.idea/inspectionProfiles/
+.idea/jsLinters/
 test-coverage/
 temp
 .DS_Store
