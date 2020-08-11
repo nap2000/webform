@@ -10,7 +10,7 @@
 }
 @font-face {
     font-family: 'OpenSansBold';
-    src: url("/fonts/OpenSans-Bold-webfont.woff") format("woff"), url("/fonts/OpenSans-Bold-webfont.ttf") format("truetype"), url("/fonts/OpenSans-Bold-webfont.svg#OpenSansBold") format("svg");
+    src: url("../fonts/OpenSans-Bold-webfont.woff") format("woff"), url("../fonts/OpenSans-Bold-webfont.ttf") format("truetype"), url("../fonts/OpenSans-Bold-webfont.svg#OpenSansBold") format("svg");
     font-weight: normal;
     font-style: normal;
 }
@@ -1278,3 +1278,7 @@ button.close {
 
 strong {
     font-weight: bold; }
+
+label.itemset-template {
+    display: none !important;
+}

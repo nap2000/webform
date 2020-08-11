@@ -292,6 +292,7 @@ body {
   flex-direction: column;
   -webkit-flex-wrap: nowrap;
   -ms-flex-wrap: nowrap;
+
   -moz-flex-wrap: nowrap;
   flex-wrap: nowrap;
   margin: 0 auto;
