@@ -1282,3 +1282,11 @@ strong {
 label.itemset-template {
     display: none !important;
 }
+
+.btn.add-repeat-btn {
+    background-color: #fff;
+}
+
+.btn.remove {
+    background-color: #fff;
+}

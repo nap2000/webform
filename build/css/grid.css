@@ -587,7 +587,7 @@ button {
     max-width: 120px; }
 
 .or-repeat {
-  background-color: #fef5ef;
+  background-color: #fffcf6;
   margin: 0 0 3px 0;
   padding: 20px 10px 10px 10px;
   position: relative; }
@@ -604,7 +604,7 @@ button {
   .or-repeat .or-repeat {
     background-color: white; }
     .or-repeat .or-repeat .or-repeat {
-      background-color: #fef5ef; }
+      background-color: #fffcf6; }
       .or-repeat .or-repeat .or-repeat .or-repeat {
         background-color: white; }
 
@@ -3990,7 +3990,7 @@ table th[class*="col-"] {
   background-color: #fffded; }
 
 .or-appearance-likert.focus .option-wrapper > label:first-of-type .option-label::after, .or-appearance-likert.focus .option-wrapper > label:last-of-type .option-label::after {
-  background-color: #fffad4; }
+  background-color: #fffcf6; }
 
 .or[dir="rtl"] .or-appearance-likert .option-wrapper > label {
   margin-right: 0; }
@@ -4012,7 +4012,7 @@ table th[class*="col-"] {
 .or-repeat .or-appearance-likert .option-wrapper > label:last-of-type .option-label::after,
 .or-repeat .or-appearance-likert .option-wrapper > label input[type=radio],
 .or-repeat .or-appearance-likert .option-wrapper > label input[type=checkbox] {
-  background-color: #fef5ef; }
+  background-color: #fffcf6; }
 
 .or-horizontal-initialized .option-wrapper {
   /*IE10*/
@@ -5158,7 +5158,7 @@ h4 + .or-repeat {
   .question.readonly {
     background: #eeeeee; }
   .question.focus {
-    background: #fffad4; }
+    background: #fffcf6; }
   .question .required {
     position: absolute;
     top: -2px;
@@ -5248,7 +5248,7 @@ h4 + .or-repeat {
 .or-repeat {
   margin: 0;
   padding: 0;
-  background: #fef5ef; }
+  background: #fffcf6; }
   .or-repeat .repeat-number {
     position: absolute;
     left: 100%;

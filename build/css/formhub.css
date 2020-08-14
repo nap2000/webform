@@ -588,7 +588,7 @@ button {
     max-width: 120px; }
 
 .or-repeat {
-  background-color: #fef5ef;
+  background-color: #fffcf6;
   margin: 0 0 3px 0;
   padding: 20px 10px 10px 10px;
   position: relative; }
@@ -605,7 +605,7 @@ button {
   .or-repeat .or-repeat {
     background-color: white; }
     .or-repeat .or-repeat .or-repeat {
-      background-color: #fef5ef; }
+      background-color: #fffcf6; }
       .or-repeat .or-repeat .or-repeat .or-repeat {
         background-color: white; }
 
@@ -4023,7 +4023,7 @@ table th[class*="col-"] {
 .or-repeat .or-appearance-likert .option-wrapper > label:last-of-type .option-label::after,
 .or-repeat .or-appearance-likert .option-wrapper > label input[type=radio],
 .or-repeat .or-appearance-likert .option-wrapper > label input[type=checkbox] {
-  background-color: #fef5ef; }
+  background-color: #fffcf6; }
 
 .or-horizontal-initialized .option-wrapper {
   /*IE10*/
