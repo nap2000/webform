@@ -12,5 +12,5 @@ export default {
     'validateContinuously': false,
     'validatePage': true,
     'swipePage': true,
-    'textMaxChars': 2000
+    'textMaxChars': 4000
 };
