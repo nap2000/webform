@@ -299,7 +299,7 @@ body {
   padding: 100px 0 70px 0;
   position: relative;
   width: 100%;
-  max-width: 1100px; }
+  max-width: 720px; }
 
 .paper {
   -webkit-flex: 1;
@@ -588,7 +588,7 @@ button {
     max-width: 120px; }
 
 .or-repeat {
-  background-color: #fffcf6;
+  background-color: #ebf0ec;
   margin: 0 0 3px 0;
   padding: 20px 10px 10px 10px;
   position: relative; }
@@ -605,7 +605,7 @@ button {
   .or-repeat .or-repeat {
     background-color: white; }
     .or-repeat .or-repeat .or-repeat {
-      background-color: #fffcf6; }
+      background-color: #ebf0ec; }
       .or-repeat .or-repeat .or-repeat .or-repeat {
         background-color: white; }
 
@@ -4023,7 +4023,7 @@ table th[class*="col-"] {
 .or-repeat .or-appearance-likert .option-wrapper > label:last-of-type .option-label::after,
 .or-repeat .or-appearance-likert .option-wrapper > label input[type=radio],
 .or-repeat .or-appearance-likert .option-wrapper > label input[type=checkbox] {
-  background-color: #fffcf6; }
+  background-color: #ebf0ec; }
 
 .or-horizontal-initialized .option-wrapper {
   /*IE10*/
