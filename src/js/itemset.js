@@ -106,6 +106,12 @@ export default {
                 }
             }
 
+            // start smap - if shared itemlist in repeat
+            if(!input) {
+                return;
+            }
+            // end smap
+
             const labelsContainer = getSiblingElements( template.closest( 'label, select, datalist' ), '.itemset-labels' )[ 0 ];
             const itemsXpath = template.dataset.itemsPath;
             let labelType = labelsContainer.dataset.labelType;
