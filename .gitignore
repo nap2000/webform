@@ -8,6 +8,7 @@ package-lock.json
 /build/js
 /test/mock/forms.json
 temp
+package-lock.json
 /lib
 .sass-cache
 ._*

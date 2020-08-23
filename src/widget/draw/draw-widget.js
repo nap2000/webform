@@ -1,5 +1,6 @@
 import Widget from '../../js/widget';
 import $ from 'jquery';
+import events from '../../js/event';
 import support from '../../js/support';
 import fileManager from 'enketo/file-manager';
 /**
@@ -18,9 +19,12 @@ const DELAY = 1500;
  * the canvas.
  *
  * @function external:SignaturePad#fromObjectURL
- * @param {*} objectUrl
- * @param {*} options
- * @return {Promise}
+ * @param {*} objectUrl - ObjectURL
+ * @param {object} options - options
+ * @param {number} [options.ratio] - ratio
+ * @param {number} [options.width] - width
+ * @param {number} [options.height] - height
+ * @return {Promise} a promise that resolves with an objectURL
  */
 SignaturePad.prototype.fromObjectURL = function( objectUrl, options ) {
     const image = new Image();
@@ -63,7 +67,7 @@ SignaturePad.prototype.fromObjectURL = function( objectUrl, options ) {
  * This is to facilitate undoing a drawing stroke over a background (bitmap) image.
  *
  * @function external:SignaturePad#updateData
- * @param {*} pointGroups
+ * @param {*} pointGroups - pointGroups
  */
 SignaturePad.prototype.updateData = function( pointGroups ) {
     const that = this;
@@ -79,11 +83,11 @@ SignaturePad.prototype.updateData = function( pointGroups ) {
 /**
  * Widget to obtain user-provided drawings or signature.
  *
- * @extends Widget
+ * @augments Widget
  */
 class DrawWidget extends Widget {
     /**
-     * @type string
+     * @type {string}
      */
     static get selector() {
         // note that the selector needs to match both the pre-instantiated form and the post-instantiated form (type attribute changes)
@@ -132,9 +136,11 @@ class DrawWidget extends Widget {
                 that.pad.off();
                 if ( existingFilename ) {
                     that.element.value = existingFilename;
+
                     return that._loadFileIntoPad( existingFilename )
                         .then( that._updateDownloadLink.bind( that ) );
                 }
+
                 return true;
             } );
         this.disable();
@@ -168,6 +174,7 @@ class DrawWidget extends Widget {
                         that.$widget.addClass( 'full-screen' );
                         that._resizeCanvas( canvas );
                         that.enable();
+
                         return false;
                     } )
                     .end().find( '.hide-canvas-btn' ).on( 'click', () => {
@@ -175,6 +182,7 @@ class DrawWidget extends Widget {
                         that.pad.off();
                         that._forceUpdate();
                         that._resizeCanvas( canvas );
+
                         return false;
                     } ).click();
 
@@ -182,7 +190,7 @@ class DrawWidget extends Widget {
                     .on( 'canvasreload', () => {
                         if ( that.cache ) {
                             that.pad.fromObjectURL( that.cache )
-                                .then( that._updateValue.bind( that ) );
+                                .then( that._updateValue.bind( that, false ) );
                         }
                     } );
                 that.enable();
@@ -195,7 +203,7 @@ class DrawWidget extends Widget {
             .on( 'applyfocus', () => {
                 canvas.focus();
             } )
-            .closest( '[role="page"]' ).on( 'pageflip', () => {
+            .closest( '[role="page"]' ).on( events.PageFlip().type, () => {
                 // When an existing value is loaded into the canvas and is not
                 // the first page, it won't become visible until the canvas is clicked
                 // or the window is resized:
@@ -215,13 +223,13 @@ class DrawWidget extends Widget {
 
     // All this is copied from the file-picker widget
     /**
-     * @param {string} loadedFileName
+     * @param {string} loadedFileName - the loaded filename
      */
     _handleFiles( loadedFileName ) {
         // Monitor maxSize changes to update placeholder text in annotate widget. This facilitates asynchronous
         // obtaining of max size from server without slowing down form loading.
         this._updatePlaceholder();
-        this.$widget.closest( 'form.or' ).on( 'updateMaxSize', this._updatePlaceholder.bind( this ) );
+        this.element.closest( 'form.or' ).addEventListener( events.UpdateMaxSize().type, this._updatePlaceholder.bind( this ) );
 
         const that = this;
 
@@ -239,6 +247,7 @@ class DrawWidget extends Widget {
                 if ( that.props.readonly || event.namespace !== 'propagate' ) {
                     that.$fakeInput.focus();
                     event.stopImmediatePropagation();
+
                     return false;
                 }
             } )
@@ -277,6 +286,7 @@ class DrawWidget extends Widget {
                 if ( that.props.readonly || $input[ 0 ].value || $fakeInput[ 0 ].value ) {
                     $( this ).focus();
                     event.stopImmediatePropagation();
+
                     return false;
                 }
                 event.preventDefault();
@@ -309,7 +319,7 @@ class DrawWidget extends Widget {
     }
 
     /**
-     * @param {string} fileName
+     * @param {string} fileName - filename to show
      */
     _showFileName( fileName ) {
         this.$widget.find( '.fake-file-input' ).val( fileName ).prop( 'readonly', !!fileName );
@@ -323,7 +333,7 @@ class DrawWidget extends Widget {
     }
 
     /**
-     * @return {DocumentFragment}
+     * @return {DocumentFragment} a document fragment with the widget markup
      */
     _getMarkup() {
         // HTML syntax copied from filepicker widget
@@ -360,13 +370,19 @@ class DrawWidget extends Widget {
 
     /**
      * Updates value
+     *
+     * @param {boolean} [changed] - whether the value has changed
      */
-    _updateValue() {
+    _updateValue( changed = true ) {
         const now = new Date();
         const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;   // smap get milliseconds
         this.element.dataset.filenamePostfix = postfix;
         // Note that this.element has become a text input.
-        this.originalInputValue = this.props.filename;
+        // When a default file is loaded this function is called by the canvasreload handler, but the user hasn't changed anything.
+        // We want to make sure the model remains unchanged in that case.
+        if ( changed ) {
+            this.originalInputValue = this.props.filename;
+        }
         // pad.toData() doesn't seem to work when redrawing on a smaller canvas. Doesn't scale.
         // pad.toDataURL() is crude and memory-heavy but the advantage is that it will also work for appearance=annotate
         this.value = this.pad.toDataURL();
@@ -393,6 +409,7 @@ class DrawWidget extends Widget {
                     // Only upon reset is loadedFileName removed, so that "undo" will work
                     // for drawings loaded from storage.
                     delete that.element.dataset.loadedFileName;
+                    delete that.element.dataset.loadedUrl;
                     that.element.dataset.filenamePostfix = '';
                     $( that.element ).val( '' ).trigger( 'change' );
                     // Annotate file input
@@ -406,17 +423,22 @@ class DrawWidget extends Widget {
 
     /**
      * @param {string|File} file - Either a filename or a file.
-     * @return {Promise<string>}
+     * @return {Promise} promise resolving with a string
      */
     _loadFileIntoPad( file ) {
         const that = this;
         if ( !file ) {
             return Promise.resolve( '' );
         }
+        if ( typeof file === 'string' && file.startsWith( 'jr://' ) && this.element.dataset.loadedUrl ) {
+            file = this.element.dataset.loadedUrl;
+        }
+
         return fileManager.getObjectUrl( file )
             .then( that.pad.fromObjectURL.bind( that.pad ) )
             .then( objectUrl => {
                 that.cache = objectUrl;
+
                 return objectUrl;
             } )
             .catch( () => {
@@ -426,7 +448,7 @@ class DrawWidget extends Widget {
     }
 
     /**
-     * @param {string} message
+     * @param {string} message - the feedback message to show
      */
     _showFeedback( message ) {
         message = message || '';
@@ -436,7 +458,7 @@ class DrawWidget extends Widget {
     }
 
     /**
-     * @param {string} url
+     * @param {string} url - the download URL
      */
     _updateDownloadLink( url ) {
         if ( url && url.indexOf( 'data:' ) === 0 ) {
@@ -538,7 +560,7 @@ class DrawWidget extends Widget {
     }
 
     /**
-     * @type object
+     * @type {object}
      */
     get props() {
         const props = this._props;
@@ -555,7 +577,7 @@ class DrawWidget extends Widget {
     }
 
     /**
-     * @type string
+     * @type {string}
      */
     get value() {
         return this.cache || '';

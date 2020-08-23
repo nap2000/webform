@@ -1,13 +1,14 @@
 import RangeWidget from '../../widget/range/range-widget';
 import { isNumber } from '../../js/utils';
 import support from '../../js/support';
+import events from '../../js/event';
 
 /**
- * @extends RangeWidget
+ * @augments RangeWidget
  */
 class AnalogScaleWidget extends RangeWidget {
     /**
-     * @type string
+     * @type {string}
      */
     static get selector() {
         return '.or-appearance-analog-scale input[type="number"]';
@@ -107,7 +108,7 @@ class AnalogScaleWidget extends RangeWidget {
         if ( this.props.vertical ) {
             // Will only be triggered if question by itself constitutes a page.
             // It will not be triggered if question is contained inside a group with fieldlist appearance.
-            this.question.addEventListener( 'pageflip', this._stretchHeight.bind( this ) );
+            this.question.addEventListener( events.PageFlip().type, this._stretchHeight.bind( this ) );
         }
     }
 
@@ -127,7 +128,7 @@ class AnalogScaleWidget extends RangeWidget {
     }
 
     /**
-     * @type object
+     * @type {object}
      */
     get props() {
         const props = this._props;
@@ -138,11 +139,12 @@ class AnalogScaleWidget extends RangeWidget {
         props.vertical = !props.appearances.includes( 'horizontal' );
         props.ticks = !props.appearances.includes( 'no-ticks' );
         props.maxTicks = 10;
+
         return props;
     }
 
     /**
-     * @type *
+     * @type {*}
      */
     get value() {
         return super.value;

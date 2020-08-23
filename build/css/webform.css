@@ -4,13 +4,13 @@
 
 @font-face {
     font-family: 'OpenSansRegular';
-    src: url("/fonts/OpenSans-Regular-webfont.woff") format("woff"), url("/fonts/OpenSans-Regular-webfont.ttf") format("truetype"), url("/fonts/OpenSans-Regular-webfont.svg#OpenSansRegular") format("svg");
+    src: url("../fonts/OpenSans-Regular-webfont.woff") format("woff"), url("../fonts/OpenSans-Regular-webfont.ttf") format("truetype"), url("../fonts/OpenSans-Regular-webfont.svg#OpenSansRegular") format("svg");
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: 'OpenSansBold';
-    src: url("/fonts/OpenSans-Bold-webfont.woff") format("woff"), url("/fonts/OpenSans-Bold-webfont.ttf") format("truetype"), url("/fonts/OpenSans-Bold-webfont.svg#OpenSansBold") format("svg");
+    src: url("../fonts/OpenSans-Bold-webfont.woff") format("woff"), url("../fonts/OpenSans-Bold-webfont.ttf") format("truetype"), url("../fonts/OpenSans-Bold-webfont.svg#OpenSansBold") format("svg");
     font-weight: normal;
     font-style: normal;
 }
@@ -26,10 +26,10 @@ html {
 
 body {
     /*IE10*/
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: column;
+    /*display: -ms-flexbox;*/
+    /*display: -webkit-flex;*/
+    /*display: flex;*/
+    /*-webkit-flex-direction: column;
     -ms-flex-direction: column;
     -moz-flex-direction: column;
     flex-direction: column;
@@ -38,13 +38,13 @@ body {
     -moz-flex-wrap: nowrap;
     flex-wrap: nowrap;
     position: relative;
-    min-height: 100%;
+    min-height: 100%;*/
     overflow: auto;
 }
 
-.or {
+/*.or {
     margin-bottom: 20px;
-}
+}*/
 
 .main ul.nav-tabs {
     margin: 20px 0 0 0;
@@ -1229,7 +1229,7 @@ button.close {
     display: none;
 }
 .offline-enabled .queue-length.submitting {
-    color: #ce4f07;
+    color: #556B2F;
 }
 .offline-enabled .queue-length:hover {
     color: green;
@@ -1271,6 +1271,757 @@ button.close {
 
 .or-form-guidance.active {
     margin: 5px 0;
-    color: #ce4f07; }
+    color: #556B2F; }
 .or-form-guidance.active summary {
     color: #888888; }
+
+
+/* Styles from theme-formhub */
+.or-columns-initialized .option-wrapper {
+    /*IE10*/
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row; }
+
+.or-columns-initialized label,
+.or-columns-initialized .filler {
+    -webkit-flex: 1 0 30%;
+    -ms-flex: 1 0 30%;
+    flex: 1 0 30%; }
+
+.or-columns-initialized .filler,
+.or-columns-initialized .filler:hover,
+.or-columns-initialized .filler:focus {
+    border: none !important;
+    background: transparent !important; }
+
+.or-appearance-columns-pack .option-wrapper {
+    /*IE10*/
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row; }
+
+.or-appearance-columns-pack label {
+    display: inline-block; }
+
+.question.or-appearance-columns.or-appearance-no-buttons legend,
+.question.or-appearance-columns-pack.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label:hover,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label .option-label,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label .active,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active,
+.question.or-appearance-columns-pack.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-1.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-1.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-1.or-appearance-no-buttons label {
+    width: 100%; }
+.question.or-appearance-columns-1.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-1 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-1 label {
+    width: calc(100% - 20px); }
+.question.or-appearance-columns-1 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-2.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-2.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-2.or-appearance-no-buttons label {
+    width: 50%; }
+.question.or-appearance-columns-2.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-2 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-2 label {
+    width: calc(50% - 20px); }
+.question.or-appearance-columns-2 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-3.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-3.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-3.or-appearance-no-buttons label {
+    width: 33.3333333333%; }
+.question.or-appearance-columns-3.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-3 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-3 label {
+    width: calc(33.3333333333% - 20px); }
+.question.or-appearance-columns-3 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-4.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-4.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-4.or-appearance-no-buttons label {
+    width: 25%; }
+.question.or-appearance-columns-4.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-4 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-4 label {
+    width: calc(25% - 20px); }
+.question.or-appearance-columns-4 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-5.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-5.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-5.or-appearance-no-buttons label {
+    width: 20%; }
+.question.or-appearance-columns-5.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-5 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-5 label {
+    width: calc(20% - 20px); }
+.question.or-appearance-columns-5 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-6.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-6.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-6.or-appearance-no-buttons label {
+    width: 16.6666666667%; }
+.question.or-appearance-columns-6.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-6 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-6 label {
+    width: calc(16.6666666667% - 20px); }
+.question.or-appearance-columns-6 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-7.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-7.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-7.or-appearance-no-buttons label {
+    width: 14.2857142857%; }
+.question.or-appearance-columns-7.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-7 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-7 label {
+    width: calc(14.2857142857% - 20px); }
+.question.or-appearance-columns-7 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-8.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-8.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-8.or-appearance-no-buttons label {
+    width: 12.5%; }
+.question.or-appearance-columns-8.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-8 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-8 label {
+    width: calc(12.5% - 20px); }
+.question.or-appearance-columns-8 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-9.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-9.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-9.or-appearance-no-buttons label {
+    width: 11.1111111111%; }
+.question.or-appearance-columns-9.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-9 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-9 label {
+    width: calc(11.1111111111% - 20px); }
+.question.or-appearance-columns-9 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-10.or-appearance-no-buttons legend {
+    border: none; }
+
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label {
+    display: inline-block;
+    margin: 0;
+    padding: 10px !important; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label:hover {
+    background: none; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label .option-label {
+    padding: 2px; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label .active {
+    display: inline-block;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 150px;
+    max-height: 150px;
+    float: none;
+    border: 2px solid transparent; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input {
+    width: 1px;
+    height: 1px;
+    position: relative;
+    top: 15px;
+    left: 15px;
+    z-index: -1; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input:not([disabled]):not([readonly]) ~ .active:hover {
+    border-color: #faa474; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active,
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input[disabled]:checked ~ .active:hover, .question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active,
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input[readonly]:checked ~ .active:hover {
+    border-color: #555555; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active,
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input:checked ~ .active:hover {
+    border-color: #556B2F; }
+.question.or-appearance-columns-10.or-appearance-no-buttons .option-wrapper > label input:focus ~ .active {
+    outline: 0;
+    -webkit-box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: 0 0 0 1px #66afe9, 0 0 8px rgba(102, 175, 233, 0.6); }
+
+.question.or-appearance-columns-10.or-appearance-no-buttons label {
+    width: 10%; }
+.question.or-appearance-columns-10.or-appearance-no-buttons label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.question.or-appearance-columns-10 .option-wrapper {
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    -moz-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap; }
+
+.question.or-appearance-columns-10 label {
+    width: calc(10% - 20px); }
+.question.or-appearance-columns-10 label img.active {
+    max-width: 100%;
+    max-height: 100%; }
+
+.touch .question:not(.or-appearance-no-buttons):not(.or-appearance-label):not(.or-appearance-list-nolabel):not(.or-appearance-likert).or-columns-initialized .option-wrapper > label {
+    margin-right: 10px; }
+
+.touch .or[dir=rtl] .question:not(.or-appearance-no-buttons):not(.or-appearance-label):not(.or-appearance-list-nolabel):not(.or-appearance-likert).or-columns-initialized .option-wrapper > label {
+    margin-left: 10px;
+    margin-right: inherit; }
+
+/* Smap */
+strong {
+    font-weight: bold; }
+
+label.itemset-template {
+    display: none !important;
+}
+
+.btn.add-repeat-btn {
+    background-color: #fff;
+}
+
+.btn.remove {
+    background-color: #fff;
+}
+
+.search-bar button.btn.btn-default, .geo-inputs button.close-chain-btn {
+    background-color: #fff;
+}
+
+.enketo-power {
+    left: unset;
+}
+

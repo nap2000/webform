@@ -59,13 +59,14 @@ function parseFunctionFromExpression( expr, func ) {
 
 /**
  * @static
- * @param {string} str
- * @return {string}
+ * @param {string} str - original string
+ * @return {string} stripped string
  */
 function stripQuotes( str ) {
     if ( /^".+"$/.test( str ) || /^'.+'$/.test( str ) ) {
         return str.substring( 1, str.length - 1 );
     }
+
     return str;
 }
 
@@ -75,9 +76,9 @@ function stripQuotes( str ) {
 // See https://github.com/kobotoolbox/enketo-express/issues/374
 /**
  * @static
- * @param {object} file
- * @param {string} postfix
- * @return {string}
+ * @param {object} file - File instance
+ * @param {string} postfix - postfix for filename
+ * @return {string} new filename
  */
 function getFilename( file, postfix ) {
     let filenameParts;
@@ -89,8 +90,10 @@ function getFilename( file, postfix ) {
         } else if ( filenameParts.length === 1 ) {
             filenameParts[ 0 ] += postfix;
         }
+
         return filenameParts.join( '.' );
     }
+
     return '';
 }
 
@@ -98,8 +101,8 @@ function getFilename( file, postfix ) {
  * Converts NodeLists or DOMtokenLists to an array.
  *
  * @static
- * @param {NodeList|DOMTokenList} list
- * @return {Array}
+ * @param {NodeList|DOMTokenList} list - a Nodelist or DOMTokenList
+ * @return {Array} list converted to array
  */
 function toArray( list ) {
     const array = [];
@@ -107,13 +110,14 @@ function toArray( list ) {
     for ( let i = list.length >>> 0; i--; ) {
         array[ i ] = list[ i ];
     }
+
     return array;
 }
 
 /**
  * @static
- * @param {*} n
- * @return {boolean}
+ * @param {*} n - value
+ * @return {boolean} whether it is a number value
  */
 function isNumber( n ) {
     return !isNaN( parseFloat( n ) ) && isFinite( n );
@@ -121,8 +125,8 @@ function isNumber( n ) {
 
 /**
  * @static
- * @param {string} name
- * @return {string}
+ * @param {string} name - a cookie to look for
+ * @return {string|undefined} the value of the cookie
  */
 function readCookie( name ) {
     let c;
@@ -153,8 +157,8 @@ function readCookie( name ) {
 
 /**
  * @static
- * @param {string} dataURI
- * @return {Blob}
+ * @param {string} dataURI - dataURI
+ * @return {Blob} dataURI converted to a Blob
  */
 function dataUriToBlobSync( dataURI ) {
     let byteString;
@@ -184,11 +188,12 @@ function dataUriToBlobSync( dataURI ) {
 
 /**
  * @static
- * @param {Event} event
- * @return {string|null}
+ * @param {Event} event - a paste event
+ * @return {string|null} clipboard data text value contained in event or null
  */
 function getPasteData( event ) {
-    const clipboardData = event.originalEvent.clipboardData || window.clipboardData; // modern || IE11
+    const clipboardData = event.clipboardData || window.clipboardData; // modern || IE11
+
     return ( clipboardData ) ? clipboardData.getData( 'text' ) : null;
 }
 

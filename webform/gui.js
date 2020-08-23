@@ -360,7 +360,7 @@
         $alert.find( '.modal-header h3' ).text( heading );
         $alert.find( '.modal-body p' ).removeClass().addClass( cls ).html( message ).capitalizeStart();
 
-        $alert.find( '.modal-footer button' ).on( 'click', function() {
+        $alert.find( '.close, .close-dialog' ).on( 'click', function() {
 		    $alert.hide();
 	    } );
 
