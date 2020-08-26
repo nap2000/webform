@@ -41,3 +41,4 @@ test-coverage/
 temp
 .DS_Store
 Thumbs.db
+lib/jquery-xpath
