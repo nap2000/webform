@@ -78,11 +78,9 @@
              * The fileSystems API is used to store attachments prior to upload when operating offline
              */
             if (fileStore.isSupported()) {
-                fileStore.init().then(function(){
-                    if (!store || store.getRecordList().length === 0) {
-                        fileStore.delete(undefined, true);
-                    }
-                });
+                if (!store || store.getRecordList().length === 0) {
+                    fileStore.delete(undefined, true);
+                }
 
             } else {
                 gui.alert('Warning: Storage of large attachments is not supported by your browser. ' +
@@ -254,7 +252,7 @@
             return;
         }
 
-        if (!draft || (draft && confirmed)) {
+        if (!draft || (draft && confirmed)) {   // Always
 
             form.validate()
                 .then( function( valid ) {
@@ -356,25 +354,45 @@
      */
     function writeRecord(recordName, record, draft, media) {
 
-        var overwrite = form.recordName === recordName;
-        var saveResult = store.setRecord(recordName, record, true, overwrite, form.recordName);
+        if(window.smapConfig.myWork) {
+            // Convert to mywork format and save in the records database
+            var task = {
+                task: {},
+                assignment: {},
+                location: {},
+                record: {}
+            };
+            task.task.title = recordName;
+            task.assignment.assignment_status = (record.draft) ? "accepted" : "complete";
+            task.record.data = record.data;
 
-        console.log('saveResult: ' + saveResult);
-        if (saveResult === 'success') {
-            resetForm(true);
-            $form.trigger('save', JSON.stringify(store.getRecordList()));
+            // TODO set ID it we are editing an existing task
+            fileStore.setRecord(task, undefined).catch((saveResult) => {
+                gui.alert('Error trying to save data in mywork database (message: ' + saveResult + ')');
+            });
 
-            if (draft) {
-                gui.feedback(t('alert.recordsavesuccess.draftmsg'), 3);
-            } else {
-                //try to send the record immediately
-                gui.feedback(t('alert.recordsavesuccess.finalmsg'), 3);
-                submitOneForced(recordName, record, media);
-            }
-        } else if (saveResult === 'require' || saveResult === 'existing' || saveResult === 'forbidden') {
-            saveRecord(undefined, false, 'Record name "' + recordName + '" already exists (or is not allowed). The record was not saved.');
         } else {
-            gui.alert('Error trying to save data locally (message: ' + saveResult + ')');
+            // Save in local storage
+            var overwrite = form.recordName === recordName;
+            var saveResult = store.setRecord(recordName, record, true, overwrite, form.recordName);
+
+            console.log('saveResult: ' + saveResult);
+            if (saveResult === 'success') {
+                resetForm(true);
+                $form.trigger('save', JSON.stringify(store.getRecordList()));
+
+                if (draft) {
+                    gui.feedback(t('alert.recordsavesuccess.draftmsg'), 3);
+                } else {
+                    //try to send the record immediately
+                    gui.feedback(t('alert.recordsavesuccess.finalmsg'), 3);
+                    submitOneForced(recordName, record, media);
+                }
+            } else if (saveResult === 'require' || saveResult === 'existing' || saveResult === 'forbidden') {
+                saveRecord(undefined, false, 'Record name "' + recordName + '" already exists (or is not allowed). The record was not saved.');
+            } else {
+                gui.alert('Error trying to save data locally (message: ' + saveResult + ')');
+            }
         }
     }
 

@@ -6,21 +6,21 @@
 
     var fileStore = {};
 
-    var maxSize,
-        currentQuota = null,
-        currentQuotaUsed = null,
-        currentDir,
-        filesystemReady,
-        fs;
-
     /*
      * Variables for indexedDB Storage
      */
-    let webformDbVersion = 3;
+    let webformDbVersion = 3;           // webforms
     let databaseName = "webform";
+
     let mediaStoreName = "media";
-    var db;                     // indexedDb
     var mediaStore;
+
+
+    let recordStoreName = 'records';
+    let assignmentIdx = 'assignment';
+    let assignmentIdxPath = 'assignment.assignment_id';
+    var recordStore;
+
     var idbSupported = typeof window.indexedDB !== 'undefined';
 
     /*
@@ -41,36 +41,61 @@
      * Initialize indexdDb
      * @return {[type]} promise boolean or rejection with Error
      */
-    fileStore.init = function() {
+    let open = function() {
         return new Promise((resolve, reject) => {
 
             if(idbSupported) {
                 var request = window.indexedDB.open(databaseName, webformDbVersion);
 
-                request.onerror = function (event) {
-                    reject();
+                request.onerror = function (e) {
+                    console.log('Error', e.target.error.name);
+                    alert('Error', e.target.error.name);
+                    reject(e);
                 };
 
-                request.onsuccess = function (event) {
-                    db = event.target.result;
+                request.onblocked = function (e) {
+                    console.log('Error', e.target.error.name);
+                    alert('Error', e.target.error.name);
+                    reject(e);
+                };
 
-                    db.onerror = function (event) {
+                request.onsuccess = function (e) {
+                    var openDb = e.target.result;
+
+                    openDb.onerror = function (e) {
                         // Generic error handler for all errors targeted at this database's
                         // requests!
-                        console.error("Database error: " + event.target.errorCode);
+                        console.error("Database error: " + e.target.errorCode);
                     };
 
-                    resolve();
+                    resolve(openDb);
                 };
 
-                request.onupgradeneeded = function(event) {
-                    var db = event.target.result;
+                request.onupgradeneeded = function(e) {
+                    var upgradeDb = e.target.result;
+                    var oldVersion = upgradeDb.oldVersion || 0;
 
-                    mediaStore = db.createObjectStore("media");
+                    switch (oldVersion) {
+                        case 0:
+                        case 1:
+                        case 2:
+                            if (!upgradeDb.objectStoreNames.contains(mediaStoreName)) {
+                                mediaStore = upgradeDb.createObjectStore("media");
+                            }
+
+                            if (!upgradeDb.objectStoreNames.contains(recordStoreName)) {
+                                recordStore = upgradeDb.createObjectStore(recordStoreName, {
+                                    keyPath: 'id',
+                                    autoIncrement: true
+                                });
+                                recordStore.createIndex(assignmentIdx, assignmentIdxPath, {unique: false});
+                            }
+                    }
+                    resolve(upgradeDb);
                 };
 
             } else {
-                resolve();
+                reject("indexeddb not supported");
             }
 
         });
@@ -79,14 +104,14 @@
 
     /*
      * Delete all media with the specified prefix
-     * Assumes db has been initialised
      * An explicit boolean "all" is added in case the function is called accidnetially with an undefined directory
      */
     fileStore.delete = function(dirname, all) {
 
-        if(typeof dirname !== "undefined" || all) {
 
-            if(dirname) {
+        if (typeof dirname !== "undefined" || all) {
+
+            if (dirname) {
                 console.log("delete directory: " + dirname);
             } else {
                 console.log("delete all attachments");
@@ -95,29 +120,32 @@
             var prefix = FM_STORAGE_PREFIX + "/" + dirname;
 
             // indexeddb first
-            var objectStore = db.transaction([mediaStoreName], "readwrite").objectStore(mediaStoreName);
-            objectStore.openCursor().onsuccess = function(event) {
-                var cursor = event.target.result;
-                if (cursor) {
-                    if (all || cursor.key.startsWith(prefix)) {     // Don't need to check the key if all is set as everything in the data store is a media URL
-                        if(cursor.value) {
-                            window.URL.revokeObjectURL(cursor.value);
+            open().then(function (db) {
+                var objectStore = db.transaction([mediaStoreName], "readwrite").objectStore(mediaStoreName);
+                objectStore.openCursor().onsuccess = function (e) {
+                    var cursor = e.target.result;
+                    if (cursor) {
+                        if (all || cursor.key.startsWith(prefix)) {     // Don't need to check the key if all is set as everything in the data store is a media URL
+                            if (cursor.value) {
+                                window.URL.revokeObjectURL(cursor.value);
+                            }
+                            var request = objectStore.delete(cursor.key);
+                            request.onsuccess = function (e) {
+                                console.log("Delete: " + cursor.key);
+                            };
+                            cursor.continue();
                         }
-                        var request = objectStore.delete(cursor.key);
-                        request.onsuccess = function (event) {
-                            console.log("Delete: " + cursor.key);
-                        };
-                        cursor.continue();
                     }
-                }
-            };
+                };
+                db.close();
+            });
 
             // Delete any entries in localstorage
             for (var key in localStorage) {
                 if ((all && key.startsWith(FM_STORAGE_PREFIX)) || key.startsWith()) {
 
                     var item = localStorage.getItem(key);
-                    if(item) {
+                    if (item) {
                         window.URL.revokeObjectURL(item);
                     }
                     console.log("Delete item: " + key);
@@ -125,6 +153,7 @@
                 }
             }
         }
+
     };
 
     /*
@@ -132,16 +161,18 @@
      */
     fileStore.saveFile = function(media, dirname) {
 
-        console.log("save file: " + media.name + " : " + dirname);
+        open().then(function (db) {
+            console.log("save file: " + media.name + " : " + dirname);
 
-        var transaction = db.transaction([mediaStoreName], "readwrite");
-        transaction.onerror = function(event) {
-            // Don't forget to handle errors!
-            alert("Error: failed to save " + media.name);
-        };
+            var transaction = db.transaction([mediaStoreName], "readwrite");
+            transaction.onerror = function (e) {
+                alert("Error: failed to open transaction to save file " + media.name);
+            };
 
-        var objectStore = transaction.objectStore(mediaStoreName);
-        var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + "/" + dirname + "/" + media.name);
+            var objectStore = transaction.objectStore(mediaStoreName);
+            var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + "/" + dirname + "/" + media.name);
+            db.close();
+        });
 
     };
 
@@ -230,31 +261,50 @@
      */
     function getFileFromIdb(key) {
         return new Promise((resolve, reject) => {
-            if (!db) {
-                fileStore.init().then(function () {
-                    resolve(completeGetFileRequest(key));
-                });
-            } else {
-                resolve(completeGetFileRequest(key));
-            }
+            open().then((db) => {
+                var transaction = db.transaction([mediaStoreName], "readonly");
+                var objectStore = transaction.objectStore(mediaStoreName);
+                var request = objectStore.get(key);
+
+                request.onerror = function (e) {
+                    reject("Error getting file");
+                };
+
+                request.onsuccess = function (e) {
+                    resolve(request.result);
+                };
+            });
+
         });
     }
 
-    function completeGetFileRequest(key) {
+    /*
+     * Functions to interoperate with mywork
+     */
+    fileStore.setRecord = function(record, id) {
         return new Promise((resolve, reject) => {
-            var transaction = db.transaction([mediaStoreName], "readonly");
-            var objectStore = transaction.objectStore(mediaStoreName);
-            var request = objectStore.get(key);
+            console.log("add a record: ");
+            open().then((db) => {
+                var transaction = db.transaction([recordStoreName], "readwrite");
+                transaction.onerror = function (event) {
+                    alert("Error: failed to add record ");
+                };
 
-            request.onerror = function(event) {
-                reject("Error getting file");
-            };
+                var objectStore = transaction.objectStore(recordStoreName);
 
-            request.onsuccess = function (event) {
-                resolve(request.result);
-            };
+                var request = objectStore.put(record, id);
+
+                request.onsuccess = function (event) {
+                    resolve();
+                };
+                request.onerror = function (event) {
+                    console.log('Error', e.target.error.name);
+                    reject();
+                };
+                db.close()
+            });
         });
-    }
+    };
 
 
     export default fileStore;
