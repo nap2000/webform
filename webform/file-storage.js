@@ -283,7 +283,7 @@
      */
     fileStore.setRecord = function(record, id) {
         return new Promise((resolve, reject) => {
-            console.log("add a record: ");
+            console.log("set record: ");
             open().then((db) => {
                 var transaction = db.transaction([recordStoreName], "readwrite");
                 transaction.onerror = function (event) {
@@ -294,10 +294,10 @@
 
                 var request = objectStore.put(record, id);
 
-                request.onsuccess = function (event) {
+                request.onsuccess = function (e) {
                     resolve();
                 };
-                request.onerror = function (event) {
+                request.onerror = function (e) {
                     console.log('Error', e.target.error.name);
                     reject();
                 };
