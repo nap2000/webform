@@ -28,7 +28,7 @@ let HTTP_ACCEPTED = 202;
 
 let contentLength = 10000000;   // 10MB try to keep uploads within this value
 
-submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) {
+submit.send = function(fileStore, calledFrom, record, inMemoryMedia) {
 
     console.log("submit called from: " + calledFrom);
 
@@ -53,14 +53,10 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) 
                 } else {
                     media = submit.getMedia();
                 }
-                sendWithMedia(fileStore, record, xmlData, media, autoClose).then(response => {
-
-                });
+                sendWithMedia(fileStore, record, xmlData, media);
             } else if(model) {
                 getMediaFromStore(fileStore, model.instanceID, model).then( media => {
-                    sendWithMedia(fileStore, record, xmlData, media, autoClose).then(response => {
-
-                    });
+                    sendWithMedia(fileStore, record, xmlData, media);
                 });
             } else {
                 reject("Model not found");
@@ -74,7 +70,7 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) 
 };
 
 
-async function sendWithMedia(fileStore, record, xmlData, media, autoClose) {
+async function sendWithMedia(fileStore, record, xmlData, media) {
 
     var content = new FormData(),
         fileIndex = 0,
@@ -146,22 +142,14 @@ async function sendWithMedia(fileStore, record, xmlData, media, autoClose) {
             if (response == 401) {
                 getNewKey(record);		// Get a new access key  TODO
             }
-            reject();
+            reject(response);
 
         }
     }
-    console.log("success");
-
-    if (autoClose) {
-        refreshForm();      // TODO
-    }
+    console.log("Finished submission");
+    resolve("success");
 
 }
-
-
-
-
-
 
 function post(url, content) {
     return new Promise((resolve, reject) => {
@@ -335,16 +323,8 @@ submit.getMedia = function() {
         }
     });
 
-    console.log("Returning media");
-    console.log(mediaArray);
     return mediaArray;
 };
-
-function refreshForm() {
-    console.debug("Refresh Form");
-    window.onbeforeunload = undefined;
-    window.location.reload(true);
-}
 
 /*
  * Get a new update key and update the record

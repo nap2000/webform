@@ -488,8 +488,13 @@
                 instanceStrToEditId: record.instanceStrToEditId,
                 accessKey: record.accessKey,
                 media: media
-            }, true, closeAfterSending()).catch(error => {
+            }, true).catch(error => {
                 gui.alert(error, 'Record Error');
+                }
+            ).then(response => {
+                    if (closeAfterSending()) {
+                        refreshForm();
+                    }
                 }
             );
 
@@ -1132,6 +1137,12 @@
     // Goto prev page
     function prevPage() {
         form.getView().pages.prev();
+    }
+
+    function refreshForm() {
+        console.debug("Refresh Form");
+        window.onbeforeunload = undefined;
+        window.location.reload(true);
     }
 
     export default controller;
