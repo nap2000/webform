@@ -8,7 +8,8 @@
     import { FormModel } from '../src/js/form-model';
 
     import gui from './gui';
-    import connection from'./connection';
+    import connection from './connection';
+    import submit from './submit';
     import $ from 'jquery';
 
     import fileManager from '../src/js/file-manager';
@@ -225,7 +226,7 @@
             count = 0,
             i,
             media = fileManager.getCurrentFiles(),      // Recently added
-            media2 = getMedia(),                        // Converted into data URLs
+            media2 = submit.getMedia(),                        // Converted into data URLs
             recordResult = {};
 
         // Add any data URLS
@@ -398,6 +399,7 @@
 
     /*
      * Submit the data directly without using local storage
+     * The record cannot be saved - hence handle accordingly
      */
     function submitEditedRecord(autoClose) {
         var name, record, saveResult, redirect, beforeMsg, callbacks, $alert;
@@ -430,6 +432,7 @@
         };
 
         //only upload the last one
+        submit.send(fileStore, "submitEditedRecord", record, true, autoClose);
         prepareFormDataArray(
             record, {
                 success: function (formDataArr) {
@@ -477,6 +480,20 @@
     function submitOneForced(recordName, record, media) {
 
         if (!record.draft) {
+
+            submit.send(fileStore, "submitOneForced", {
+                key: recordName,
+                data: record.data,
+                assignmentId: record.assignmentId,
+                instanceStrToEditId: record.instanceStrToEditId,
+                accessKey: record.accessKey,
+                media: media
+            }, true, closeAfterSending()).catch(error => {
+                gui.alert(error, 'Record Error');
+                }
+            );
+
+            /*
             prepareFormDataArray({
                     key: recordName,
                     data: record.data,
@@ -494,6 +511,7 @@
                 },
                 true // Use media from file store
             );
+             */
         }
     }
 
@@ -514,6 +532,7 @@
         $('.record-list').find('li').removeClass('error');
         if (!connection.getUploadOngoingID() && connection.getUploadQueue().length === 0) {
             for (i = 0; i < records.length; i++) {
+                submit.send(fileStore, "submitQueue", records[i], false, false);
                 prepareFormDataArray(
                     records[i], {
                         success: successHandler,
@@ -556,67 +575,6 @@
 
     }
 
-    /*
-     * Get an array of the media dataUrls along with the filenames from the current form
-     */
-    function getMedia() {
-        var $media,
-            $preview,
-            elem,
-            count,
-            i,
-            $fp,
-            $filePicker,
-            name,
-            dataUrl,
-            mediaArray = [],
-            filename,
-            filenameParts;
-
-        $('[type="file"]').each(function () {
-            $media = $(this);
-            $preview = $media.parent().find(".file-preview").find("img");
-            //name = $media.parent().find(".fake-file-input").text();
-            elem = $media[0];
-
-            var postfix = $media.parent().find('input[type="file"]').data("filename-postfix");
-            postfix = postfix || '';
-
-            if(elem.files.length == 0 && $preview.length > 0) {
-                mediaArray.push({
-                    //fileName: $media.attr("data-loaded-file-name"),
-                    name: $media.attr("data-loaded-file-name"),
-                    dataUrl: $preview.attr("src"),
-                    size: $preview.attr("src").length
-                });
-            } else {
-                for (i = 0; i < elem.files.length; i++) {
-                    filename = elem.files[i].name;
-
-                    // Add postfix
-                    filenameParts = filename.split('.');
-                    if (filenameParts.length > 1) {
-                        filenameParts[filenameParts.length - 2] += postfix;
-                    } else if (filenameParts.length === 1) {
-                        filenameParts[0] += postfix;
-                    }
-                    filename = filenameParts.join('.');
-
-                    mediaArray.push({
-                        fileName: filename,
-                        //file: elem.files[i],              // Update media issue
-                        dataUrl: $preview.attr("src"),
-                        size: elem.files[i].size
-                    });
-                }
-            }
-        });
-
-        console.log("Returning media");
-        console.log(mediaArray);
-        return mediaArray;
-    }
-
     /**
      * Asynchronous function that builds up a form data array including media files
      * @param { { name: string, data: string } } record[ description ]
@@ -633,7 +591,7 @@
             model = new FormModel(record.data);
             model.init();
             xmlData = model.getStr();
-            xmlData = _fixIosMediaNames(xmlData); // ios names all media image.jpg, Make each name unique
+            xmlData = submit.fixIosMediaNames(xmlData); // ios names all media image.jpg, Make each name unique
         } else {
             callbacks.success(record);	// d1504 existing record from record store all pre-prepared
         }
@@ -666,7 +624,7 @@
             if(record.media) {
                 media = record.media;
             } else {
-                media = getMedia();
+                media = submit.getMedia();
             }
 
             if (media) {
@@ -768,41 +726,6 @@
         } else if (model) {
             gatherFiles(model.instanceID);
         }
-
-
-    }
-
-    /*
-     * IOS 4 (at least) sets all images to a name of image.jpg and all videos to a name of capturedvideo.mov
-     * This function makes the reference to these names unique, however it does not change the file name.
-     * The files are sent to the server with their duplicate names, the server then applies the same
-     * logic as here to set the name of the file on the server
-     */
-    function _fixIosMediaNames(xmlData) {
-        var xml = $.parseXML(xmlData),
-            $xml,
-            imageCount = 0,
-            videoCount = 0;
-
-        $xml = $(xml);
-        $xml.find('[type="file"]').each(function () {
-            var $this = $(this),
-                name;
-            name = $this.text();
-            if (name === "image.jpg") {
-                name = "image_" + imageCount + ".jpg";
-                $this.text(name);
-                imageCount++;
-            }
-            if (name === "capturedvideo.MOV") {
-                name = "capturedvideo_" + videoCount + ".MOV";
-                $this.text(name);
-                videoCount++;
-            }
-        });
-
-        return ( new XMLSerializer() ).serializeToString(xml);
-
     }
 
     /**

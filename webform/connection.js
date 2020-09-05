@@ -648,15 +648,4 @@
 
     export default connection;
 
-    /*
-    module.exports = {
-        oRosaHelper: oRosaHelper,
-        // "private" but used for tests:
-        _processOpenRosaResponse: _processOpenRosaResponse,
-        _getUploadResult: _getUploadResult,
-        _resetUploadResult: _resetUploadResult,
-        _setOnlineStatus: _setOnlineStatus
-    };
-    */
-
 
