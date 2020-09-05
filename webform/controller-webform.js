@@ -493,7 +493,7 @@
                 }
             );
 
-            /*
+            /* submit disable old submit
             prepareFormDataArray({
                     key: recordName,
                     data: record.data,

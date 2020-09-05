@@ -26,6 +26,8 @@ let submit = {};
 let HTTP_CREATED = 201;
 let HTTP_ACCEPTED = 202;
 
+let contentLength = 10000000;   // 10MB try to keep uploads within this value
+
 submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) {
 
     console.log("submit called from: " + calledFrom);
@@ -51,10 +53,14 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) 
                 } else {
                     media = submit.getMedia();
                 }
-                sendWithMedia(record, xmlData, media, autoClose);
+                sendWithMedia(fileStore, record, xmlData, media, autoClose).then(response => {
+
+                });
             } else if(model) {
                 getMediaFromStore(fileStore, model.instanceID, model).then( media => {
-                    sendWithMedia(record, xmlData, media, autoClose);
+                    sendWithMedia(fileStore, record, xmlData, media, autoClose).then(response => {
+
+                    });
                 });
             } else {
                 reject("Model not found");
@@ -68,58 +74,96 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) 
 };
 
 
-function sendWithMedia(record, xmlData, media, autoClose) {
+async function sendWithMedia(fileStore, record, xmlData, media, autoClose) {
 
-    var sizes = [],
-        count = 0,
-        content,
+    var content = new FormData(),
+        fileIndex = 0,
         i,
-        url = getSubmissionUrl(record),
-        isComplete;
+        url = getSubmissionUrl(record);
 
-    return new Promise((resolve, reject) => {
+    /*
+	 * Use same approach as fieldTask to send bached results
+	 * he XML content is sent with each batch
+	 */
+    var fileIndex = 0;
+    var lastFileIndex = 0;
+    var first = true;
+    while (fileIndex < media.length || first) {
+        lastFileIndex = fileIndex;
+        first = false;
+        var byteCount = 0;
 
-        content = new FormData();
+        // Add the XML content
         content.append('xml_submission_data', xmlData);
         if (record.assignmentId) {
             content.append('assignment_id', record.assignmentId);
         }
+        byteCount += xmlData.length;
 
-        // If we have media get the zizes
-        if (media) {
-            for (i = 0; i < media.length; i++) {
-                count++;
-                sizes.push(media[i].size)
+        // Add the media
+        for (; fileIndex < media.length; fileIndex++) {
+            var blob = undefined;
+            var name = undefined;
+
+            if (media[fileIndex].blob) {
+                blob = media[fileIndex].blob;
+                name = media[fileIndex].fileName;
+                // Commented out 14/1/2019 during upgrade - uncommented 25/2/2020
+            } else if (media[fileIndex].dataUrl) {
+                // immediate send data is still in dataUrl
+                blob = fileStore.dataURLtoBlob(media[fileIndex].dataUrl);
+                name = media[fileIndex].name;
+            } else {
+                // Assume the media file is the blob
+                blob = media[fileIndex];
+                name = blob.name;
+            }
+
+            console.log("++++++++++ append file: " + name);
+            if (blob) {
+                content.append(name, blob, name);
+                byteCount += media[fileIndex].size;
+
+                if (fileIndex + 1 < media.length) {      // Look ahead to see if we should stop now
+                    if ((fileIndex - lastFileIndex + 1 > 100) || (byteCount + media[fileIndex + 1].size > contentLength)) {
+                        // the next file would exceed the 10MB threshold
+                        console.log("Spliting large post");
+                        content.append("*isIncomplete*", "yes");
+                        ++fileIndex;
+                        break;
+                    }
+                }
             }
         }
 
-        isComplete = true;
-        post(url, content, isComplete).then (response => {
-            if (response != HTTP_CREATED && response != HTTP_ACCEPTED) {
-                console.log("error");
 
-                if (response == 401) {
-                    getNewKey(record);		// Get a new access key  TODO
-                }
-                reject();
+        let promise = post(url, content);
+        let response = await promise;
 
-            } else {
-                console.log("success");
+        if (response != HTTP_CREATED && response != HTTP_ACCEPTED) {
+            console.log("error");
 
-                if (autoClose) {
-                    refreshForm();      // TODO
-                }
-                resolve();
+            if (response == 401) {
+                getNewKey(record);		// Get a new access key  TODO
             }
+            reject();
 
-        });
+        }
+    }
+    console.log("success");
 
-
-    });
+    if (autoClose) {
+        refreshForm();      // TODO
+    }
 
 }
 
-function post(url, content, isComplete) {
+
+
+
+
+
+function post(url, content) {
     return new Promise((resolve, reject) => {
         console.debug("Submit: " + url);
         $.ajax(url, {
