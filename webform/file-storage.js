@@ -15,7 +15,6 @@
     let mediaStoreName = "media";
     var mediaStore;
 
-
     let recordStoreName = 'records';
     let assignmentIdx = 'assignment';
     let assignmentIdxPath = 'assignment.assignment_id';

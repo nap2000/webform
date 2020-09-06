@@ -8,7 +8,7 @@
     import { FormModel } from '../src/js/form-model';
 
     import gui from './gui';
-    import connection from './connection';
+    //import connection from './connection';
     import submit from './submit';
     import $ from 'jquery';
 
@@ -72,7 +72,7 @@
 
 
             // Initialise network connection
-            connection.init(true, store);
+            //connection.init(true, store);
 
             /*
              * Initialise file manager if it is supported in this browser
@@ -414,11 +414,12 @@
         record = {
             'key': 'iframe_record',
             'data': form.getDataStr(true, true),
-            'instanceStrToEditId': surveyData.instanceStrToEditId,  // d1504
-            'assignmentId': surveyData.assignmentId,				 // d1504
-            'accessKey': surveyData.key								 // d1504
+            'instanceStrToEditId': surveyData.instanceStrToEditId,
+            'assignmentId': surveyData.assignmentId,
+            'accessKey': surveyData.key
         };
 
+        /*
         callbacks = {
             error: function () {
                 gui.alert('Please try submitting again.', 'Submission Failed');
@@ -431,8 +432,11 @@
             }
         };
 
+         */
+
         //only upload the last one
         submit.send(fileStore, "submitEditedRecord", record, true, autoClose);
+        /*
         prepareFormDataArray(
             record, {
                 success: function (formDataArr) {
@@ -444,6 +448,8 @@
             },
             true // Use media referenced in browser
         );
+
+         */
     }
 
     /*
@@ -488,15 +494,10 @@
                 instanceStrToEditId: record.instanceStrToEditId,
                 accessKey: record.accessKey,
                 media: media
-            }, true).catch(error => {
+            }, true, closeAfterSending()).catch(error => {
                 gui.alert(error, 'Record Error');
                 }
-            ).then(response => {
-                    if (closeAfterSending()) {
-                        refreshForm();
-                    }
-                }
-            );
+            )
 
             /* submit disable old submit
             prepareFormDataArray({
@@ -520,24 +521,29 @@
         }
     }
 
-    function submitQueue() {
+
+    async function submitQueue() {
 
         var i,
-            records = store.getSurveyDataArr(true),
-            successHandler = function (recordPrepped) {
-                connection.uploadRecords(recordPrepped, false, undefined, false);		// d1504 do not close after sending as this is a background job
-            },
-            errorHandler = function () {
-                console.log('Something went wrong while trying to prepare the record(s) for uploading.');
-            };
+            records = store.getSurveyDataArr(true);
+            //successHandler = function (recordPrepped) {
+            //    connection.uploadRecords(recordPrepped, false, undefined, false);		// d1504 do not close after sending as this is a background job
+            //},
+            //errorHandler = function () {
+            //    console.log('Something went wrong while trying to prepare the record(s) for uploading.');
+            //};
 
         // reset recordsList with fake save
         $form.trigger('save', JSON.stringify(store.getRecordList()));
         // Clear any errors from recordList
         $('.record-list').find('li').removeClass('error');
+        for (i = 0; i < records.length; i++) {
+            await submit.send(fileStore, "submitQueue", records[i], false, false);
+        }
+
+        /*
         if (!connection.getUploadOngoingID() && connection.getUploadQueue().length === 0) {
             for (i = 0; i < records.length; i++) {
-                submit.send(fileStore, "submitQueue", records[i], false, false);
                 prepareFormDataArray(
                     records[i], {
                         success: successHandler,
@@ -545,8 +551,11 @@
                     },
                     false // Use media from storage
                 );
+
+
             }
         }
+        */
     }
 
     function emptyQueue() {
@@ -584,7 +593,7 @@
      * Asynchronous function that builds up a form data array including media files
      * @param { { name: string, data: string } } record[ description ]
      * @param {{success: Function, error: Function}} callbacks
-     */
+     *
     function prepareFormDataArray(record, callbacks, immediate) {
         var j, k, l, xmlData, formData, model, $fileNodes, fileIndex, fileO, recordPrepped,
             count = 0,
@@ -732,6 +741,7 @@
             gatherFiles(model.instanceID);
         }
     }
+     */
 
     /**
      * Function to export or backup data to a file. In Chrome it will get an appropriate file name.

@@ -18,9 +18,10 @@ along with SMAP.  If not, see <http://www.gnu.org/licenses/>.
 "use strict";
 
 import {FormModel} from "../src/js/form-model";
-import connection from './connection';
 import $ from "jquery";
 import store from "./store";
+import gui from "./gui";
+import {t} from "../src/js/translator";
 
 let submit = {};
 let HTTP_CREATED = 201;
@@ -28,7 +29,7 @@ let HTTP_ACCEPTED = 202;
 
 let contentLength = 10000000;   // 10MB try to keep uploads within this value
 
-submit.send = function(fileStore, calledFrom, record, inMemoryMedia) {
+submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) {
 
     console.log("submit called from: " + calledFrom);
 
@@ -46,6 +47,9 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia) {
             xmlData = model.getStr();
             xmlData = submit.fixIosMediaNames(xmlData); // ios names all media image.jpg, Make each name unique
 
+            record.instanceID = model.instanceID;
+            record.name = record.key;
+
             // Get the media to submit
             if(inMemoryMedia) {
                 if(record.media) {
@@ -53,13 +57,17 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia) {
                 } else {
                     media = submit.getMedia();
                 }
-                sendWithMedia(fileStore, record, xmlData, media);
-            } else if(model) {
-                getMediaFromStore(fileStore, model.instanceID, model).then( media => {
-                    sendWithMedia(fileStore, record, xmlData, media);
-                });
+                sendWithMedia(fileStore, record, xmlData, media).then(response => {
+                    sendComplete(response, record, autoClose, inMemoryMedia);
+                    resolve(response);
+                })
             } else {
-                reject("Model not found");
+                getMediaFromStore(fileStore, model.instanceID, model).then( media => {
+                    sendWithMedia(fileStore, record, xmlData, media).then(response => {
+                        sendComplete(response, record, autoClose, inMemoryMedia);
+                        resolve(response);
+                    })
+                });
             }
 
 
@@ -70,12 +78,30 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia) {
 };
 
 
+function sendComplete(response, record, autoClose, inMemoryMedia) {
+
+    if (isSuccess(response.status) ) {
+        $(document).trigger('submissionsuccess', [record.name, record.instanceID]);
+    } else if (response.status == 401) {
+        getNewKey(record);		// Get a new access key  TODO
+    }
+
+    if (autoClose) {
+        refreshForm();
+    }
+
+    processResponse(response, record, inMemoryMedia);
+
+
+}
+
 async function sendWithMedia(fileStore, record, xmlData, media) {
 
     var content = new FormData(),
         fileIndex = 0,
         i,
-        url = getSubmissionUrl(record);
+        url = getSubmissionUrl(record),
+        response;
 
     /*
 	 * Use same approach as fieldTask to send bached results
@@ -132,27 +158,21 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
             }
         }
 
+        response = await post(url, content);
 
-        let promise = post(url, content);
-        let response = await promise;
-
-        if (response != HTTP_CREATED && response != HTTP_ACCEPTED) {
+        if (!isSuccess(response.status) ) {
             console.log("error");
-
-            if (response == 401) {
-                getNewKey(record);		// Get a new access key  TODO
-            }
-            reject(response);
+            return response;
 
         }
     }
     console.log("Finished submission");
-    resolve("success");
+    return response;
 
 }
 
 function post(url, content) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         console.debug("Submit: " + url);
         $.ajax(url, {
             type: 'POST',
@@ -161,8 +181,12 @@ function post(url, content) {
             contentType: false,
             processData: false,
             timeout: 800 * 1000,
-            complete: function (jqXHR, response) {
-                resolve(jqXHR.status);
+            complete: function (jqXHR) {
+                var resp = {
+                    status: jqXHR.status,
+                    msg: jqXHR.statusText
+                }
+                resolve(resp);
             }
         });
     });
@@ -172,6 +196,10 @@ function post(url, content) {
  **************************
  * Utility Functions
  */
+
+function isSuccess(status) {
+    return status == HTTP_CREATED || status == HTTP_ACCEPTED;
+}
 
 function getMediaFromStore(fileStore, directory, model) {
 
@@ -360,5 +388,104 @@ function getNewKey(record) {
     });
 }
 
+function processResponse( response, record, foreground ) {
+    var name = record.name,
+        msg = '',
+        names = [],
+        level = 'error',
+        contactSupport = 'Contact ' + settings[ 'supportEmail' ] + ' please.',
+        contactAdmin = 'Contact the survey administrator please.',
+        serverDown = 'Sorry, the server is not available. Please try again later or contact your administrator.',
+        statusMap = {
+            0: {
+                success: false,
+                msg: "Failed (offline?). The browser will retry to send when back online. Please do not close this page."
+            },
+            200: {
+                success: false,
+                msg: "Data server did not accept data. " + contactSupport
+            },
+            201: {
+                success: true,
+                msg: "Done!"
+            },
+            202: {
+                success: true,
+                msg: "Done! (duplicate)"
+            },
+            '2xx': {
+                success: false,
+                msg: "Unknown error occurred when submitting data. " + contactSupport
+            },
+            400: {
+                success: false,
+                msg: response.message
+            },
+            401: {
+                success: false,
+                msg: "Authorisation expired. Refresh your browser. "
+            },
+            403: {
+                success: false,
+                msg: "Not allowed to post data to this data server. " + contactAdmin
+            },
+            404: {
+                success: false,
+                msg: "Submission service on data server not found."
+            },
+            '4xx': {
+                success: false,
+                msg: "Unknown submission problem on data server."
+            },
+            413: {
+                success: false,
+                msg: "Data is too large. Please contact " + settings[ 'supportEmail' ] + "."
+            },
+            500: {
+                success: false,
+                msg: serverDown
+            },
+            503: {
+                success: false,
+                msg: serverDown
+            },
+            '5xx': {
+                success: false,
+                msg: serverDown
+            }
+        };
+
+
+    if ( typeof statusMap[ response.status ] !== 'undefined' ) {
+        msg = statusMap[ response.status ].msg;
+        if ( statusMap[ response.status ].success === true ) {
+            level = 'success';
+        }
+    }
+    //unforeseen statuscodes
+    else if ( response.status > 500 ) {
+        console.error( 'Error during uploading, received unexpected statuscode: ' + status );
+        msg = statusMap[ '5xx' ].msg;
+    } else if ( response.status > 400 ) {
+        console.error( 'Error during uploading, received unexpected statuscode: ' + status );
+        msg = statusMap[ '4xx' ].msg;
+    } else if ( response.status > 200 ) {
+        console.error( 'Error during uploading, received unexpected statuscode: ' + status );
+        msg = statusMap[ '2xx' ].msg;
+    }
+
+    names.push( name );
+    if ( level === 'success' ) {
+        gui.feedback( t( 'alert.queuesubmissionsuccess.msg', { count: names.length, recordNames: name } ));
+    } else {
+
+        msg = name + ' '  + msg;
+        if(!foreground) {
+            gui.feedback( msg, 10, 'Failed data submission');
+        } else {
+            gui.alert(msg, 'Failed data submission');
+        }
+    }
+}
 
 export default submit;
