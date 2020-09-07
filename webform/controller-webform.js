@@ -18,6 +18,7 @@
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileStore, startEditData;
 
     var fileStoreSupported = false;
+    var submitInProgress = false;
 
     controller.init = function(selector, options) {
         var  purpose;
@@ -444,7 +445,7 @@
          */
 
         //only upload the last one
-        submit.send(fileStore, "submitEditedRecord", record, true, autoClose).then((response) => {
+        submit.send(fileStore, "submitEditedRecord", record, true, autoClose, false).then((response) => {
             if(submit.isSuccess(response.status)) {
                 resetForm(true);
             }
@@ -507,7 +508,7 @@
                 instanceStrToEditId: record.instanceStrToEditId,
                 accessKey: record.accessKey,
                 media: media
-            }, true, closeAfterSending()).catch(error => {
+            }, true, closeAfterSending(), true).catch(error => {
                 gui.alert(error, 'Record Error');
                 }
             )
@@ -546,13 +547,21 @@
             //    console.log('Something went wrong while trying to prepare the record(s) for uploading.');
             //};
 
+        if(submitInProgress) {
+            return;
+        }
         // reset recordsList with fake save
         $form.trigger('save', JSON.stringify(store.getRecordList()));
         // Clear any errors from recordList
+        submitInProgress = true;
         $('.record-list').find('li').removeClass('error');
-        for (i = 0; i < records.length; i++) {
-            await submit.send(fileStore, "submitQueue", records[i], false, false);
+        if(records.length > 0) {
+            gui.feedback( t( 'formfooter.submit.btn'));
+            for (i = 0; i < records.length; i++) {
+                await submit.send(fileStore, "submitQueue", records[i], false, false, true);
+            }
         }
+        submitInProgress = false;
 
         /*
         if (!connection.getUploadOngoingID() && connection.getUploadQueue().length === 0) {
@@ -1163,12 +1172,6 @@
     // Goto prev page
     function prevPage() {
         form.getView().pages.prev();
-    }
-
-    function reloadForm() {
-        console.debug("Refresh Form");
-        window.onbeforeunload = undefined;
-        window.location.reload(true);
     }
 
     export default controller;

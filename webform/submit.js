@@ -29,7 +29,7 @@ let HTTP_ACCEPTED = 202;
 
 let contentLength = 10000000;   // 10MB try to keep uploads within this value
 
-submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) {
+submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, saved) {
 
     console.log("submit called from: " + calledFrom);
 
@@ -58,13 +58,13 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) 
                     media = submit.getMedia();
                 }
                 sendWithMedia(fileStore, record, xmlData, media).then(response => {
-                    sendComplete(response, record, autoClose, inMemoryMedia);
+                    sendComplete(response, record, autoClose, inMemoryMedia, saved);
                     resolve(response);
                 })
             } else {
                 getMediaFromStore(fileStore, model.instanceID, model).then( media => {
                     sendWithMedia(fileStore, record, xmlData, media).then(response => {
-                        sendComplete(response, record, autoClose, inMemoryMedia);
+                        sendComplete(response, record, autoClose, inMemoryMedia, saved);
                         resolve(response);
                     })
                 });
@@ -78,7 +78,7 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) 
 };
 
 
-function sendComplete(response, record, autoClose, inMemoryMedia) {
+function sendComplete(response, record, autoClose, inMemoryMedia, saved) {
 
     if (submit.isSuccess(response.status) ) {
         $(document).trigger('submissionsuccess', [record.name, record.instanceID]);
@@ -89,7 +89,7 @@ function sendComplete(response, record, autoClose, inMemoryMedia) {
         getNewKey(record);		// Get a new access key  TODO
     }
 
-    processResponse(response, record, inMemoryMedia);
+    processResponse(response, record, inMemoryMedia, saved);
 
 
 }
@@ -388,7 +388,7 @@ function getNewKey(record) {
     });
 }
 
-function processResponse( response, record, foreground ) {
+function processResponse( response, record, foreground, saved ) {
     var name = record.name,
         msg = '',
         names = [],
@@ -480,12 +480,18 @@ function processResponse( response, record, foreground ) {
     } else {
 
         msg = name + ' '  + msg;
-        if(!foreground) {
+        if(!foreground || saved) {
             gui.feedback( msg, 10, 'Failed data submission');
         } else {
             gui.alert(msg, 'Failed data submission');
         }
     }
+}
+
+function reloadForm() {
+    console.debug("Refresh Form");
+    window.onbeforeunload = undefined;
+    window.location.reload(true);
 }
 
 export default submit;
