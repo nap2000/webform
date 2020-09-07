@@ -20,8 +20,6 @@
     let assignmentIdxPath = 'assignment.assignment_id';
     var recordStore;
 
-    var idbSupported = typeof window.indexedDB !== 'undefined';
-
     /*
      * Variables for fall back local storage
      */
@@ -33,7 +31,18 @@
      * @return {Boolean}
      */
     fileStore.isSupported = function() {
-        return idbSupported;
+        return new Promise((resolve) => {
+            if (typeof window.indexedDB !== 'undefined') {
+                open().then(() => {
+                    resolve(true);
+                }).catch( () => {
+                    resolve(false);
+                });
+            } else {
+                resolve(false);
+            }
+        });
+
     };
 
     /**
@@ -43,18 +52,18 @@
     let open = function() {
         return new Promise((resolve, reject) => {
 
-            if(idbSupported) {
+            if(typeof window.indexedDB !== 'undefined') {
                 var request = window.indexedDB.open(databaseName, webformDbVersion);
 
                 request.onerror = function (e) {
-                    console.log('Error', e.target.error.name);
-                    alert('Error', e.target.error.name);
+                    console.log('Error', e.target.error.message);
+                    //alert('Error', e.target.error.message);
                     reject(e);
                 };
 
                 request.onblocked = function (e) {
-                    console.log('Error', e.target.error.name);
-                    alert('Error', e.target.error.name);
+                    console.log('Error', e.target.error.message);
+                    alert('Error', e.target.error.message);
                     reject(e);
                 };
 

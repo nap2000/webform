@@ -17,6 +17,8 @@
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileStore, startEditData;
 
+    var fileStoreSupported = false;
+
     controller.init = function(selector, options) {
         var  purpose;
 
@@ -78,24 +80,22 @@
              * Initialise file manager if it is supported in this browser
              * The fileSystems API is used to store attachments prior to upload when operating offline
              */
-            if (fileStore.isSupported()) {
-                if (!store || store.getRecordList().length === 0) {
-                    fileStore.delete(undefined, true);
-                }
+            fileStore.isSupported().then(supported => {
+                if (supported) {
+                    fileStoreSupported = true;
+                    if (!store || store.getRecordList().length === 0) {
+                        fileStore.delete(undefined, true);
+                    }
 
-            } else {
-                if(store && store.isSupported) {
-                    gui.alert('Warning: Storage of large attachments is not supported by your browser. ' +
-                        'Hence if you are adding media files larger than 2 MB do not save the survey as draft.  ' +
-                        'Also and do not close the browser window until the completed survey has been sent sucessfully.',
-                        undefined, 'normal', undefined);
                 } else {
+                    fileStoreSupported = false;
+                    gui.alert('Warning: Storage is not supported by your browser. ' +
+                        'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
+                        'has been sent sucessfully',
+                        undefined, 'normal', undefined);
+                }
+            });
 
-                } gui.alert('Warning: Storage is not supported by your browser. ' +
-                    'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
-                    'has been sent sucessfully',
-                    undefined, 'normal', undefined);
-            }
 
             // Create the form
             formSelector = 'form.or:eq(0)';
@@ -487,7 +487,7 @@
      */
     function canSaveRecord() {
 
-        if (store.isSupported()) {
+        if (store.isSupported() && fileStoreSupported) {
             console.log("Can Save record:");
             return true;
         } else {
@@ -902,9 +902,11 @@
 
         //remove filesystem folder after successful submission
         $(document).on('submissionsuccess', function (ev, recordName, instanceID) {
-            if (fileStore.isSupported()) {
-                fileStore.delete(instanceID, false);
-            }
+            fileStore.isSupported().then(supported => {
+                if(supported) {
+                    fileStore.delete(instanceID, false);
+                }
+            });
             if (store) {
                 store.removeRecord(recordName);
             }

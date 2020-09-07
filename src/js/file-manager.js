@@ -61,17 +61,19 @@ fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
         } else if ( typeof subject === 'string' ) {
 	    if(subject.startsWith('http')) {                        // some random URL
                 resolve( subject );
-	    } else if(fileStore.isSupported()) {
-	        var dirname = window.gLoadedInstanceID;
-            fileStore.getFile(subject, dirname).then(function(url){
-                if(url) {
-                    resolve(url);
-            } else {
-                    resolve(location.origin + "/" + subject);		// URL must be from the server
+	    } else fileStore.isSupported().then(supported => {
+	        if(supported) {
+                var dirname = window.gLoadedInstanceID;
+                fileStore.getFile(subject, dirname).then(function (url) {
+                    if (url) {
+                        resolve(url);
+                    } else {
+                        resolve(location.origin + "/" + subject);		// URL must be from the server
+                    }
+                });
             }
-            });
 
-        }
+        })
 
 
     } else if ( typeof subject === 'object' ) {
