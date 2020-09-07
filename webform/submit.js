@@ -80,14 +80,13 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose) 
 
 function sendComplete(response, record, autoClose, inMemoryMedia) {
 
-    if (isSuccess(response.status) ) {
+    if (submit.isSuccess(response.status) ) {
         $(document).trigger('submissionsuccess', [record.name, record.instanceID]);
+        if (autoClose) {
+            reloadForm();
+        }
     } else if (response.status == 401) {
         getNewKey(record);		// Get a new access key  TODO
-    }
-
-    if (autoClose) {
-        refreshForm();
     }
 
     processResponse(response, record, inMemoryMedia);
@@ -97,7 +96,7 @@ function sendComplete(response, record, autoClose, inMemoryMedia) {
 
 async function sendWithMedia(fileStore, record, xmlData, media) {
 
-    var content = new FormData(),
+    var content,
         fileIndex = 0,
         i,
         url = getSubmissionUrl(record),
@@ -116,6 +115,7 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
         var byteCount = 0;
 
         // Add the XML content
+        content = new FormData()
         content.append('xml_submission_data', xmlData);
         if (record.assignmentId) {
             content.append('assignment_id', record.assignmentId);
@@ -160,7 +160,7 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
 
         response = await post(url, content);
 
-        if (!isSuccess(response.status) ) {
+        if (!submit.isSuccess(response.status) ) {
             console.log("error");
             return response;
 
@@ -180,7 +180,7 @@ function post(url, content) {
             cache: false,
             contentType: false,
             processData: false,
-            timeout: 800 * 1000,
+            timeout: 0,
             complete: function (jqXHR) {
                 var resp = {
                     status: jqXHR.status,
@@ -197,9 +197,9 @@ function post(url, content) {
  * Utility Functions
  */
 
-function isSuccess(status) {
+submit.isSuccess = function(status) {
     return status == HTTP_CREATED || status == HTTP_ACCEPTED;
-}
+};
 
 function getMediaFromStore(fileStore, directory, model) {
 

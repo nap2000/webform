@@ -84,10 +84,17 @@
                 }
 
             } else {
-                gui.alert('Warning: Storage of large attachments is not supported by your browser. ' +
-                    'Hence if you are adding media files larger than 2 MB do not save the survey as draft.  ' +
-                    'Also if you are offline when you submit the data these attachments may not be sent.',
-                    undefined, 'normal', undefined );
+                if(store && store.isSupported) {
+                    gui.alert('Warning: Storage of large attachments is not supported by your browser. ' +
+                        'Hence if you are adding media files larger than 2 MB do not save the survey as draft.  ' +
+                        'Also and do not close the browser window until the completed survey has been sent sucessfully.',
+                        undefined, 'normal', undefined);
+                } else {
+
+                } gui.alert('Warning: Storage is not supported by your browser. ' +
+                    'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
+                    'has been sent sucessfully',
+                    undefined, 'normal', undefined);
             }
 
             // Create the form
@@ -402,21 +409,23 @@
      * The record cannot be saved - hence handle accordingly
      */
     function submitEditedRecord(autoClose) {
-        var name, record, saveResult, redirect, beforeMsg, callbacks, $alert;
+        var name, record;
+
         $form.trigger('beforesave');
         if (!form.isValid()) {
             gui.alert(t("alert.validationerror.msg"));
             return;
         }
 
-        gui.alert('<progress style="text-align: center;"/>', 'Submitting...', 'info');
+        //gui.alert('<progress style="text-align: center;"/>', 'Submitting...', 'info');
 
         record = {
             'key': 'iframe_record',
             'data': form.getDataStr(true, true),
             'instanceStrToEditId': surveyData.instanceStrToEditId,
             'assignmentId': surveyData.assignmentId,
-            'accessKey': surveyData.key
+            'accessKey': surveyData.key,
+            'media': fileManager.getCurrentFiles()
         };
 
         /*
@@ -435,7 +444,11 @@
          */
 
         //only upload the last one
-        submit.send(fileStore, "submitEditedRecord", record, true, autoClose);
+        submit.send(fileStore, "submitEditedRecord", record, true, autoClose).then((response) => {
+            if(submit.isSuccess(response.status)) {
+                resetForm(true);
+            }
+        });
         /*
         prepareFormDataArray(
             record, {
@@ -556,6 +569,7 @@
             }
         }
         */
+        return "done";
     }
 
     function emptyQueue() {
@@ -1149,7 +1163,7 @@
         form.getView().pages.prev();
     }
 
-    function refreshForm() {
+    function reloadForm() {
         console.debug("Refresh Form");
         window.onbeforeunload = undefined;
         window.location.reload(true);
