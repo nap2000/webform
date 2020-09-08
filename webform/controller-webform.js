@@ -19,6 +19,7 @@
 
     var fileStoreSupported = false;
     var submitInProgress = false;
+    var manualSubmitInProgress = false;
 
     controller.init = function(selector, options) {
         var  purpose;
@@ -501,6 +502,7 @@
 
         if (!record.draft) {
 
+            markSubmit('start', 'manual');
             submit.send(fileStore, "submitOneForced", {
                 key: recordName,
                 data: record.data,
@@ -508,7 +510,10 @@
                 instanceStrToEditId: record.instanceStrToEditId,
                 accessKey: record.accessKey,
                 media: media
-            }, true, closeAfterSending(), true).catch(error => {
+            }, true, closeAfterSending(), true).then(() => {
+                markSubmit('stop', 'manual');
+            }).catch(error => {
+                markSubmit('stop', 'manual');
                 gui.alert(error, 'Record Error');
                 }
             )
@@ -547,13 +552,13 @@
             //    console.log('Something went wrong while trying to prepare the record(s) for uploading.');
             //};
 
-        if(submitInProgress) {
+        if(submitInProgress || manualSubmitInProgress) {
             return;
         }
         // reset recordsList with fake save
         $form.trigger('save', JSON.stringify(store.getRecordList()));
         // Clear any errors from recordList
-        submitInProgress = true;
+        markSubmit('start', 'auto')
         $('.record-list').find('li').removeClass('error');
         if(records.length > 0) {
             gui.feedback( t( 'formfooter.submit.btn'));
@@ -561,7 +566,7 @@
                 await submit.send(fileStore, "submitQueue", records[i], false, false, true);
             }
         }
-        submitInProgress = false;
+        markSubmit('stop', 'auto')
 
         /*
         if (!connection.getUploadOngoingID() && connection.getUploadQueue().length === 0) {
@@ -875,7 +880,11 @@
         });
 
         $(document).on('click', '.upload-records:not(:disabled)', function () {
-            submitQueue();
+            if (submitInProgress || manualSubmitInProgress) {
+                gui.alert(t("alert.submission.msg"));
+            } else {
+                submitQueue();
+            }
         });
 
         $(document).on('click', '.delete-records:not(:disabled)', function () {
@@ -1172,6 +1181,30 @@
     // Goto prev page
     function prevPage() {
         form.getView().pages.prev();
+    }
+
+    /*
+     * Update state of submission
+     * status = "start" || "stop"
+     * type = "manual" || "auto"
+     */
+    function markSubmit(status, type) {
+        if(status === 'start') {
+            if(type === 'auto') {
+                submitInProgress = true;
+            } else if(type === 'manual') {
+                manualSubmitInProgress = true;
+            }
+            $('#hour_glass').show();
+        } else  if(status === 'stop') {
+            if(type === 'auto') {
+                submitInProgress = false;
+            } else if(type === 'manual') {
+                manualSubmitInProgress = false;
+            }
+            $('#hour_glass').hide();
+        }
+
     }
 
     export default controller;
