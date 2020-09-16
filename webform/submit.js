@@ -115,7 +115,7 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
         var byteCount = 0;
 
         // Add the XML content
-        content = new FormData()
+        content = new FormData();
         content.append('xml_submission_data', xmlData);
         if (record.assignmentId) {
             content.append('assignment_id', record.assignmentId);
