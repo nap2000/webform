@@ -4,7 +4,6 @@
  * @module language
  */
 
-import $ from 'jquery';     // smap
 import { getSiblingElements } from './dom-utils';
 import events from './event';
 
