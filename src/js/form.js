@@ -212,6 +212,12 @@ Form.prototype.init = function() {
     // Handle odk-instance-first-load event
     this.model.events.addEventListener( events.InstanceFirstLoad().type, event => this.calc.setValue( event ) );
 
+    // Smap
+    this.view.html.addEventListener( 'datarefresh', event => {
+        that.calc.update(event.target);
+    } );
+
+
     // Handle odk-new-repeat event before initializing repeats
     this.view.html.addEventListener( events.NewRepeat().type, event => this.calc.setValue( event ) );
 
