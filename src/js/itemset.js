@@ -175,6 +175,7 @@ export default {
             let translations = [];
             const cacheKey = `${context}:${itemsXpath}`;
 
+            fragmentsCache[ cacheKey ] = undefined;     // smap disable caching here as it impacts setting of distinct names per choices in select questions
             if ( fragmentsCache[ cacheKey ] ) {
                 // important: leave cache intact by cloning
                 optionsFragment = fragmentsCache[ cacheKey ].optionsFragment.cloneNode( true );
