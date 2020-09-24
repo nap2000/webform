@@ -216,6 +216,8 @@ Form.prototype.init = function() {
     this.view.html.addEventListener( 'datarefresh', event => {
         that.calc.update(event.target);
     } );
+    window.wfcache = undefined;
+    // end smap
 
 
     // Handle odk-new-repeat event before initializing repeats
