@@ -5,6 +5,7 @@
 import config from 'enketo/config';
 import { getAncestors, getSiblingElementsAndSelf } from './dom-utils';
 import events from './event';
+import $ from 'jquery'; // smap
 
 export default {
     /**
@@ -56,7 +57,7 @@ export default {
                      * and the dependent node is inside the same repeat, we can prevent the expensive index determination
                      */
                     const dataNodeName = ( name.lastIndexOf( '/' ) !== -1 ) ? name.substring( name.lastIndexOf( '/' ) + 1 ) : name;
-                    const dataNode = this.form.model.node( updated.repeatPath, updated.repeatIndex ).getElement().querySelector( dataNodeName );
+                    const dataNode = this.form.model.node( updated.repeatPath, updated.repeatIndex ).getElement().querySelector( $.escapeSelector(dataNodeName) );  // smap escape selector
                     props.index = dataNodes.indexOf( dataNode );
                     this._updateCalc( control, props );
                 } else if ( control.type === 'hidden' ) {
