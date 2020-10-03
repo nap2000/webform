@@ -181,7 +181,7 @@ class DrawWidget extends Widget {
                         that.$widget.removeClass( 'full-screen' );
                         that.pad.off();
                         that._forceUpdate();
-                        that._resizeCanvas( canvas );
+                        that._resizeCanvas( canvas ); // smap - resize does a double update  XXXXXXXXXXXXXXXX
 
                         return false;
                     } ).click();
@@ -190,7 +190,7 @@ class DrawWidget extends Widget {
                     .on( 'canvasreload', () => {
                         if ( that.cache ) {
                             that.pad.fromObjectURL( that.cache )
-                                .then( that._updateValue.bind( that, false ) );
+                                .then( that._updateValue.bind( that, false ) );  // smap do not update value on reload   XXXXXXX
                         }
                     } );
                 that.enable();
@@ -376,7 +376,10 @@ class DrawWidget extends Widget {
     _updateValue( changed = true ) {
         const now = new Date();
         const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;   // smap get milliseconds
-        this.element.dataset.filenamePostfix = postfix;
+
+        if(!this.element.dataset.filenamePostfix) { // smap only update postfix if it has not been set
+            this.element.dataset.filenamePostfix = postfix;
+        }
         // Note that this.element has become a text input.
         // When a default file is loaded this function is called by the canvasreload handler, but the user hasn't changed anything.
         // We want to make sure the model remains unchanged in that case.
@@ -476,7 +479,7 @@ class DrawWidget extends Widget {
     _handleResize( canvas ) {
         const that = this;
         $( window ).on( 'resize', () => {
-            that._forceUpdate();
+            that._forceUpdate();  // smap do not update data on resize XXXXXXXXXXX
             that._resizeCanvas( canvas );
         } );
     }

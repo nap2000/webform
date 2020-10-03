@@ -104,7 +104,7 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
 
     /*
 	 * Use same approach as fieldTask to send bached results
-	 * he XML content is sent with each batch
+	 * the XML content is sent with each batch
 	 */
     var fileIndex = 0;
     var lastFileIndex = 0;
@@ -149,7 +149,7 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
                 if (fileIndex + 1 < media.length) {      // Look ahead to see if we should stop now
                     if ((fileIndex - lastFileIndex + 1 > 100) || (byteCount + media[fileIndex + 1].size > contentLength)) {
                         // the next file would exceed the 10MB threshold
-                        console.log("Spliting large post");
+                        console.log("Splitting large post");
                         content.append("*isIncomplete*", "yes");
                         ++fileIndex;
                         break;
