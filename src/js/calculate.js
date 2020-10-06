@@ -57,9 +57,12 @@ export default {
                      * and the dependent node is inside the same repeat, we can prevent the expensive index determination
                      */
                     const dataNodeName = ( name.lastIndexOf( '/' ) !== -1 ) ? name.substring( name.lastIndexOf( '/' ) + 1 ) : name;
-                    const dataNode = this.form.model.node( updated.repeatPath, updated.repeatIndex ).getElement().querySelector( $.escapeSelector(dataNodeName) );  // smap escape selector
-                    props.index = dataNodes.indexOf( dataNode );
-                    this._updateCalc( control, props );
+                    let elem = this.form.model.node( updated.repeatPath, updated.repeatIndex ).getElement();    // smap - check for undefined
+                    if(elem) {
+                        const dataNode = elem.querySelector($.escapeSelector(dataNodeName));  // smap escape selector
+                        props.index = dataNodes.indexOf(dataNode);
+                        this._updateCalc( control, props );
+                    }
                 } else if ( control.type === 'hidden' ) {
                     /*
                      * This case is the consequence of the  decision to place calculated items without a visible form control,
