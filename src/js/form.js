@@ -404,17 +404,17 @@ Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, context, index,
             let label = '';
             const value = that.model.evaluate( params[ 0 ], resTypeStr, context, index, tryNative );
             const name = stripQuotes( params[ 1 ] ).trim();
-            const $input = that.view.$.find( `[data-name="${name}"]` );
+            const $input = that.view.$.find( `[data-name="${name}"]` );     // smap use data-name not name as that will be randomised within a repeat
 
             if ( !value ) {
                 label = '';
             } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'select' ) {
-                label = $input.find( `[value="${value}"]` ).text();
+                label = $input.find( `[value="${value}"]` )[0].textContent;      // Smap just get the content of the first element
             } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'input' ) {
                 if ( !$input.attr( 'list' ) ) {
                     label = $input.filter( function() {
                         return $( this ).attr( 'value' ) === value;
-                    } ).siblings( '.option-label.active' ).text();
+                    } ).siblings( '.option-label.active' )[0].textContent;      // Smap just get the content of the first element
                 } else {
                     label = $input.siblings( `datalist#${$input.attr( 'list' )}` ).find( `[data-value="${value}"]` ).attr( 'value' );
                 }
