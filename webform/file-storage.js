@@ -9,7 +9,12 @@
     /*
      * Variables for indexedDB Storage
      */
-    let webformDbVersion = 3;           // webforms
+    let webformDbVersion;
+    if(window.idbConfig) {
+        webformDbVersion = window.idbConfig.version;        // Share value with webforms page 
+    } else {
+        webformDbVersion = 3;
+    }
     let databaseName = "webform";
 
     let mediaStoreName = "media";
