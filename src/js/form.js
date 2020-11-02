@@ -409,12 +409,18 @@ Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, context, index,
             if ( !value ) {
                 label = '';
             } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'select' ) {
-                label = $input.find( `[value="${value}"]` )[0].textContent;      // Smap just get the content of the first element
+                let $labelElement = $input.find( `[value="${value}"]` );        // smap
+                if($labelElement && $labelElement.length > 0) {
+                    label = $labelElement[0].textContent;      // Smap just get the content of the first element
+                }
             } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'input' ) {
                 if ( !$input.attr( 'list' ) ) {
-                    label = $input.filter( function() {
+                    let $labelElement = $input.filter( function() { // smap
                         return $( this ).attr( 'value' ) === value;
-                    } ).siblings( '.option-label.active' )[0].textContent;      // Smap just get the content of the first element
+                    } ).siblings( '.option-label.active' );
+                    if($labelElement && $labelElement.length > 0) {
+                        label = $labelElement[0].textContent;      // Smap just get the content of the first element
+                    }
                 } else {
                     label = $input.siblings( `datalist#${$input.attr( 'list' )}` ).find( `[data-value="${value}"]` ).attr( 'value' );
                 }
