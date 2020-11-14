@@ -1,5 +1,5 @@
-import events from 'enketo-core/src/js/event';
-import Widget from 'enketo-core/src/js/widget';
+import events from '../../js/event';
+import Widget from '../../js/widget';
 const FLASH = 'flash';
 const STOP = 'stop';
 const START = 'start';
@@ -64,7 +64,7 @@ class LiteracyWidget extends Widget {
 
         optionWrapper.prepend(
             fragment.createContextualFragment(
-                `<button class="btn btn-default literacy-widget__start" type="button" data-i18n="literacywidget.start"></button>
+                `<button class="btn btn-default literacy-widget__start" type="button" data-i18n="literacywidget.start">Start</button>
                 <div class="literacy-widget__timer"/>`
             )
         );
@@ -72,7 +72,7 @@ class LiteracyWidget extends Widget {
         const startButton = optionWrapper.querySelector( '.literacy-widget__start' );
 
         optionWrapper.append(
-            fragment.createContextualFragment( '<button class="btn btn-primary literacy-widget__stop" disabled type="button" data-i18n="literacywidget.finish"></button>' )
+            fragment.createContextualFragment( '<button class="btn btn-primary literacy-widget__stop" disabled type="button" data-i18n="literacywidget.finish">Finish</button>' )
         );
         optionWrapper.append( this.resetButtonHtml );
 

@@ -302,6 +302,10 @@
         "vi": "Vietnamese",
         "zh": "Chinese"
     },
+    "literacywidget": {
+        "finish": "Finish",
+        "start": "Start"
+    },
     "page": {
         "modernbrowsers": {
             "heading": "Modern Browsers",
