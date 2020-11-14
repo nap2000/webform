@@ -34,7 +34,6 @@ build/js/
 test/mock/forms.js
 temp
 node_modules/
-build/css/
 build/js/
 test/mock/forms.js
 test-coverage/
