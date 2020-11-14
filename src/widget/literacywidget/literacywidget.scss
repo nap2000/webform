@@ -1,0 +1,112 @@
+.or-appearance-literacy.simple-select {
+    input[type=text]{
+        display: none;
+    }
+    .option-wrapper {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        label {
+            display: none;
+            flex-direction: column;
+            padding: 10px;
+            margin: 2px 4px;
+            &.incorrect-word{
+                //background-color: $state-danger-bg;
+                .option-label {
+                    text-decoration: line-through;
+                }
+            }
+            &.at-flash {
+                // avoid override on touchscreens
+                background-color: #66afe9 !important;
+            }
+            &.at-end {
+                // avoid override on touchscreens
+                background-color: $state-danger-bg !important;
+            }
+            &.unread {
+                opacity: 0.5;
+            }
+        }
+        .option-label {
+            order: 1;
+            margin: 0 auto;
+            font-size: 1.5em;
+        }
+        input[type=checkbox]{
+            order: 2;
+            margin: 10px auto 0 auto;
+            &:disabled, &[readonly] {
+                visibility: hidden;
+            }
+        }
+    }
+    .literacy-widget{
+        &__start,
+        &__stop,
+        &__timer{
+            display: block;
+            margin: 0 calc(100%/2 - 100px);
+            width: 200px;
+            margin-bottom: 20px;
+        }
+        &__stop {
+            display: none;
+        }
+        &__timer{
+            display: none;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+            padding: 10px;
+            border: 1px solid $gray;
+            text-align: center;
+            background: white;
+        }
+        .btn-reset {
+            margin-left: calc(100% - 30px);
+        }
+
+    }
+    &.flash, &.stop, &.start, &.finish {
+        .literacy-widget{
+            label{
+                display: flex;
+            }
+            &__timer {
+                display: block;
+            }
+            &__start {
+                display: none;
+            }
+        }
+    }
+    &.flash, &.start {
+        .literacy-widget{
+            &__stop {
+                display: block;
+            }
+        }
+    }
+    &.flash:not(.note):not(.focus),
+    &.flash.question:not(.note):not(.focus):hover,
+    &.stop:not(.note):not(.focus),
+    &.stop.question:not(.note):not(.focus):hover{
+        background: #f9f96e;
+    }
+}
+
+//disable touch styles
+.touch .question.or-appearance-literacy.simple-select .option-wrapper {
+    > label{
+        padding: 10px;
+        margin: 2px 4px;
+        border: none;
+        input[type="checkbox"] {
+            margin-left: auto;
+        }
+    }
+    .option-label{
+        margin-left: 0;
+    }
+}
