@@ -192,7 +192,7 @@ class LiteracyWidget extends Widget {
     }
 
     _showCheckboxes( startIndex ) {
-        startIndex = startIndex || 0;
+        startIndex = startIndex > 0 ? startIndex : 0;
         this.checkboxes.slice( startIndex ).forEach( el => el.disabled = false );
     }
 
