@@ -44,7 +44,7 @@ class LiteracyWidget extends Widget {
             el.removeAttribute( 'name' );
             el.removeAttribute( 'data-type-xml' );
             el.removeAttribute( 'data-relevant' );
-            el.removeAttribute( 'data-required' );
+            //el.removeAttribute( 'data-required' );   // smap
             el.disabled = true;
         } );
 
@@ -192,7 +192,7 @@ class LiteracyWidget extends Widget {
     }
 
     _showCheckboxes( startIndex ) {
-        startIndex = startIndex > 0 ? startIndex : 0;
+        startIndex = startIndex > 0 ? startIndex : 0; // smap
         this.checkboxes.slice( startIndex ).forEach( el => el.disabled = false );
     }
 
@@ -304,8 +304,8 @@ class LiteracyWidget extends Widget {
     }
 
     get value() {
-        const finishCount = this.result.lastWordIndex !== null ? this.result.lastWordIndex + 1 : null;
-        const flashCount = this.result.flashWordIndex !== null ? this.result.flashWordIndex + 1 : null;
+        const finishCount = this.result.lastWordIndex !== null ? this.result.lastWordIndex : null;  // smap remove he +1 from the next two
+        const flashCount = this.result.flashWordIndex !== null ? this.result.flashWordIndex : null;
         const incorrectWords = [ ...this.element.querySelectorAll( '.incorrect-word input' ) ].map( el => el.value );
 
         return [ flashCount, this.timer.elapsed, finishCount, null, null, null, null, null, null, null ]
