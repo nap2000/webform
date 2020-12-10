@@ -372,7 +372,7 @@ function getNewKey(record) {
                 // Update the access key in the stored record
                 var dbRecord = store.getRecord( record.name );
                 dbRecord.accessKey = data.key;
-                gStore.setRecord( record.name, dbRecord, true, true, dbRecord.key );
+                store.setRecord( record.name, dbRecord, true, true, dbRecord.key );
             }
             // TODO update the surveyData in the form if this is an immediate submit
             // setSubmissionUrl(data.key);

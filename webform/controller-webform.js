@@ -451,20 +451,6 @@
                 resetForm(true);
             }
         });
-        /*
-        prepareFormDataArray(
-            record, {
-                success: function (formDataArr) {
-                    connection.uploadRecords(formDataArr, true, callbacks, autoClose);
-                },
-                error: function () {
-                    gui.alert('Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error');
-                }
-            },
-            true // Use media referenced in browser
-        );
-
-         */
     }
 
     /*
@@ -518,25 +504,6 @@
                 }
             )
 
-            /* submit disable old submit
-            prepareFormDataArray({
-                    key: recordName,
-                    data: record.data,
-                    assignmentId: record.assignmentId,				 // d1504
-                    instanceStrToEditId: record.instanceStrToEditId, // d1505
-                    accessKey: record.accessKey,						 // d1504
-                    media: media
-                }, {
-                    success: function (formDataArr) {
-                        connection.uploadRecords(formDataArr, true, undefined, closeAfterSending());		// d1504 add closeAfterSending
-                    },
-                    error: function () {
-                        gui.alert('Something went wrong while trying to prepare the record(s) for uploading.', 'Record Error');
-                    }
-                },
-                true // Use media from file store
-            );
-             */
         }
     }
 
@@ -545,12 +512,6 @@
 
         var i,
             records = store.getSurveyDataArr(true);
-            //successHandler = function (recordPrepped) {
-            //    connection.uploadRecords(recordPrepped, false, undefined, false);		// d1504 do not close after sending as this is a background job
-            //},
-            //errorHandler = function () {
-            //    console.log('Something went wrong while trying to prepare the record(s) for uploading.');
-            //};
 
         if(submitInProgress || manualSubmitInProgress) {
             return;
@@ -566,23 +527,9 @@
                 await submit.send(fileStore, "submitQueue", records[i], false, false, true);
             }
         }
-        markSubmit('stop', 'auto')
-
-        /*
-        if (!connection.getUploadOngoingID() && connection.getUploadQueue().length === 0) {
-            for (i = 0; i < records.length; i++) {
-                prepareFormDataArray(
-                    records[i], {
-                        success: successHandler,
-                        error: errorHandler
-                    },
-                    false // Use media from storage
-                );
+        markSubmit('stop', 'auto');
 
 
-            }
-        }
-        */
         return "done";
     }
 
