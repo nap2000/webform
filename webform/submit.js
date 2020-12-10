@@ -29,7 +29,7 @@ let HTTP_ACCEPTED = 202;
 
 let contentLength = 10000000;   // 10MB try to keep uploads within this value
 
-submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, saved) {
+submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, saved, manual) {
 
     console.log("submit called from: " + calledFrom);
 
@@ -50,6 +50,8 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, 
             record.instanceID = model.instanceID;
             record.name = record.key;
 
+            let showMsg = manual || calledFrom !== 'submitQueue';
+
             // Get the media to submit
             if(inMemoryMedia) {
                 if(record.media) {
@@ -58,13 +60,13 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, 
                     media = submit.getMedia();
                 }
                 sendWithMedia(fileStore, record, xmlData, media).then(response => {
-                    sendComplete(response, record, autoClose, inMemoryMedia, saved);
+                    sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg);
                     resolve(response);
                 })
             } else {
                 getMediaFromStore(fileStore, model.instanceID, model).then( media => {
                     sendWithMedia(fileStore, record, xmlData, media).then(response => {
-                        sendComplete(response, record, autoClose, inMemoryMedia, saved);
+                        sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg);
                         resolve(response);
                     })
                 });
@@ -78,7 +80,7 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, 
 };
 
 
-function sendComplete(response, record, autoClose, inMemoryMedia, saved) {
+function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg) {
 
     if (submit.isSuccess(response.status) ) {
         $(document).trigger('submissionsuccess', [record.name, record.instanceID]);
@@ -89,7 +91,9 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved) {
         getNewKey(record);		// Get a new access key  TODO
     }
 
-    processResponse(response, record, inMemoryMedia, saved);
+    if(showMsg) {
+        processResponse(response, record, inMemoryMedia, saved);
+    }
 
 
 }

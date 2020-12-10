@@ -147,10 +147,10 @@
             }
             if (options.submitInterval) {
                 window.setInterval(function () {
-                    submitQueue();
+                    submitQueue(false);
                 }, options.submitInterval);
                 window.setTimeout(function () {
-                    submitQueue();
+                    submitQueue(false);
                 }, 5 * 1000);
             }
         }, 0 );
@@ -508,7 +508,7 @@
     }
 
 
-    async function submitQueue() {
+    async function submitQueue(manual) {
 
         var i,
             records = store.getSurveyDataArr(true);
@@ -522,9 +522,11 @@
         markSubmit('start', 'auto')
         $('.record-list').find('li').removeClass('error');
         if(records.length > 0) {
-            gui.feedback( t( 'formfooter.submit.btn'));
+            if(manual) {
+                gui.feedback(t('formfooter.submit.btn'));
+            }
             for (i = 0; i < records.length; i++) {
-                await submit.send(fileStore, "submitQueue", records[i], false, false, true);
+                await submit.send(fileStore, "submitQueue", records[i], false, false, true, manual);
             }
         }
         markSubmit('stop', 'auto');
@@ -830,7 +832,7 @@
             if (submitInProgress || manualSubmitInProgress) {
                 gui.alert(t("alert.submission.msg"));
             } else {
-                submitQueue();
+                submitQueue(true);
             }
         });
 
