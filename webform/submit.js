@@ -87,8 +87,8 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
         if (autoClose) {
             reloadForm();
         }
-    } else if (response.status == 401) {
-        getNewKey(record);		// Get a new access key  TODO
+    } else if (response.status == 403 || response.status == 401) {
+        getNewKey(record);
     }
 
     if(showMsg) {
@@ -431,7 +431,7 @@ function processResponse( response, record, foreground, saved ) {
             },
             403: {
                 success: false,
-                msg: "Not allowed to post data to this data server. " + contactAdmin
+                msg: "Authorisation expired. Refresh your browser. "
             },
             404: {
                 success: false,
