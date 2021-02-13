@@ -87,14 +87,14 @@ export default {
     },
     /**
      * @param {Element} control - form control HTML element
-     * @return {string} element constraint
+     * @return {string} constraint expression
      */
     getConstraint( control ) {
         return control.dataset.constraint;
     },
     /**
      * @param {Element} control - form control HTML element
-     * @return {string|undefined} element required
+     * @return {string|undefined} required expression
      */
     getRequired( control ) {
         // only return value if input is not a table heading input
@@ -104,7 +104,7 @@ export default {
     },
     /**
      * @param {Element} control - form control HTML element
-     * @return {string} element relevant
+     * @return {string} relevant expression
      */
     getRelevant( control ) {
         return control.dataset.relevant;
@@ -118,21 +118,21 @@ export default {
     },
     /**
      * @param {Element} control - form control HTML element
-     * @return {string} element calculate
+     * @return {string} calculate expression
      */
     getCalculation( control ) {
         return control.dataset.calculate;
     },
     /**
      * @param {Element} control - form control HTML element
-     * @return {string} element XML type
+     * @return {string} XML type
      */
     getXmlType( control ) {
         return ( control.dataset.typeXml || 'string' ).toLowerCase();
     },
     /**
      * @param {Element} control - form control HTML element
-     * @return {string} element name
+     * @return {string} name
      */
     getName( control ) {
         const name = control.dataset.name || control.getAttribute( 'name' );
@@ -290,7 +290,7 @@ export default {
                     } ).replace( /\u200E/g, '' )} ${value.replace( /(\d\d:\d\d:\d\d)(\.\d{1,3})(\s?((\+|-)\d\d))(:)?(\d\d)?/, '$1 GMT$3$7' )}`;
                     const d = new Date( ds );
                     if ( d.toString() !== 'Invalid Date' ) {
-                        value = `${d.getHours().toString().pad( 2 )}:${d.getMinutes().toString().pad( 2 )}`;
+                        value = `${d.getHours().toString().padStart( 2, '0' )}:${d.getMinutes().toString().padStart( 2, '0' )}`;
                     } else {
                         console.error( 'could not parse time:', value );
                     }
@@ -342,11 +342,33 @@ export default {
                 // don't trigger on all radiobuttons/checkboxes
                 if ( event ) {
                     inputs[ 0 ].dispatchEvent( event );
+                    // Ensure that any calculations with form controls that serve as setvalue triggers
+                    // the action.
+                    if ( event.type === events.InputUpdate().type ){
+                        inputs[0].dispatchEvent( events.XFormsValueChanged() );
+                    }
                 }
             }
         }
 
         return inputs[ 0 ];
+    },
+    /**
+     * Clears form input fields and triggers events when doing this.
+     *
+     * @param grp - Element whose DESCENDANT form controls to clear
+     * @param event1 - first event to trigger
+     * @param event2 - second event to trigger
+     */
+    clear( grp, event1, event2 ){
+        // See original pre-December 2020 plugin.js for some additional stuff with file-preview, loadedFileName and selectedIndex
+        // which I think was no longer necessary, or should be moved to the widgets instead
+        grp.querySelectorAll( 'input:not(.ignore), select:not(.ignore), textarea:not(.ignore)' ).forEach( control => {
+            this.setVal( control, '', event1 );
+            if ( event2 ){
+                control.dispatchEvent( event2 );
+            }
+        } );
     },
     /**
      * @param {Element} control - form control HTML element

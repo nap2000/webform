@@ -1,7 +1,7 @@
 import { FormModel } from './form-model';
 import $ from 'jquery';
-import { toArray, parseFunctionFromExpression, stripQuotes, getFilename } from './utils';
-import { getXPath, closestAncestorUntil } from './dom-utils';
+import { parseFunctionFromExpression, stripQuotes, getFilename, joinPath } from './utils';
+import { getXPath, closestAncestorUntil, getSiblingElements } from './dom-utils';
 import { t } from 'enketo/translator';
 import config from 'enketo/config';
 import inputHelper from './input';
@@ -161,6 +161,22 @@ Form.prototype = {
         return this.view.html.id;
     },
     /**
+     * To facilitate forks that support multiple constraints per question
+     *
+     * @type {Array<string>}
+     */
+    get constraintClassesInvalid() {
+        return [ 'invalid-constraint' ];
+    },
+    /**
+     * To facilitate forks that support multiple constraints per question
+     *
+     * @type {Array<string>}
+     */
+    get constraintAttributes() {
+        return [ 'data-constraint' ];
+    },
+    /**
      * @type {Array<string>}
      */
     get languages() {
@@ -268,11 +284,14 @@ Form.prototype.init = function() {
 
         // after radio button data-name setting (now done in XLST)
         // Set temporary event handler to ensure calculations in newly added repeats are run for the first time
-        const tempHandler = event => this.calc.update( event.detail );
-        this.view.html.addEventListener( events.AddRepeat().type, tempHandler );
+        const tempHandlerAddRepeat = event => this.calc.update( event.detail );
+        const tempHandlerRemoveRepeat = () => this.all = {};
+        this.view.html.addEventListener( events.AddRepeat().type, tempHandlerAddRepeat );
+        this.view.html.addEventListener( events.RemoveRepeat().type, tempHandlerRemoveRepeat );
         this.repeatsInitialized = true;
         this.repeats.init();
-        this.view.html.removeEventListener( events.AddRepeat().type, tempHandler );
+        this.view.html.removeEventListener( events.AddRepeat().type, tempHandlerAddRepeat );
+        this.view.html.removeEventListener( events.RemoveRepeat().type, tempHandlerRemoveRepeat );
 
         // after repeats.init, but before itemset.update
         this.output.update();
@@ -290,7 +309,6 @@ Form.prototype.init = function() {
         this.options.input = this.input;
         this.options.pathToAbsolute = this.pathToAbsolute.bind( this );
         this.options.evaluate = this.model.evaluate.bind( this.model );
-        this.options.formClasses = toArray( this.view.html.classList );
         this.options.getModelValue = this.getModelValue.bind( this );
         this.widgetsInitialized = this.widgets.init( null, this.options );
 
@@ -353,8 +371,7 @@ Form.prototype.goTo = function( xpath ) {
  * @param {{include: boolean}} [include] - Optional object items to exclude if false
  * @return {string} XML string of primary instance
  */
-Form.prototype.getDataStr = function( include ) {
-    include = ( typeof include !== 'object' || include === null ) ? {} : include;
+Form.prototype.getDataStr = function( include = {} ) {
     // By default everything is included
     if ( include.irrelevant === false ) {
         return this.getDataStrWithoutIrrelevantNodes();
@@ -393,8 +410,7 @@ Form.prototype.resetView = function() {
  * @param {boolean} tryNative - whether to try the native evaluator, i.e. if there is no risk it would create an incorrect result such as with date comparisons
  * @return {string} updated expression
  */
-Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, context, index, tryNative ) {
-    const that = this;
+Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, context, index, tryNative ){
     const choiceNames = parseFunctionFromExpression( expr, 'jr:choice-name' );
 
     choiceNames.forEach( choiceName => {
@@ -402,29 +418,34 @@ Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, context, index,
 
         if ( params.length === 2 ) {
             let label = '';
-            const value = that.model.evaluate( params[ 0 ], resTypeStr, context, index, tryNative );
-            const name = stripQuotes( params[ 1 ] ).trim();
-            const $input = that.view.$.find( `[data-name="${name}"]` );     // smap use data-name not name as that will be randomised within a repeat
+            const value = this.model.evaluate( params[ 0 ], resTypeStr, context, index, tryNative );
+            let name = stripQuotes( params[ 1 ] ).trim();
+            name = name.startsWith( '/' ) ? name : joinPath( context, name );
+            const inputs = [ ...this.view.html.querySelectorAll( `[name="${name}"], [data-name="${name}"]` ) ];
+            //const $input = that.view.$.find( `[data-name="${name}"]` );     // smap use data-name not name as that will be randomised within a repeat
+            const nodeName = inputs.length ? inputs[0].nodeName.toLowerCase() : null;
 
-            if ( !value ) {
+            if ( !value || !inputs.length ) {
                 label = '';
-            } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'select' ) {
-                let $labelElement = $input.find( `[value="${value}"]` );        // smap
-                if($labelElement && $labelElement.length > 0) {
-                    label = $labelElement[0].textContent;      // Smap just get the content of the first element
-                }
-            } else if ( $input.length > 0 && $input.prop( 'nodeName' ).toLowerCase() === 'input' ) {
-                if ( !$input.attr( 'list' ) ) {
-                    let $labelElement = $input.filter( function() { // smap
-                        return $( this ).attr( 'value' ) === value;
-                    } ).siblings( '.option-label.active' );
-                    if($labelElement && $labelElement.length > 0) {
-                        label = $labelElement[0].textContent;      // Smap just get the content of the first element
-                    }
+            } else if (  nodeName === 'select' ) {
+                const found = inputs.filter( input => input.querySelector( `[value="${value}"]` ) );
+                label =  found ? found[0].querySelector( `[value="${value}"]` ).textContent : '';
+            } else if (  nodeName === 'input' ) {
+                const list = inputs[0].getAttribute( 'list' );
+
+                if ( !list ){
+                    const found = inputs.filter( input => input.getAttribute( 'value' ) === value );
+                    const siblingLabelEls = getSiblingElements( found[0], '.option-label.active' );
+                    label = siblingLabelEls.length ? siblingLabelEls[0].textContent : '';
                 } else {
-                    label = $input.siblings( `datalist#${$input.attr( 'list' )}` ).find( `[data-value="${value}"]` ).attr( 'value' );
+                    const siblingListEls = getSiblingElements( inputs[0], `datalist#${CSS.escape( list )}` );
+                    if ( siblingListEls.length ){
+                        const optionEl = siblingListEls[0].querySelector( `[data-value="${value}"]` );
+                        label = optionEl ? optionEl.getAttribute( 'value' ) : '';
+                    }
                 }
             }
+
             expr = expr.replace( choiceName[ 0 ], `"${label}"` );
         } else {
             throw new FormLogicError( `jr:choice-name function has incorrect number of parameters: ${choiceName[ 0 ]}` );
@@ -497,12 +518,8 @@ Form.prototype.getModelValue = function( $control ) {
  * @return {jQuery} - A jQuery collection of elements
  */
 Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
-    let collection;
     let repeatControls = null;
     let controls;
-    let selector = [];
-    const that = this;
-
     updated = updated || {};
     filter = filter || '';
 
@@ -541,6 +558,7 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
      * repeats such as with /path/to/repeat[3]/node, /path/to/repeat[position() = 3]/node or indexed-repeat(/path/to/repeat/node, /path/to/repeat, 3).
      * We accept that for now.
      **/
+    let collection;
     if ( repeatControls ) {
         // The non-repeat fields have to be added too, e.g. to update a calculated item with count(to/repeat/node) at the top level
         collection = this.nonRepeats[ attr ].concat( repeatControls );
@@ -548,15 +566,16 @@ Form.prototype.getRelatedNodes = function( attr, filter, updated ) {
         collection = this.all[ attr ];
     }
 
+    let selector = [];
     // Add selectors based on specific changed nodes
     if ( !updated.nodes || updated.nodes.length === 0 ) {
-        selector = selector.concat( [ filter ] );
+        selector = [ `${filter}[${attr}]` ];
     } else {
         updated.nodes.forEach( node => {
-            selector = selector.concat( that.getQuerySelectorsForLogic( filter, attr, node ) );
+            selector = selector.concat( this.getQuerySelectorsForLogic( filter, attr, node ) );
         } );
         // add all the paths that use the /* selector at end of path
-        selector = selector.concat( that.getQuerySelectorsForLogic( filter, attr, '*' ) );
+        selector = selector.concat( this.getQuerySelectorsForLogic( filter, attr, '*' ) );
     }
 
     const selectorStr = selector.join( ', ' );
@@ -579,7 +598,7 @@ Form.prototype.filterRadioCheckSiblings = controls => {
         const wrapper = control.type === 'radio' || control.type === 'checkbox' ? closestAncestorUntil( control, '.option-wrapper', '.question' ) : null;
         // Filter out duplicate radiobuttons and checkboxes
         if ( wrapper ) {
-            if ( wrappers.indexOf( wrapper ) !== -1 ) {
+            if ( wrappers.includes( wrapper ) ) {
                 return false;
             }
             wrappers.push( wrapper );
@@ -692,13 +711,9 @@ Form.prototype.grosslyViolateStandardComplianceByIgnoringCertainCalcs = function
  *
  * @param {UpdatedDataNodes} updated - object that contains information on updated nodes
  */
-Form.prototype.validationUpdate = function( updated ) {
-    let $nodes;
-    const that = this;
-    let upd;
-
+Form.prototype.validationUpdate = function( updated = {} ) {
     if ( config.validateContinuously === true ) {
-        upd = updated || {};
+        let upd = { ...updated };
         if ( updated.cloned ) {
             /*
              * We don't want requireds and constraints of questions in a newly created
@@ -713,13 +728,11 @@ Form.prototype.validationUpdate = function( updated ) {
             };
         }
 
-        // Find all inputs that have a dependency on the changed node.
-        $nodes = this.getRelatedNodes( 'data-constraint', '', upd )
-            .add( this.getRelatedNodes( 'data-required', '', upd ) );
+        // Find all inputs that have a dependency on the changed node. Avoid duplicates with Set.
+        const nodes = new Set( this.getRelatedNodes( 'data-required', '', upd ).get() );
+        this.constraintAttributes.forEach( attr => this.getRelatedNodes( attr, '', upd ).get().forEach( nodes.add, nodes ) );
 
-        $nodes.each( function() {
-            that.validateInput( this );
-        } );
+        nodes.forEach( this.validateInput, this );
     }
 };
 
@@ -771,7 +784,7 @@ Form.prototype.setEventHandlers = function() {
             if ( updated ) {
                 that.validateInput( input )
                     .then( () => {
-                        // propagate event externally after internal processing is completed
+                        // after internal processing is completed
                         input.dispatchEvent( events.XFormsValueChanged( { repeatIndex: n.index } ) );
                     } );
             }
@@ -828,26 +841,67 @@ Form.prototype.setEventHandlers = function() {
 };
 
 /**
- * @param {Element} node - form control HTML element
+ * Removes an invalid mark on a question in the form UI.
+ *
+ * @param {Element} control - form control HTML element
  * @param {string} [type] - One of "constraint", "required" and "relevant".
  */
-Form.prototype.setValid = function( node, type ) {
-    const classes =  type ? [ `invalid-${type}` ] : [ 'invalid-constraint', 'invalid-required', 'invalid-relevant' ];
-    this.input.getWrapNode( node ).classList.remove( ...classes );
+Form.prototype.setValid = function( control, type ) {
+    const wrap = this.input.getWrapNode( control );
+
+    if ( !wrap ){
+        // TODO: this condition occurs, at least in tests for itemsets, but we need find out how.
+        return;
+    }
+
+    const classes = type ? [ `invalid-${type}` ] : [ ...wrap.classList ].filter( cl => cl.indexOf( 'invalid-' ) === 0 );
+    wrap.classList.remove( ...classes );
 };
 
 /**
- * @param {Element} node - form control HTML element
+ * Marks a question as invalid in the form UI.
+ *
+ * @param {Element} control - form control HTML element
  * @param {string} [type] - One of "constraint", "required" and "relevant".
  */
-Form.prototype.setInvalid = function( node, type ) {
-    type = type || 'constraint';
+Form.prototype.setInvalid = function( control, type = 'constraint' ) {
+    const wrap = this.input.getWrapNode( control );
 
-    if ( config.validatePage === false && this.isValid( node ) ) {
+    if ( !wrap ){
+        // TODO: this condition occurs, at least in tests for itemsets, but we need find out how.
+        return;
+    }
+
+    if ( config.validatePage === false && this.isValid( control ) ) {
         this.blockPageNavigation();
     }
 
-    this.input.getWrapNode( node ).classList.add( `invalid-${type}` );
+    wrap.classList.add( `invalid-${type}` );
+};
+
+/**
+ *
+ * @param {*} control - form control HTML element
+ * @param {*} result - result object obtained from Nodeset.validate
+ */
+Form.prototype.updateValidityInUi = function( control, result ){
+    const passed = result.requiredValid !== false && result.constraintValid !== false;
+
+    // Update UI
+    if ( result.requiredValid === false ) {
+        this.setValid( control, 'constraint' );
+        this.setInvalid( control, 'required' );
+    } else if ( result.constraintValid === false ) {
+        this.setValid( control, 'required' );
+        this.setInvalid( control, 'constraint' );
+    } else {
+        this.setValid( control, 'constraint' );
+        this.setValid( control, 'required' );
+    }
+
+    if ( !passed ){
+        control.dispatchEvent( events.Invalidated() );
+    }
 };
 
 /**
@@ -870,14 +924,15 @@ Form.prototype.blockPageNavigation = function() {
  * @return {!boolean} Whether the question/form is not marked as invalid.
  */
 Form.prototype.isValid = function( node ) {
+    const invalidSelectors = [ '.invalid-required', '.invalid-relevant' ].concat(  this.constraintClassesInvalid.map( cls => `.${cls}` ) );
     if ( node ) {
         const question = this.input.getWrapNode( node );
         const cls = question.classList;
 
-        return !cls.contains( 'invalid-required' ) && !cls.contains( 'invalid-constraint' ) && !cls.contains( 'invalid-relevant' );
+        return !invalidSelectors.some( selector => cls.contains( selector ) );
     }
 
-    return this.view.html.querySelector( '.invalid-required, .invalid-constraint, .invalid-relevant' ) === null;
+    return !this.view.html.querySelector( invalidSelectors.join( ', ' ) );
 };
 
 /**
@@ -895,7 +950,7 @@ Form.prototype.clearNonRelevant = function() {
  */
 Form.prototype.validateAll = function() {
     const that = this;
-    // to not delay validation unneccessarily we only clear irrelevants if necessary
+    // to not delay validation unnecessarily we only clear non-relevants if necessary
     this.clearNonRelevant();
 
     return this.validateContent( this.view.$ )
@@ -920,8 +975,8 @@ Form.prototype.validate = Form.prototype.validateAll;
  * @return {Promise} wrapping {boolean} whether the container contains any errors
  */
 Form.prototype.validateContent = function( $container ) {
-    let $firstError;
     const that = this;
+    const invalidSelector = [ '.invalid-required', '.invalid-relevant' ].concat( this.constraintClassesInvalid.map( cls => `.${cls}` ) ).join( ', ' );
 
     //can't fire custom events on disabled elements therefore we set them all as valid
     $container.find( 'fieldset:disabled input, fieldset:disabled select, fieldset:disabled textarea, ' +
@@ -942,16 +997,14 @@ Form.prototype.validateContent = function( $container ) {
 
     return Promise.all( validations )
         .then( () => {
-            $firstError = $container
-                .find( '.invalid-required, .invalid-constraint, .invalid-relevant' )
-                .addBack( '.invalid-required, .invalid-constraint, .invalid-relevant' )
-                .eq( 0 );
+            const container = $container[ 0 ];
+            const firstError = container.matches( invalidSelector ) ? container : container.querySelector( invalidSelector );
 
-            if ( $firstError.length > 0 ) {
-                that.goToTarget( $firstError[ 0 ] );
+            if ( firstError ) {
+                that.goToTarget( firstError );
             }
 
-            return $firstError.length === 0;
+            return !firstError;
         } )
         .catch( () => // fail whole-form validation if any of the question
             // validations threw.
@@ -994,7 +1047,7 @@ Form.prototype.validateInput = function( control ) {
     }
     const that = this;
     let getValidationResult;
-    // All relevant properties, except for the **very expensive** index property
+    // All properties, except for the **very expensive** index property
     // There is some scope for performance improvement by determining other properties when they
     // are needed, but that may not be so significant.
     const n = {
@@ -1028,33 +1081,11 @@ Form.prototype.validateInput = function( control ) {
 
     return getValidationResult
         .then( result => {
-            let previouslyInvalid = false;
-            const passed = result.requiredValid !== false && result.constraintValid !== false;
-
             if ( n.inputType !== 'hidden' ) {
-
-                // Check current UI state
-                n.q = that.input.getWrapNode( control );
-                previouslyInvalid = n.q.classList.contains( 'invalid-required' ) || n.q.classList.contains( 'invalid-constraint' );
-
-                // Update UI
-                if ( result.requiredValid === false ) {
-                    that.setValid( control, 'constraint' );
-                    that.setInvalid( control, 'required' );
-                } else if ( result.constraintValid === false ) {
-                    that.setValid( control, 'required' );
-                    that.setInvalid( control, 'constraint' );
-                } else {
-                    that.setValid( control, 'constraint' );
-                    that.setValid( control, 'required' );
-                }
-            }
-            // Send invalidated event
-            if ( !passed && !previouslyInvalid ) {
-                control.dispatchEvent( events.Invalidated() );
+                this.updateValidityInUi( control, result );
             }
 
-            return passed;
+            return result;
         } )
         .catch( e => {
             console.error( 'validation error', e );
@@ -1146,11 +1177,11 @@ Form.prototype.goToTarget = function( target ) {
 };
 
 /**
- * Static method to obtain required enketo-transform version direct from class.
+ * Static property with required enketo-transformer version.
  *
  * @type {string}
  * @default
  */
-Form.requiredTransformerVersion = '1.40.1';
+Form.requiredTransformerVersion = '1.41.4';
 
 export { Form, FormModel };

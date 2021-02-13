@@ -1,0 +1,44 @@
+	modified:   src/js/calculate.js
+	modified:   src/js/dom-utils.js
+	new file:   src/js/download-utils.js
+	modified:   src/js/event.js
+	modified:   src/js/extend.js
+	modified:   src/js/form-model.js
+	modified:   src/js/form.js
+	modified:   src/js/input.js
+	modified:   src/js/itemset.js
+	modified:   src/js/mask.js
+	new file:   src/js/nodeset.js
+	modified:   src/js/plugins.js
+	modified:   src/js/preload.js
+	modified:   src/js/print.js
+	modified:   src/js/readonly.js
+	modified:   src/js/relevant.js
+	modified:   src/js/repeat.js
+	modified:   src/js/sniffer.js
+	modified:   src/js/types.js
+	modified:   src/js/utils.js
+	new file:   src/js/xpath-evaluator-binding-ie11.js
+	modified:   src/js/xpath-evaluator-binding.js
+	modified:   src/sass/core/_main.scss
+	modified:   src/sass/core/_mixins.scss
+	modified:   src/sass/grid/_main.scss
+	modified:   src/sass/grid/_widgets.scss
+	modified:   src/widget/analog-scale/analog-scalepicker.js
+	modified:   src/widget/analog-scale/analog-scalepicker.scss
+	modified:   src/widget/comment/commentwidget.js
+	modified:   src/widget/date/datepicker-extended.js
+	modified:   src/widget/datetime/datetimepicker-extended.js
+	modified:   src/widget/draw/draw-widget.js
+	modified:   src/widget/draw/draw-widget.scss
+	modified:   src/widget/file/filepicker.js
+	modified:   src/widget/file/filepicker.scss
+	modified:   src/widget/geo/geopicker.js
+	modified:   src/widget/image-map/image-map.js
+	modified:   src/widget/image-map/image-map.scss
+	modified:   src/widget/range/range-widget.js
+	modified:   src/widget/select-autocomplete/autocomplete.js
+	modified:   src/widget/select-desktop/selectpicker.js
+	modified:   src/widget/thousands-sep/thousands-sep.js
+	modified:   src/widget/time/timepicker-extended.js
+	modified:   src/widget/time/timepicker.js

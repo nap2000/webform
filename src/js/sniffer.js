@@ -16,7 +16,7 @@ const os = {
      * @type {string}
      **/
     get ios() {
-        // in iOS13, the default Safari setting is 'Request Desktop Site' to be On. 
+        // in iOS13, the default Safari setting is 'Request Desktop Site' to be On.
         // The platform and useragent no longer show iPad/iPhone/iPod
         // so we use a trick that will work for a while until MacOs gets touchscreen support.
         return /iPad|iPhone|iPod/i.test( pf ) || ( /Mac/i.test( pf ) && document.documentElement.ontouchstart !== undefined );
@@ -26,7 +26,26 @@ const os = {
      **/
     get android() {
         return /android/i.test( ua );
+    },
+    /**
+     * @type {string}
+     **/
+    get macos() {
+        return /Mac/.test( ua );
+    },
+};
+
+
+/**
+ * @namespace browser
+ **/
+const browser = {
+    /**ua
+     * @type {string}
+     **/
+    get safari() {
+        return /^((?!chrome|android).)*safari/i.test( ua );
     }
 };
 
-export { os };
+export { os, browser };

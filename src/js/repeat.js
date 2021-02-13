@@ -75,6 +75,9 @@ export default {
             const xPath = templateEl.getAttribute( 'name' );
             this.remove();
             $( templateEl ).removeClass( 'contains-current current' ).find( '.current' ).removeClass( 'current' );
+            // Clear all values (this is required for setvalue/odk-instance-first-load populated values)
+            // The default values will be added anyway in the repeats.add function.
+            that.form.input.clear( templateEl );
             that.templates[ xPath ] = templateEl;
         } );
 
@@ -356,14 +359,14 @@ export default {
         const repeatIndex = this.getIndex( $repeat[ 0 ] );
         const repeatInfo = $repeat.siblings( '.or-repeat-info' )[ 0 ];
 
-            $repeat.remove();
-            that.numberRepeats( repeatInfo );
-            that.toggleButtons( repeatInfo );
-            // Trigger the removerepeat on the next repeat or repeat-info(always present)
-            // so that removerepeat handlers know where the repeat was removed
-            $next[ 0 ].dispatchEvent( events.RemoveRepeat() );
-            // Now remove the data node
-            that.form.model.node( repeatPath, repeatIndex ).remove();
+        $repeat.remove();
+        that.numberRepeats( repeatInfo );
+        that.toggleButtons( repeatInfo );
+        // Trigger the removerepeat on the next repeat or repeat-info(always present)
+        // so that removerepeat handlers know where the repeat was removed
+        $next[ 0 ].dispatchEvent( events.RemoveRepeat() );
+        // Now remove the data node
+        that.form.model.node( repeatPath, repeatIndex ).remove();
 
     },
     fixRadioName( element ) {

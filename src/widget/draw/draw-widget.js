@@ -9,7 +9,8 @@ import fileManager from 'enketo/file-manager';
 import SignaturePad from 'signature_pad';
 import { t } from 'enketo/translator';
 import dialog from 'enketo/dialog';
-import { updateDownloadLink, dataUriToBlobSync, getFilename } from '../../js/utils';
+import { dataUriToBlobSync, getFilename } from '../../js/utils';
+import downloadUtils from '../../js/download-utils';
 const DELAY = 1500;
 
 /**
@@ -374,22 +375,24 @@ class DrawWidget extends Widget {
      * @param {boolean} [changed] - whether the value has changed
      */
     _updateValue( changed = true ) {
-        const now = new Date();
-        const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;   // smap get milliseconds
-
-        if(!this.element.dataset.filenamePostfix) { // smap only update postfix if it has not been set
-            this.element.dataset.filenamePostfix = postfix;
+        const newValue = this.pad.toDataURL();
+        if ( this.value !== newValue ){
+            const now = new Date();
+            const postfix = `-${now.getHours()}_${now.getMinutes()}_${now.getSeconds()}_${now.getMilliseconds()}`;   // smap get milliseconds
+            if(!this.element.dataset.filenamePostfix) { // smap only update postfix if it has not been set
+                this.element.dataset.filenamePostfix = postfix;
+            }
+            // Note that this.element has become a text input.
+            // When a default file is loaded this function is called by the canvasreload handler, but the user hasn't changed anything.
+            // We want to make sure the model remains unchanged in that case.
+            if ( changed ) {
+                this.originalInputValue = this.props.filename;
+            }
+            // pad.toData() doesn't seem to work when redrawing on a smaller canvas. Doesn't scale.
+            // pad.toDataURL() is crude and memory-heavy but the advantage is that it will also work for appearance=annotate
+            this.value = newValue;
+            this._updateDownloadLink( this.value );
         }
-        // Note that this.element has become a text input.
-        // When a default file is loaded this function is called by the canvasreload handler, but the user hasn't changed anything.
-        // We want to make sure the model remains unchanged in that case.
-        if ( changed ) {
-            this.originalInputValue = this.props.filename;
-        }
-        // pad.toData() doesn't seem to work when redrawing on a smaller canvas. Doesn't scale.
-        // pad.toDataURL() is crude and memory-heavy but the advantage is that it will also work for appearance=annotate
-        this.value = this.pad.toDataURL();
-        this._updateDownloadLink( this.value );
     }
 
     /**
@@ -468,7 +471,7 @@ class DrawWidget extends Widget {
             url = URL.createObjectURL( dataUriToBlobSync( url ) );
         }
         const fileName = url ? getFilename( { name: this.element.value }, this.element.dataset.filenamePostfix ) : '';
-        updateDownloadLink( this.$widget.find( '.btn-download' )[ 0 ], url, fileName );
+        downloadUtils.updateDownloadLink( this.$widget.find( '.btn-download' )[ 0 ], url, fileName );
     }
 
     /**
@@ -479,7 +482,8 @@ class DrawWidget extends Widget {
     _handleResize( canvas ) {
         const that = this;
         $( window ).on( 'resize', () => {
-            that._forceUpdate();  // smap do not update data on resize XXXXXXXXXXX
+            // smap is this right - upgrade
+            //that._forceUpdate();
             that._resizeCanvas( canvas );
         } );
     }

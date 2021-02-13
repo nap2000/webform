@@ -44,6 +44,3 @@ if(typeof surveyData !== "undefined") {
     });
 }
 
-
-
-

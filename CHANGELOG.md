@@ -3,6 +3,124 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+[5.17.1] - 2020-01-18
+----------------------
+##### Changed
+- The uuid() function implementation has improved with a reduced chance of collisions.
+
+##### Fixed
+- Action setvalue/odk-instance-first-load and setvalue/odk-new-repeat actions are not properly added for radiobutton and checkbox questions (in enketo-transformer).
+- Lazy and/or evaluation within function arguments (in openrosa-xpath-evaluator).
+- Action setvalue/odk-new-repeat does not run non-form-control actions before form controls (since 5.17.0).
+- Static itemsets with radio buttons inside multiple repeat instances do not load correctly.
+- Draw widget changes file name whenever browser window resizes.
+- Draw widget updates file name when canvas loses focus if drawing hasn't changed.
+- Nested XPath expressions with dead branches cause an exception (since 5.17.0).
+
+[5.17.0] - 2020-12-28
+----------------------
+##### Changed
+- Vastly improved performance for most slow forms by replacing the XPath evaluator. See [blog post to follow]().
+
+[5.16.16] - 2020-12-23
+-----------------------
+##### Fixed
+- A form with a repeat count that has a relevant, will not create the required amount of repeats when loading an existing record.
+
+[5.16.15] - 2020-12-22
+-----------------------
+##### Fixed
+- If the same repeat question has both a setvalue/odk-instance-first-load as well as a setvalue/xforms-value-changed, the output can get messed up (fixed in enketo-transformer).
+
+[5.16.14] - 2020-12-18
+-----------------------
+##### Fixed
+- The setvalue/odk-instance-first-load default in the first repeat instance is not populated if that repeat or question is non-relevant upon load.
+- If the result of a non-first setvalue/odk-new-repeat calculation is an empty string but the first repeat instance has a non-empty default for that question, the view will show the non-empty default (model is correct).
+
+[5.16.13] - 2020-12-16
+-----------------------
+##### Fixed
+- An exception occurs when a repeat is deleted.
+- When a calculation becomes non-relevant, values are sometimes cleared (they should stay).
+- The input field of a readonly question without a calculation but with a triggered setvalue/xforms-value-changed action remains hidden.
+- Calculation updates do not trigger setvalue/xforms-value-changed actions.
+
+[5.16.12] - 2020-12-04
+-----------------------
+##### Changed
+- setvalue/odk-instance-first-load actions without form controls are evaluated (in form order) before setvalue/odk-instance-first-load actions with form controls (in form order)
+
+[5.16.11] - 2020-12-02
+-----------------------
+##### Fixed
+- Print/pdf view creates image-map that overlaps in cell below with Grid theme (#744).
+- In Safari on MacOS, dates are offset incorrectly by the UTC offset.
+- Grid Theme designed for rows with 9 or 10 cells display 1 cell too many.
+- Inconsistent and unsafe HTML rendering of select minimal labels and values.
+- Primary instance node names starting with underscore followed by number, break autocomplete widget.
+
+[5.16.10] - 2020-11-18
+-----------------------
+##### Changed
+- Improved timings of print script for Grid Theme forms
+
+##### Fixed
+- Geopicker on mobile devices won't show map any more after first map reveal.
+- jr:choice-name not working for questions with radiobuttons.
+- If a ref or nodeset attribute starts with a space, the absolute path is not determined correctly (enketo-transformer).
+
+[5.16.9] - 2020-09-28
+-----------------------
+##### Fixed
+- In custom (OC) analog-scale widget, if the widget itself is a page (not its parent group), it is not hidden when it should be when the page is not current.
+- When pasting an invalid number into a number field with an existing value, the existing value does not get cleared in the model.
+
+[5.16.8] - 2020-08-28
+----------------------
+##### Added
+- In custom (OC) analog-scale widget support for `show-scale` appearance for vertical widgets using int/decimal.
+
+##### Changed
+- Ordered markdown lists should always be preceded by a newline character because it's very common to number labels in forms(enketo-transformer).
+
+[5.16.7] - 2020-08-13
+----------------------
+##### Changed
+- Removed animation when removing a repeat.
+
+##### Fixed
+- When a `setvalue` element has no `value` attribute and no textContent, it does not work for resetting values(enketo-transformer fix).
+- When nested repeats using jr:count have values that empty or 0, a nested repeat can never be created (exception)
+
+[5.16.6] - 2020-08-03
+----------------------
+##### Fixed
+- Readonly empty fields are displayed but should be invisible (recent regression).
+
+[5.16.5] - 2020-08-03
+----------------------
+##### Changed
+- Let cookie access attempt fail silently in context where document.cookie is not accessible and throws an exception.
+
+##### Fixed
+- Xforms-version check relies on specific namespace prefix.
+- jr:choice-name() not working if parameters are relative paths.
+
+[5.16.4] - 2020-07-23
+----------------------
+##### Changed
+- Markdown lists no longer require preceding newline (enketo-transformer).
+- Markdown ordered lists detect non-1 numbering start (enketo-transformer).
+- Add rel="noopener" to markdown links (enketo-transformer).
+- Focus date/time/datetime pickers when clicking label.
+
+##### Fixed
+- Pulldata fails to work when the search value looks like a number in scientific notation.
+- Readonly text fields with overflowing text have invisible overflow on printouts.
+- Textarea contains unnecessary space character (enketo-transformer).
+- In Firefox the native datepicker launches when the question label is clicked.
+
 [5.16.3] - 2020-07-09
 ----------------------
 ##### Changed

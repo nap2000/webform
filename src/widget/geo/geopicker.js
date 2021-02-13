@@ -6,6 +6,7 @@ import { t } from 'enketo/translator';
 import support from '../../js/support';
 import types from '../../js/types';
 import dialog from 'enketo/dialog';
+import { getScript } from '../../js/utils';
 import { elementDataStore as data } from '../../js/dom-utils';
 let googleMapsScriptRequest;
 
@@ -245,9 +246,10 @@ class Geopicker extends Widget {
                 .find( '.leaflet-google-layer' ).remove();
             if ( that.map ) {
                 that.map.remove();
-                that.map = null;
-                that.polygon = null;
-                that.polyline = null;
+                that.map = undefined;
+                this.loadMap = undefined;
+                that.polygon = undefined;
+                that.polyline = undefined;
             }
 
             return false;
@@ -656,7 +658,8 @@ class Geopicker extends Widget {
             this.loadMap
                 .then( () => {
                     that._updateDynamicMapView( latLng, zoom );
-                } );
+                } )
+                .catch( () => {} );
 
         }
     }
@@ -846,15 +849,13 @@ class Geopicker extends Widget {
 
                 // create a global callback to be called by the Google Maps script once this has loaded
                 window.gmapsLoaded = () => {
-                    // clean up the global function
-                    delete window.gmapsLoaded;
                     // resolve the deferred object
                     resolve();
                 };
                 // make the request for the Google Maps script asynchronously
                 apiKeyQueryParam = ( googleApiKey ) ? `&key=${googleApiKey}` : '';
-                loadUrl = `https://maps.google.com/maps/api/js?v=3.exp${apiKeyQueryParam}&libraries=places&callback=gmapsLoaded`;
-                $.getScript( loadUrl );
+                loadUrl = `https://maps.google.com/maps/api/js?v=weekly${apiKeyQueryParam}&libraries=places&callback=gmapsLoaded`;
+                getScript( loadUrl );
             } );
         }
 
