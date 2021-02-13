@@ -4,7 +4,7 @@
      */
     "use strict";
 
-    var fileStore = {};
+    let fileStore = {};
 
     /*
      * Variables for indexedDB Storage
@@ -13,17 +13,17 @@
     if(window.idbConfig) {
         webformDbVersion = window.idbConfig.version;        // Share value with webforms page 
     } else {
-        webformDbVersion = 3;
+        webformDbVersion = 6;
     }
     let databaseName = "webform";
 
     let mediaStoreName = "media";
-    var mediaStore;
+    let mediaStore;
 
     let recordStoreName = 'records';
     let assignmentIdx = 'assignment';
     let assignmentIdxPath = 'assignment.assignment_id';
-    var recordStore;
+    let recordStore;
 
     /*
      * Variables for fall back local storage
@@ -73,7 +73,7 @@
                 };
 
                 request.onsuccess = function (e) {
-                    var openDb = e.target.result;
+                    let openDb = e.target.result;
 
                     openDb.onerror = function (e) {
                         // Generic error handler for all errors targeted at this database's
@@ -85,8 +85,8 @@
                 };
 
                 request.onupgradeneeded = function(e) {
-                    var upgradeDb = e.target.result;
-                    var oldVersion = upgradeDb.oldVersion || 0;
+                    let upgradeDb = e.target.result;
+                    let oldVersion = upgradeDb.oldVersion || 0;
 
                     switch (oldVersion) {
                         case 0:
