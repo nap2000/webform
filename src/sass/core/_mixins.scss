@@ -178,17 +178,16 @@
         $flex: percentage($value / $total);
     }
 
-    -webkit-flex-grow: 1;
     flex-grow: 1;
-    -webkit-flex-shrink: 1;
-    flex-shrink: 1; // Internet Explorer 10 and 11 have a box-sizing issue with multiline flexboxes
+    flex-shrink: 1;
+    // Internet Explorer 11 has a box-sizing issue with multiline flexboxes
     // box-sizing: border-box is ignored
     // 2 x 6px padding + 1 border = 13px adjustment
-    -webkit-flex-basis: calc(#{$flex} - 13px); // IE10:
     -ms-flex-preferred-size: calc(#{$flex} - 13px);
     -ms-flex-positive: 1;
-    -ms-flex-negative: 1; // unprefixed
-    flex-basis: calc(#{$flex} - 13px);
+    -ms-flex-negative: 1;
+    // unprefixed
+    flex-basis: calc(#{$flex});
 }
 
 @mixin flex-wrap($wrap: wrap) {
@@ -244,6 +243,31 @@
 
 @mixin focus-shadow {
     // just a placeholder
+}
+
+// Moving this styles to a mixin facilitates custom functionality added in OpenClinica with multiple constraints.
+@mixin question-invalid {
+    @include transition-fast;
+
+    background-color: $state-danger-bg;
+    border-color: $state-danger-border;
+    border-radius: $border-radius-small;
+
+    $pad: 10px;
+
+    margin-right: -$pad;
+    margin-left: -$pad;
+    padding-left: $pad;
+    padding-right: $pad;
+    padding-bottom: $pad;
+}
+
+// Moving this styles to a mixin facilitates custom functionality added in OpenClinica with multiple constraints.
+@mixin question-error-message {
+    font-weight: bold;
+    padding-top: 5px;
+    font-size: 0.85em;
+    color: $state-danger-text;
 }
 
 // from https://gist.github.com/JacobDB/0ffffaf8e772c12acf7102edb8a302be

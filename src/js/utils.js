@@ -92,23 +92,6 @@ function getFilename( file, postfix ) {
 }
 
 /**
- * Converts NodeLists or DOMtokenLists to an array.
- *
- * @static
- * @param {NodeList|DOMTokenList} list - a Nodelist or DOMTokenList
- * @return {Array} list converted to array
- */
-function toArray( list ) {
-    const array = [];
-    // iterate backwards ensuring that length is an UInt32
-    for ( let i = list.length >>> 0; i--; ) {
-        array[ i ] = list[ i ];
-    }
-
-    return array;
-}
-
-/**
  * @static
  * @param {*} n - value
  * @return {boolean} whether it is a number value
@@ -127,22 +110,31 @@ function readCookie( name ) {
         return cookies[ name ];
     }
 
-    const parts = document.cookie.split( '; ' );
-    cookies = {};
+    // In enketo-validate and perhaps other contexts, enketo-core is used in an empty page in a headless browser
+    // In such a context document.cookie throws an 'Access is denied for this document' error.
+    try {
+        const parts = document.cookie.split( '; ' );
+        cookies = {};
 
-    for ( let i = parts.length - 1; i >= 0; i-- ) {
-        const ck = parts[ i ].split( '=' );
-        // decode URI
-        ck[ 1 ] = decodeURIComponent( ck[ 1 ] );
-        // if cookie is signed (using expressjs/cookie-parser/), extract value
-        if ( ck[ 1 ].substr( 0, 2 ) === 's:' ) {
-            ck[ 1 ] = ck[ 1 ].slice( 2 );
-            ck[ 1 ] = ck[ 1 ].slice( 0, ck[ 1 ].lastIndexOf( '.' ) );
+        for ( let i = parts.length - 1; i >= 0; i-- ) {
+            const ck = parts[ i ].split( '=' );
+            // decode URI
+            ck[ 1 ] = decodeURIComponent( ck[ 1 ] );
+            // if cookie is signed (using expressjs/cookie-parser/), extract value
+            if ( ck[ 1 ].substr( 0, 2 ) === 's:' ) {
+                ck[ 1 ] = ck[ 1 ].slice( 2 );
+                ck[ 1 ] = ck[ 1 ].slice( 0, ck[ 1 ].lastIndexOf( '.' ) );
+            }
+            cookies[ ck[ 0 ] ] = decodeURIComponent( ck[ 1 ] );
         }
-        cookies[ ck[ 0 ] ] = decodeURIComponent( ck[ 1 ] );
-    }
 
-    return cookies[ name ];
+        return cookies[ name ];
+
+    } catch( e ){
+        console.error( 'Cookie error', e );
+
+        return null;
+    }
 }
 
 /**
@@ -225,14 +217,63 @@ function resizeImage( file, maxPixels ) {
     } );
 }
 
+/**
+ * Copied from: https://gist.github.com/creationix/7435851
+ * Joins path segments.  Preserves initial "/" and resolves ".." and "."
+ * Does not support using ".." to go above/outside the root.
+ * This means that join("foo", "../../bar") will not resolve to "../bar"
+ */
+function joinPath( /* path segments */ ) {
+    // Split the inputs into a list of path commands.
+    let parts = [];
+    for ( var i = 0, l = arguments.length; i < l; i++ ) {
+        parts = parts.concat( arguments[i].split( '/' ) );
+    }
+    // Interpret the path commands to get the new resolved path.
+    let newParts = [];
+    for ( i = 0, l = parts.length; i < l; i++ ) {
+        var part = parts[i];
+        // Remove leading and trailing slashes
+        // Also remove "." segments
+        if ( !part || part === '.' ) continue;
+        // Interpret ".." to pop the last segment
+        if ( part === '..' ) newParts.pop();
+        // Push new path segments.
+        else newParts.push( part );
+    }
+    // Preserve the initial slash if there was one.
+    if ( parts[0] === '' ) newParts.unshift( '' );
+
+    // Turn back into a single string path.
+    return newParts.join( '/' ) || ( newParts.length ? '/' : '.' );
+}
+
+
+function getScript( url ) {
+    const scriptTag = document.createElement( 'script' );
+    const firstScriptTag = document.getElementsByTagName( 'script' )[0];
+    scriptTag.src = url;
+    firstScriptTag.parentNode.insertBefore( scriptTag, firstScriptTag );
+}
+
+function encodeHtmlEntities( text ){
+    return text
+        .replace( /&/g, '&amp;' )
+        .replace( /</g, '&lt;' )
+        .replace( />/g, '&gt;' )
+        .replace( /"/g, '&quot;' );
+}
+
 export {
     parseFunctionFromExpression,
     stripQuotes,
     getFilename,
-    toArray,
     isNumber,
     readCookie,
     dataUriToBlobSync,
     getPasteData,
-    resizeImage
+    resizeImage,
+    joinPath,
+    getScript,
+    encodeHtmlEntities
 };

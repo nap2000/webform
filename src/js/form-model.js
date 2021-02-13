@@ -1,11 +1,13 @@
 import MergeXML from 'mergexml/mergexml';
 import { readCookie, parseFunctionFromExpression, stripQuotes } from './utils';
-import $ from 'jquery';
 import { getSiblingElementsAndSelf, getXPath, getRepeatIndex, hasPreviousCommentSiblingWithContent, hasPreviousSiblingElementSameName } from './dom-utils';
 import FormLogicError from './form-logic-error';
 import config from 'enketo/config';
 import types from './types';
 import event from './event';
+import { Nodeset } from './nodeset';
+import bindJsEvaluator from 'enketo/xpath-evaluator-binding';
+
 const REPEAT_COMMENT_PREFIX = 'repeat:/';
 const INSTANCE = /instance\(\s*(["'])((?:(?!\1)[A-z0-9.\-_]+))\1\s*\)/g;
 const OPENROSA = /(decimal-date-time\(|pow\(|indexed-repeat\(|format-date\(|coalesce\(|join\(|max\(|min\(|random\(|substr\(|int\(|uuid\(|regex\(|now\(|today\(|date\(|if\(|boolean-from-string\(|checklist\(|selected\(|selected-at\(|round\(|area\(|position\([^)])/;
@@ -14,12 +16,9 @@ const JAVAROSA_XFORMS_NS = 'http://openrosa.org/javarosa';
 const ENKETO_XFORMS_NS = 'http://enketo.org/xforms';
 const ODK_XFORMS_NS = 'http://www.opendatakit.org/xforms';
 
-//require( './plugins' );
 import './extend';
 
 const parser = new DOMParser();
-let FormModel;
-let Nodeset;
 
 /**
  * Class dealing with the XML Model of a form
@@ -29,7 +28,7 @@ let Nodeset;
  * @param {object=} options - FormModel options
  * @param {string=} options.full - Whether to initialize the full model or only the primary instance.
  */
-FormModel = function( data, options ) {
+const FormModel = function( data, options ) {
 
     if ( typeof data === 'string' ) {
         data = {
@@ -117,7 +116,7 @@ FormModel.prototype.init = function() {
 
         // Add external data to model
         this.data.external.forEach( instance => {
-            id = `instance "${instance.id}"` || 'instance unknown';
+            id = instance.id ? `instance "${instance.id}"` : 'instance "unknown"';
             instanceDoc = that.getSecondaryInstance( instance.id );
             // remove any existing content that is just an XLSForm hack to pass ODK Validate
             secondaryInstanceChildren = instanceDoc.children;
@@ -125,9 +124,7 @@ FormModel.prototype.init = function() {
                 instanceDoc.removeChild( secondaryInstanceChildren[ i ] );
             }
             let rootEl;
-            // The instance.xml.constructor.name === 'Document' check is only supported for Enketo Validate.
-            // Document instances are not supposed to be used otherwise as it could create problems.
-            if ( instance.xml instanceof XMLDocument || instance.xml.constructor.name === 'Document' ) {
+            if ( instance.xml instanceof XMLDocument ) {
                 if ( window.navigator.userAgent.indexOf( 'Trident/' ) >= 0 ) {
                     // IE does not support importNode
                     rootEl = that.importNode( instance.xml.documentElement, true );
@@ -161,7 +158,7 @@ FormModel.prototype.init = function() {
             // In the future, if there are more use cases for odk:xforms-version, we'll probably have to use a semver-parser
             // to do a comparison. In this case, the presence of the attribute is sufficient, as we know no older versions
             // than odk:xforms-version="1.0.0" exist. Previous versions had no number.
-            this.noRepeatRefErrorExpected = this.evaluate( '/model/@odk:xforms-version', 'boolean', null, null, true );
+            this.noRepeatRefErrorExpected = this.evaluate( `/model/@${this.getNamespacePrefix( ODK_XFORMS_NS )}:xforms-version`, 'boolean', null, null, true );
 
             // Check if instanceID is present
             if ( !this.getMetaNode( 'instanceID' ).getElement() ) {
@@ -228,7 +225,7 @@ FormModel.prototype.createSession = function( id, sessObj ) {
     }
 
     sessObj = ( typeof sessObj === 'object' ) ? sessObj : {};
-    instance = model.querySelector( `instance[id="${id}"]` );
+    instance = model.querySelector( `instance#${CSS.escape( id )}` );
 
     if ( !instance ) {
         instance = parser.parseFromString( `<instance id="${id}"/>`, 'text/xml' ).documentElement;
@@ -555,7 +552,6 @@ FormModel.prototype.setInstanceIdAndDeprecatedId = function() {
     }
 };
 
-import bindJsEvaluator from './xpath-evaluator-binding';
 /**
  * Creates a custom XPath Evaluator to be used for XPath Expresssions that contain custom
  * OpenRosa functions or for browsers that do not have a native evaluator.
@@ -758,7 +754,7 @@ FormModel.prototype.determineIndex = function( element ) {
 };
 
 /**
- * Extracts all templates from the model and stores them in a Javascript object poperties as Jquery collections.
+ * Extracts all templates from the model and stores them in a Javascript object.
  */
 FormModel.prototype.extractTemplates = function() {
     const that = this;
@@ -768,7 +764,7 @@ FormModel.prototype.extractTemplates = function() {
         const xPath = getXPath( templateEl, 'instance' );
         that.addTemplate( xPath, templateEl );
         /*
-         * Nested repeats that have a template attribute are correctly add to that.templates.
+         * Nested repeats that have a template attribute are correctly added to the templates object.
          * The template of the repeat ancestor of the nested repeat contains the correct comment.
          * However, since the ancestor repeat (template)
          */
@@ -1051,7 +1047,7 @@ FormModel.prototype.replaceInstanceFn = function( expr ) {
     let prefix;
     const that = this;
 
-    // TODO: would be more consistent to use utls.parseFunctionFromExpression() and utils.stripQuotes
+    // TODO: would be more consistent to use utils.parseFunctionFromExpression() and utils.stripQuotes
     return expr.replace( INSTANCE, ( match, quote, id ) => {
         prefix = `/model/instance[@id="${id}"]`;
         // check if referred instance exists in model
@@ -1069,7 +1065,7 @@ FormModel.prototype.replaceInstanceFn = function( expr ) {
  * Doing this here instead of adding a current() function to the XPath evaluator, means we can keep using
  * the much faster native evaluator in most cases!
  *
- * Root will be shifted, and repeat positions injected, **later on**, so it's not included here.
+ * Root will be shifted later, and repeat positions are already injected into context selector.
  *
  * @param {string} expr - Original expression
  * @param {string} contextSelector - Context selector
@@ -1353,340 +1349,6 @@ FormModel.prototype.evaluate = function( expr, resTypeStr, selector, index, tryN
     }
 };
 
-/**
- * @typedef NodesetFilter
- * @property {boolean} onlyLeaf
- * @property {boolean} noEmpty
- */
-
-/**
- * Class dealing with nodes and nodesets of the XML instance
- *
- * @class
- * @param {string} [selector] - SimpleXPath or jQuery selector
- * @param {number} [index] - The index of the target node with that selector
- * @param {NodesetFilter} [filter] - Filter object for the result nodeset
- * @param {FormModel} model - Instance of FormModel
- */
-Nodeset = function( selector, index, filter, model ) {
-    const defaultSelector = model.hasInstance ? '/model/instance[1]//*' : '//*';
-
-    this.model = model;
-    this.originalSelector = selector;
-    this.selector = ( typeof selector === 'string' && selector.length > 0 ) ? selector : defaultSelector;
-    filter = ( typeof filter !== 'undefined' && filter !== null ) ? filter : {};
-    this.filter = filter;
-    this.filter.onlyLeaf = ( typeof filter.onlyLeaf !== 'undefined' ) ? filter.onlyLeaf : false;
-    this.filter.noEmpty = ( typeof filter.noEmpty !== 'undefined' ) ? filter.noEmpty : false;
-    this.index = index;
-};
-
-/**
- * @return {Element} Single node
- */
-Nodeset.prototype.getElement = function() {
-    return this.getElements()[ 0 ];
-};
-
-/**
- * @return {Array<Element>} List of nodes
- */
-Nodeset.prototype.getElements = function() {
-    let nodes;
-    let /** @type {string} */ val;
-
-    // cache evaluation result
-    if ( !this._nodes ) {
-        this._nodes = this.model.evaluate( this.selector, 'nodes', null, null, true );
-        // noEmpty automatically excludes non-leaf nodes
-        if ( this.filter.noEmpty === true ) {
-            this._nodes = this._nodes
-                .filter( node => {
-                    val = node.textContent;
-
-                    return node.children.length === 0 && val.trim().length > 0;
-                } );
-        }
-        // this may still contain empty leaf nodes
-        else if ( this.filter.onlyLeaf === true ) {
-            this._nodes = this._nodes
-                .filter( node => node.children.length === 0 );
-        }
-    }
-
-    nodes = this._nodes;
-
-    if ( typeof this.index !== 'undefined' && this.index !== null ) {
-        nodes = typeof nodes[ this.index ] === 'undefined' ? [] : [ nodes[ this.index ] ];
-    }
-
-    return nodes;
-};
-
-/**
- * Sets the index of the Nodeset instance
- *
- * @param {number} [index] - The 0-based index
- */
-Nodeset.prototype.setIndex = function( index ) {
-    this.index = index;
-};
-
-/**
- * Sets data node values.
- *
- * @param {(string|Array<string>)} [newVals] - The new value of the node.
- * @param {string} [xmlDataType] - XML data type of the node
- *
- * @return {null|UpdatedDataNodes} `null` is returned when the node is not found or multiple nodes were selected,
- *                       otherwise an object with update information is returned.
- */
-Nodeset.prototype.setVal = function( newVals, xmlDataType ) {
-    let /**@type {string}*/ newVal;
-    let updated;
-    let customData;
-
-    const curVal = this.getVal();
-
-    if ( typeof newVals !== 'undefined' && newVals !== null ) {
-        newVal = ( Array.isArray( newVals ) ) ? newVals.join( ' ' ) : newVals.toString();
-    } else {
-        newVal = '';
-    }
-
-    newVal = this.convert( newVal, xmlDataType );
-    const targets = this.getElements();
-
-    if ( targets.length === 1 && newVal.toString() !== curVal.toString() ) {
-        const target = targets[ 0 ];
-        // first change the value so that it can be evaluated in XPath (validated)
-        target.textContent = newVal.toString();
-        // then return validation result
-        updated = this.getClosestRepeat();
-        updated.nodes = [ target.nodeName ];
-
-        customData = this.model.getUpdateEventData( target, xmlDataType );
-        updated = ( customData ) ? $.extend( {}, updated, customData ) : updated;
-
-        this.model.events.dispatchEvent( event.DataUpdate( updated ) );
-
-        //add type="file" attribute for file references
-        if ( xmlDataType === 'binary' ) {
-            if ( newVal.length > 0 ) {
-                target.setAttribute( 'type', 'file' );
-                // The src attribute if for default binary values (added by enketo-transformer)
-                // As soon as the value changes this attribute can be removed to clean up.
-                target.removeAttribute( 'src' );
-            } else {
-                target.removeAttribute( 'type' );
-            }
-        }
-
-        return updated;
-    }
-    if ( targets.length > 1 ) {
-        console.error( 'nodeset.setVal expected nodeset with one node, but received multiple' );
-
-        return null;
-    }
-    if ( targets.length === 0 ) {
-        console.warn( `Data node: ${this.selector} with null-based index: ${this.index} not found. Ignored.` );
-
-        return null;
-    }
-
-    return null;
-};
-
-/**
- * Obtains the data value of the first node.
- *
- * @return {string|undefined} data value of first node or `undefined` if zero nodes
- */
-Nodeset.prototype.getVal = function() {
-    const nodes = this.getElements();
-
-    return nodes.length ? nodes[ 0 ].textContent : undefined;
-};
-
-/**
- * Note: If repeats have not been cloned yet, they are not considered a repeat by this function
- *
- * @return {{repeatPath: string, repeatIndex: number}|{}} Empty object for nothing found
- */
-Nodeset.prototype.getClosestRepeat = function() {
-    let el = this.getElement();
-    let nodeName = el.nodeName;
-
-    while ( nodeName && nodeName !== 'instance' && !( el.nextElementSibling && el.nextElementSibling.nodeName === nodeName ) && !( el.previousElementSibling && el.previousElementSibling.nodeName === nodeName ) ) {
-        el = el.parentElement;
-        nodeName = el ? el.nodeName : null;
-    }
-
-    return ( !nodeName || nodeName === 'instance' ) ? {} : {
-        repeatPath: getXPath( el, 'instance' ),
-        repeatIndex: this.model.determineIndex( el )
-    };
-};
-
-/**
- * Remove a repeat node
- */
-Nodeset.prototype.remove = function() {
-    const dataNode = this.getElement();
-
-    if ( dataNode ) {
-        const nodeName = dataNode.nodeName;
-        const repeatPath = getXPath( dataNode, 'instance' );
-        let repeatIndex = this.model.determineIndex( dataNode );
-        const removalEventData = this.model.getRemovalEventData( dataNode );
-
-        if ( !this.model.templates[ repeatPath ] ) {
-            // This allows the model itseldataNodeout requiring the controller to call .extractFakeTemplates()
-            // to extract non-jr:templates by assuming that node.remove() would only called for a repeat.
-            this.model.extractFakeTemplates( [ repeatPath ] );
-        }
-        // warning: jQuery.next() to be avoided to support dots in the nodename
-        let nextNode = dataNode.nextElementSibling;
-
-        dataNode.remove();
-        this._nodes = null;
-
-        // For internal use
-        this.model.events.dispatchEvent( event.DataUpdate( {
-            nodes: null,
-            repeatPath,
-            repeatIndex
-        } ) );
-
-        // For all next sibling repeats to update formulas that use e.g. position(..)
-        // For internal use
-        while ( nextNode && nextNode.nodeName == nodeName ) {
-            nextNode = nextNode.nextElementSibling;
-
-            this.model.events.dispatchEvent( event.DataUpdate( {
-                nodes: null,
-                repeatPath,
-                repeatIndex: repeatIndex++
-            } ) );
-        }
-
-        // For external use, if required with custom data.
-        this.model.events.dispatchEvent( event.Removed( removalEventData ) );
-
-    } else {
-        console.error( `could not find node ${this.selector} with index ${this.index} to remove ` );
-    }
-};
-
-/**
- * Convert a value to a specified data type (though always stringified)
- *
- * @param {string} [x] - Value to convert
- * @param {string} [xmlDataType] - XML data type
- * @return {string} - String representation of converted value
- */
-Nodeset.prototype.convert = ( x, xmlDataType ) => {
-    if ( x.toString() === '' ) {
-        return x;
-    }
-    if ( typeof xmlDataType !== 'undefined' && xmlDataType !== null &&
-        typeof types[ xmlDataType.toLowerCase() ] !== 'undefined' &&
-        typeof types[ xmlDataType.toLowerCase() ].convert !== 'undefined' ) {
-        return types[ xmlDataType.toLowerCase() ].convert( x );
-    }
-
-    return x;
-};
-
-/**
- * @param {string} constraintExpr - The XPath expression
- * @param {string} requiredExpr - The XPath expression
- * @param {string} xmlDataType - XML data type
- * @return {Promise} promise that resolves with a ValidateInputResolution object
- */
-Nodeset.prototype.validate = function( constraintExpr, requiredExpr, xmlDataType ) {
-    const that = this;
-    const result = {};
-
-    // Avoid checking constraint if required is invalid
-    return this.validateRequired( requiredExpr )
-        .then( passed => {
-            result.requiredValid = passed;
-
-            return ( passed === false ) ? null : that.validateConstraintAndType( constraintExpr, xmlDataType );
-        } )
-        .then( passed => {
-            result.constraintValid = passed;
-
-            return result;
-        } );
-};
-
-/**
- * Validate a value with an XPath Expression and /or xml data type
- *
- * @param {string} [expr] - The XPath expression
- * @param {string} [xmlDataType] - XML data type
- * @return {Promise} wrapping a boolean indicating if the value is valid or not; error also indicates invalid field, or problem validating it
- */
-Nodeset.prototype.validateConstraintAndType = function( expr, xmlDataType ) {
-    const that = this;
-    let value;
-
-    if ( !xmlDataType || typeof types[ xmlDataType.toLowerCase() ] === 'undefined' ) {
-        xmlDataType = 'string';
-    }
-
-    // This one weird trick results in a small validation performance increase.
-    // Do not obtain *the value* if the expr is empty and data type is string, select, select1, binary knowing that this will always return true.
-    if ( !expr && ( xmlDataType === 'string' || xmlDataType === 'select' || xmlDataType === 'select1' || xmlDataType === 'binary' ) ) {
-        return Promise.resolve( true );
-    }
-
-    value = that.getVal();
-
-    if ( value.toString() === '' ) {
-        return Promise.resolve( true );
-    }
-
-    return Promise.resolve()
-        .then( () => types[ xmlDataType.toLowerCase() ].validate( value ) )
-        .then( typeValid => {
-            const exprValid = ( typeof expr !== 'undefined' && expr !== null && expr.length > 0 ) ? that.model.evaluate( expr, 'boolean', that.originalSelector, that.index ) : true;
-
-            return ( typeValid && exprValid );
-        } );
-};
-
-// TODO: rename to isTrue?
-/**
- * @param {string} [expr] - The XPath expression
- * @return {boolean} Whether node is required
- */
-Nodeset.prototype.isRequired = function( expr ) {
-    return !expr || expr.trim() === 'false()' ? false : expr.trim() === 'true()' || this.model.evaluate( expr, 'boolean', this.originalSelector, this.index );
-};
-
-/**
- * Validates if requiredness is fulfilled.
- *
- * @param {string} [expr] - The XPath expression
- * @return {Promise<boolean>} Promise that resolves with a boolean
- */
-Nodeset.prototype.validateRequired = function( expr ) {
-    const that = this;
-
-    // if the node has a value or there is no required expression
-    if ( !expr || this.getVal() ) {
-        return Promise.resolve( true );
-    }
-
-    // if the node does not have a value and there is a required expression
-    return Promise.resolve()
-        .then( () => // if the expression evaluates to true, the field is required, and the function returns false.
-            !that.isRequired( expr ) );
-};
 
 /**
  * Placeholder function meant to be overwritten

@@ -1,12 +1,12 @@
-![coverage-shield-badge-1](https://img.shields.io/badge/coverage-75.24%25-yellow.svg)
-[![npm version](https://badge.fury.io/js/enketo-core.svg)](http://badge.fury.io/js/enketo-core) [![Build Status](https://travis-ci.org/enketo/enketo-core.svg?branch=master)](https://travis-ci.org/enketo/enketo-core) [![Dependency Status](https://david-dm.org/enketo/enketo-core/status.svg)](https://david-dm.org/enketo/enketo-core) [![devDependency Status](https://david-dm.org/enketo/enketo-core/dev-status.svg)](https://david-dm.org/enketo/enketo-core?type=dev) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/dc1c5aaa9267d75cbd2d6714d2b4fa32)](https://www.codacy.com/app/martijnr/enketo-core?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=enketo/enketo-core&amp;utm_campaign=Badge_Grade)
+![coverage-shield-badge-1](https://img.shields.io/badge/coverage-74.6%25-yellow.svg)
+[![npm version](https://badge.fury.io/js/enketo-core.svg)](http://badge.fury.io/js/enketo-core) [![Build Status](https://travis-ci.com/enketo/enketo-core.svg?branch=master)](https://travis-ci.org/enketo/enketo-core) [![Dependency Status](https://david-dm.org/enketo/enketo-core/status.svg)](https://david-dm.org/enketo/enketo-core) [![devDependency Status](https://david-dm.org/enketo/enketo-core/dev-status.svg)](https://david-dm.org/enketo/enketo-core?type=dev) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/dc1c5aaa9267d75cbd2d6714d2b4fa32)](https://www.codacy.com/app/martijnr/enketo-core?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=enketo/enketo-core&amp;utm_campaign=Badge_Grade)
 
 Enketo Core
 ===========
 
 The engine that powers [Enketo Smart Paper](https://enketo.org) and various third party tools including [this selection](https://enketo.org/about/adoption/).
 
-Enketo's form engine is compatible with tools in the ODK ecosystem and complies with its [XForms specification](https://opendatakit.github.io/xforms-spec/) though not all features in that specification have been implemented yet.
+Enketo's form engine is compatible with tools in the ODK ecosystem and complies with its [XForms specification](https://getodk.github.io/xforms-spec/) though not all features in that specification have been implemented yet.
 
 This repo is meant to be used as a building block for any Enketo-powered application. See [this page](https://enketo.org/develop/#libraries) for a schematic overview of a real-life full-fledged data collection application and how Enketo Core fits into this.
 
@@ -43,6 +43,7 @@ The development of this library was sponsored by:
 * [Ona](https://ona.io)
 * [Medic Mobile](http://medicmobile.org/)
 * [Esri](https://esri.com)
+* [DIAL Open Source Center](https://www.osc.dial.community/)
 
 ### Performance (live)
 

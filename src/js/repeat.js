@@ -75,6 +75,9 @@ export default {
             const xPath = templateEl.getAttribute( 'name' );
             this.remove();
             $( templateEl ).removeClass( 'contains-current current' ).find( '.current' ).removeClass( 'current' );
+            // Clear all values (this is required for setvalue/odk-instance-first-load populated values)
+            // The default values will be added anyway in the repeats.add function.
+            that.form.input.clear( templateEl );
             that.templates[ xPath ] = templateEl;
         } );
 
@@ -236,7 +239,7 @@ export default {
             toCreate = Math.abs( toCreate ) >= numRepsInView ? -numRepsInView + ( disableFirstRepeatRemoval ? 1 : 0 ) : toCreate;
             for ( ; toCreate < 0; toCreate++ ) {
                 const $last = $( repeatInfo ).siblings( '.or-repeat' ).last();
-                this.remove( $last, 0 );
+                this.remove( $last );
             }
         }
         // Now check the repeat counts of all the descendants of this repeat and its new siblings, level-by-level.
@@ -349,25 +352,22 @@ export default {
 
         return true;
     },
-    remove( $repeat, delay ) {
+    remove( $repeat ) {
         const that = this;
         const $next = $repeat.next( '.or-repeat, .or-repeat-info' );
         const repeatPath = $repeat.attr( 'name' );
         const repeatIndex = this.getIndex( $repeat[ 0 ] );
         const repeatInfo = $repeat.siblings( '.or-repeat-info' )[ 0 ];
 
-        delay = typeof delay !== 'undefined' ? delay : 600;
+        $repeat.remove();
+        that.numberRepeats( repeatInfo );
+        that.toggleButtons( repeatInfo );
+        // Trigger the removerepeat on the next repeat or repeat-info(always present)
+        // so that removerepeat handlers know where the repeat was removed
+        $next[ 0 ].dispatchEvent( events.RemoveRepeat() );
+        // Now remove the data node
+        that.form.model.node( repeatPath, repeatIndex ).remove();
 
-        $repeat.hide( delay, () => {
-            $repeat.remove();
-            that.numberRepeats( repeatInfo );
-            that.toggleButtons( repeatInfo );
-            // Trigger the removerepeat on the next repeat or repeat-info(always present)
-            // so that removerepeat handlers know where the repeat was removed
-            $next[ 0 ].dispatchEvent( events.RemoveRepeat() );
-            // Now remove the data node
-            that.form.model.node( repeatPath, repeatIndex ).remove();
-        } );
     },
     fixRadioName( element ) {
         const random = Math.floor( ( Math.random() * 10000000 ) + 1 );

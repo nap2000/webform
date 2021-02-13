@@ -6,7 +6,8 @@ import config from '../../config';
 import pkg from '../../package';
 import events from '../../src/js/event';
 import dialog from '../../src/js/fake-dialog';
-const range = document.createRange();
+
+dialog.confirm = () => Promise.resolve( true );
 
 describe( 'Output functionality ', () => {
     // These tests were orginally meant for modilabs/enketo issue #141. However, they passed when they were
@@ -311,6 +312,17 @@ describe( 'calculations', () => {
         expect( form.view.$.find( '.or-output[data-value="/RepeatGroupTest/P/pos"]' ).eq( 2 ).text() ).toEqual( '3' );
     } );
 
+    // https://github.com/enketo/enketo-core/issues/755
+    it( 'do not cause an exception when a repeat is removed', () => {
+        const form = loadForm( 'calcs_in_repeats.xml' );
+        form.init();
+        const addButton =  form.view.html.querySelector( '.add-repeat-btn' );
+        addButton.click();
+        addButton.click();
+        const deleteAction = () => { [ ...form.view.html.querySelectorAll( '.remove' ) ].pop().click();};
+        expect( deleteAction ).not.toThrow();
+    } );
+
 } );
 
 describe( 'branching functionality', () => {
@@ -475,7 +487,6 @@ describe( 'branching functionality', () => {
         form.init();
         it( 'initializes all nested repeat questions', () => {
             expect( form.view.$.find( '.or-branch' ).length ).toEqual( 4 );
-            expect( form.view.$.find( '.or-branch.pre-init' ).length ).toEqual( 0 );
         } );
     } );
 
@@ -600,7 +611,6 @@ describe( 'branching functionality', () => {
 
     describe( 'on a question inside a REMOVED repeat', () => {
         it( 'does not try to evaluate it', ( done ) => {
-            dialog.confirm = () => Promise.resolve( true );
             const form = loadForm( 'repeat-irrelevant-date.xml' );
             form.init();
             form.view.$.find( '[name="/repeat/rep"] button.remove' ).click();
@@ -1033,23 +1043,6 @@ describe( 'getting related nodes', () => {
     } );
 } );
 
-describe( 'clearing inputs', () => {
-    const $fieldset = $( '<fieldset><input type="number" value="23" /><input type="text" value="abc" /><textarea>abcdef</textarea></fieldset>"' );
-
-    it( 'works!', () => {
-        expect( $fieldset.find( '[type="number"]' ).val() ).toEqual( '23' );
-        expect( $fieldset.find( '[type="text"]' ).val() ).toEqual( 'abc' );
-        expect( $fieldset.find( 'textarea' ).val() ).toEqual( 'abcdef' );
-
-        $fieldset.clearInputs();
-
-        expect( $fieldset.find( '[type="number"]' ).val() ).toEqual( '' );
-        expect( $fieldset.find( '[type="text"]' ).val() ).toEqual( '' );
-        expect( $fieldset.find( 'textarea' ).val() ).toEqual( '' );
-
-    } );
-} );
-
 describe( 'white-space-only input', () => {
     // This is e.g. important for automatic value-change log creation in OpenClinica.
     it( 'does not fire an xforms-value-changed event', done => {
@@ -1138,7 +1131,7 @@ describe( 'jr:choice-name', () => {
         form.init();
 
         expect( form.view.$.find( '[name="/choice-regex/translator"]:checked' ).next().text() ).toEqual( '[Default Value] Area' );
-        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( '[Default Value] Area' );
+        expect( form.view.html.querySelectorAll( '.readonly .or-output' )[0].textContent ).toEqual( '[Default Value] Area' );
 
         // when
         form.view.$.find( '[name="/choice-regex/input"]' ).val( 'abc' ).trigger( 'change' );
@@ -1149,13 +1142,21 @@ describe( 'jr:choice-name', () => {
         // and
         // We don't expect the value change to cascade to a label until the choice value itself is changed.
         // See: https://github.com/enketo/enketo-core/issues/412
-        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( '[Default Value] Area' );
+        expect( form.view.html.querySelectorAll( '.readonly .or-output' )[0].textContent ).toEqual( '[Default Value] Area' );
 
         // when
         form.view.$.find( '[name="/choice-regex/translator"][value=health_center]' ).click().trigger( 'change' );
 
         // then
-        expect( form.view.$.find( '.readonly .or-output' ).text() ).toEqual( '[abc] Health Center' );
+        expect( form.view.html.querySelectorAll( '.readonly .or-output' )[0].textContent ).toEqual( '[abc] Health Center' );
+    } );
+
+    it( 'should match when there the path parameters are relative', () => {
+        const form = loadForm( 'jr-choice-name.xml' );
+        form.init();
+
+        expect( form.view.$.find( '[name="/choice-regex/translator"]:checked' ).next().text() ).toEqual( '[Default Value] Area' );
+        expect( form.view.html.querySelectorAll( '.readonly .or-output' )[1].textContent ).toEqual( '[Default Value] Area' );
     } );
 
     /** @see https://github.com/enketo/enketo-core/issues/490 */
@@ -1181,6 +1182,20 @@ describe( 'jr:choice-name', () => {
 
         expect( form.view.$.find( '.or-output' ).text() ).toEqual( 'The Third Choice' );
     } );
+
+    it( 'should work with radio buttons', () => {
+        const form = loadForm( 'jr_choice_name_repeats.xml' );
+        form.init();
+
+        expect( form.view.html.querySelector( '[data-name="/data/r1/province_name"]' ).checked ).toEqual( false );
+
+        form.view.html.querySelector( '[data-name="/data/r1/province_name"]' ).checked = true;
+        form.view.html.querySelector( '[data-name="/data/r1/province_name"]' ).dispatchEvent( events.Change() );
+
+        expect( form.view.html.querySelector( '[data-value=" ../province_label "]' ).innerText ).toEqual( 'Central' );
+    } );
+
+
 } );
 
 describe( 'autocomplete questions', () => {
@@ -1239,13 +1254,16 @@ describe( 'Form.prototype', () => {
 
     describe( '#replaceChoiceNameFn()', () => {
 
-        $.each( {
+        const tests = {
             'jr:choice-name( /choice-regex/translator, " /choice-regex/translator ")': '"__MOCK_VIEW_VALUE__"',
             '     jr:choice-name(       /choice-regex/translator     ,  " /choice-regex/translator "   )    ': '     "__MOCK_VIEW_VALUE__"    ',
             'if(string-length( /embedded-choice/translator ) !=0, jr:choice-name( /embedded-choice/translator ,\' /embedded-choice/translator \'),\'unspecified\')': 'if(string-length( /embedded-choice/translator ) !=0, "__MOCK_VIEW_VALUE__",\'unspecified\')',
             'jr:choice-name( selected-at( /energy_1/light/light_equip , 1), " /energy_1/light/light_equip " )': '"__MOCK_VIEW_VALUE__"',
             'if( /data/C1 =01, jr:choice-name( /data/C2 ," /data/C2 "), jr:choice-name( /data/C3 ," /data/C3 " ) )': 'if( /data/C1 =01, "__MOCK_VIEW_VALUE__", "__MOCK_VIEW_VALUE__" )',
-        }, ( initial, expected ) => {
+        };
+
+        for ( const initial in tests ) {
+            const expected = tests[initial];
             it( `should replace ${initial} with ${expected}`, () => {
                 // given
                 const form = mockChoiceNameForm();
@@ -1256,33 +1274,27 @@ describe( 'Form.prototype', () => {
                 // then
                 expect( actual ).toEqual( expected );
             } );
-        } );
+        }
     } );
 } );
 
 function mockChoiceNameForm() {
+    const val = '__MOCK_MODEL_VALUE__';
+
     return {
         model: {
             evaluate() {
-                return '__MOCK_MODEL_VALUE__';
+                return val;
             },
         },
         view: {
-            '$': {
-                find() {
-                    return {
-                        length: 1,
-                        prop() {
-                            return 'select';
-                        },
-                        find() {
-                            return {
-                                text() {
-                                    return '__MOCK_VIEW_VALUE__';
-                                },
-                            };
-                        },
-                    };
+            html: {
+                querySelectorAll() {
+                    return document.createRange().createContextualFragment( `
+                        <select>
+                            <option value="${val}">__MOCK_VIEW_VALUE__</option>
+                        </select>
+                    ` ).querySelectorAll( 'select' );
                 },
             },
         },

@@ -246,6 +246,42 @@ describe( 'repeat functionality', () => {
             expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 0 );
         } );
 
+        //https://github.com/OpenClinica/enketo-express-oc/issues/308#issuecomment-750382318
+        it( 'correctly loads the required number of repeats in an existing record if the repeat-count has a relevant', ()=> {
+            const form = loadForm( 'repeat-count.xml', `
+            <dynamic-repeat-count xmlns:jr="http://openrosa.org/javarosa" xmlns:oc="http://openclinica.org/xforms" xmlns:orx="http://openrosa.org/xforms" id="dynamic-repeat-count">
+                <count>4</count>
+                <rep_count>4</rep_count>
+                <rep>
+                    <txt/>
+                    <num>5</num>
+                </rep>
+                <rep>
+                    <txt/>
+                    <num>5</num>
+                </rep>
+                <rep>
+                    <txt/>
+                    <num>5</num>
+                </rep>
+                <rep>
+                    <txt/>
+                    <num>5</num>
+                </rep>
+                <sum_note>4</sum_note>
+                <txtsum_note>4</txtsum_note>
+                <meta>
+                    <instanceID>uuid:0afd146a-cdc4-4000-b5f4-3ec0705e85d8</instanceID>
+                </meta>
+            </dynamic-repeat-count>
+            ` );
+            const rep = '.or-repeat[name="/dynamic-repeat-count/rep"]';
+            form.init();
+            expect( form.view.html.querySelectorAll( rep ).length ).toEqual( 4 );
+            expect( form.model.xml.querySelectorAll( 'rep' ).length ).toEqual( 4 );
+        } );
+
+
         it( 'and works nicely with relevant even if repeat count is 0 (with relevant on group)', () => {
             // When repeat count is zero there is no context node to pass to evaluator.
             const form = loadForm( 'repeat-count-relevant.xml' );
@@ -277,6 +313,31 @@ describe( 'repeat functionality', () => {
             school.dispatchEvent( event.Change() );
 
             expect( form.view.html.querySelectorAll( a )[ 1 ].querySelectorAll( b ).length ).toEqual( 2 );
+        } );
+
+        // https://github.com/enketo/enketo-core/issues/734 => cache contains non-existing nodes
+        it( 'and correctly deals with nested repeats that have empty repeat counts', () => {
+            const form = loadForm( 'repeat-count-nested-3.xml' );
+            form.init();
+
+            // First test the actual cause of the above-mentioned bug
+            const infos = form.getRelatedNodes( 'data-repeat-count', '.or-repeat-info' ).get();
+            const orphans = infos.filter( info => !info.closest( 'form.or' ) );
+            expect( orphans.length ).toEqual( 0 );
+
+            // Then test the actually user-visible behavior
+            const a = '.or-repeat[name="/data/repeat_A"]';
+            const b = '.or-repeat[name="/data/repeat_A/repeat_B"]';
+
+            const members = form.view.html.querySelector( '[name="/data/number"]' );
+            members.value = '1';
+            members.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( a ).length ).toEqual( 1 );
+
+            const school = form.view.html.querySelector( '[name="/data/repeat_A/schools"]' );
+            school.value = '1';
+            school.dispatchEvent( event.Change() );
+            expect( form.view.html.querySelectorAll( b ).length ).toEqual( 1 );
         } );
 
         it( 'and is able to use a relative repeat count path for top-level repeats', () => {

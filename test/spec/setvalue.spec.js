@@ -349,8 +349,52 @@ describe( 'setvalue action to populate defaults', () => {
                 expect( ds[ 2 ].textContent ).toEqual( 'a' );
             } );
 
+            it( 'works for the first repeat if that repeat is non-relevant upon load', () => {
+                const form = loadForm( 'setvalue-repeat.xml' );
+                form.init();
+                const yn = form.view.html.querySelector( '[name="/data/grp/yn"]' );
+                form.input.setVal( yn, '1', events.Change() );
+
+                expect( form.view.html.querySelector( '[name="/data/grp/rep/pos"]' ).value ).toEqual( 'Standing' );
+            } );
+
+            it( 'works if the default value is an empty string', () => {
+                const form = loadForm( 'setvalue-repeat.xml' );
+                form.init();
+                const yn = form.view.html.querySelector( '[name="/data/grp/yn"]' );
+                form.input.setVal( yn, '1', events.Change() );
+
+                // Create 5 additional repeat instances (total 6)
+                const btn = form.view.html.querySelector( '.add-repeat-btn' );
+                for ( let i = 0;  i < 5; i++ ){
+                    btn.click();
+                }
+
+                // Test that especially the last 3 are empty (and not 'Standing' due a view template extraction issue)
+                // https://github.com/OpenClinica/enketo-express-oc/issues/406#issuecomment-748325668
+                expect( [ ...form.view.html.querySelectorAll( '[name="/data/grp/rep/pos"]' ) ].map( el => el.value ) ).toEqual( [ 'Standing', 'Sitting', 'Lying', '', '', '' ] );
+            } );
+
         } );
 
+    } );
+
+
+    it( 'relying on non-form-control setvalue/odk-instance-first-load items to be evaluated before form-control setvalue items', () => {
+        const form1 = loadForm( 'setvalue-order.xml' );
+        form1.init();
+        expect( form1.model.xml.querySelector( 'one' ).textContent ).toEqual( '2' );
+        expect( form1.model.xml.querySelector( 'two' ).textContent ).toEqual( '2' );
+        expect( form1.model.xml.querySelector( 'three' ).textContent ).toEqual( '2#' );
+    } );
+
+    it( 'relying on non-form-control setvalue/odk-new-repeat items inside repeats to be evaluated before form-control setvalue items', () => {
+        const form1 = loadForm( 'setvalue-repeat-order.xml' );
+        form1.init();
+        form1.view.html.querySelector( '.add-repeat-btn' ).click();
+        expect( form1.model.xml.querySelectorAll( 'one' )[1].textContent ).toEqual( '2' );
+        expect( form1.model.xml.querySelectorAll( 'two' )[1].textContent ).toEqual( '2' );
+        expect( form1.model.xml.querySelectorAll( 'three' )[1].textContent ).toEqual( '2#' );
     } );
 
 } );
@@ -368,8 +412,7 @@ describe( 'setvalue actions to populate a value if another value changes', () =>
         expect( myAgeChangedView.textContent ).toEqual( '' );
         expect( myAgeChangedModel.textContent ).toEqual( '' );
 
-        form.input.setVal( myAgeView, '11', null );
-        myAgeView.dispatchEvent( events.Change() );
+        form.input.setVal( myAgeView, '11', events.Change()  );
 
         setTimeout( () => {
             //expect( myAgeChangedView.textContent ).toEqual( '6' );
@@ -388,8 +431,7 @@ describe( 'setvalue actions to populate a value if another value changes', () =>
         expect( ageChangedsView.map( el => el.textContent ) ).toEqual( [ '', '' ] );
         expect( ageChangedsModel.map( el => el.textContent ) ).toEqual( [ '', '' ] );
 
-        form.input.setVal( agesView[ 0 ], '22', null );
-        agesView[ 0 ].dispatchEvent( events.Change() );
+        form.input.setVal( agesView[ 0 ], '22', events.Change()  );
 
         setTimeout( () => {
             //expect( ageChangedsView.map( el => el.textContent )).toEqual( [ 'Age changed!', '' ] );
@@ -410,8 +452,7 @@ describe( 'setvalue actions to populate a value if another value changes', () =>
         const dModel = form.model.xml.querySelector( 'd' );
         const eModel = form.model.xml.querySelector( 'e' );
 
-        form.input.setVal( dView, '3030', null );
-        dView.dispatchEvent( events.Change() );
+        form.input.setVal( dView, '3030', events.Change() );
 
         expect( aView.textContent ).toEqual( '' );
         expect( bModel.textContent ).toEqual( '' );
@@ -420,8 +461,7 @@ describe( 'setvalue actions to populate a value if another value changes', () =>
         expect( dModel.textContent ).toEqual( '3030' );
         expect( eModel.textContent ).toEqual( 'default' );
 
-        form.input.setVal( aView, '11', null );
-        aView.dispatchEvent( events.Change() );
+        form.input.setVal( aView, '11', events.Change() );
 
         setTimeout( () => {
             expect( bModel.textContent ).toEqual( '2' );
@@ -432,8 +472,19 @@ describe( 'setvalue actions to populate a value if another value changes', () =>
             expect( eModel.textContent ).toEqual( '' );
             done();
         }, 100 );
+    } );
 
+    it( 'works if the setvalue trigger is a calculation', () => {
+        const form = loadForm( 'setvalue-triggered-by-calc.xml' );
+        form.init();
+        const a = form.input.find( '/data/a', 0 );
 
+        form.input.setVal( a, '1', events.Change() );
+
+        // check calculated value
+        expect( form.model.xml.querySelector( 'a_copy' ).textContent ).toEqual( '1' );
+        // check setvalue-changed value
+        expect( form.model.xml.querySelector( 'triggered' ).textContent ).toEqual( '11' );
     } );
 
 } );
