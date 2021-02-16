@@ -19,12 +19,12 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/enketo/enketo-core"
+        "url": "https://github.com/nap2000/enketo-core"
     },
     "author": {
-        "name": "Martijn van de Rijdt",
-        "email": "martijn@enketo.org",
-        "url": "https://www.linkedin.com/in/martijnvanderijdt"
+        "name": "Neil Penman",
+        "email": "neilpenman@smap.com.au",
+        "url": "https://www.smap.com.au"
     },
     "contributors": [
         {}
@@ -60,7 +60,7 @@
         "grunt-sass": "^3.1.0",
         "grunt-shell": "3.0.x",
         "gulp": "^4.0.2",
-        "i18next-parser": "^3.3.0",
+        "i18next-parser": "^3.6.0",
         "istanbul": "^0.4.5",
         "istanbul-reporter-shield-badge": "^1.2.1",
         "jasmine-core": "^3.6.0",
@@ -96,10 +96,10 @@
         "bootstrap-datepicker": "1.9.x",
         "grunt-i18next": "0.2.x",
         "html5sortable": "0.9.17",
-        "i18next": "^19.8.3",
+        "i18next": "^19.8.7",
         "i18next-browser-languagedetector": "^4.2.0",
-        "i18next-fs-backend": "^1.0.6",
-        "i18next-http-backend": "^1.0.21",
+        "i18next-fs-backend": "^1.0.8",
+        "i18next-http-backend": "^1.1.0",
         "i18next-http-middleware": "^2.1.2",
         "i18next-xhr-backend": "^3.2.x",
         "jquery": "^3.5.1",

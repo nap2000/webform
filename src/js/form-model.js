@@ -6,7 +6,7 @@ import config from 'enketo/config';
 import types from './types';
 import event from './event';
 import { Nodeset } from './nodeset';
-import bindJsEvaluator from 'enketo/xpath-evaluator-binding';
+import bindJsEvaluator from './xpath-evaluator-binding';  // smap change path
 
 const REPEAT_COMMENT_PREFIX = 'repeat:/';
 const INSTANCE = /instance\(\s*(["'])((?:(?!\1)[A-z0-9.\-_]+))\1\s*\)/g;

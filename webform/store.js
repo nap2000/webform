@@ -269,7 +269,7 @@
     store.getCounterValue = function() {
         var record = store.getRecord('__counter'),
             number = ( record && record['counter'] && isNumber(record['counter']) ) ? Number(record['counter']) : 0,
-            numberStr = ( number + 1 ).toString().pad(4);
+            numberStr = ( number + 1 ).toString();
 
         return numberStr;
     };
