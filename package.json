@@ -59,7 +59,6 @@
         "grunt-karma": "^4.0.0",
         "grunt-sass": "^3.1.0",
         "grunt-shell": "3.0.x",
-        "gulp": "^4.0.2",
         "i18next-parser": "^3.6.0",
         "istanbul": "^0.4.5",
         "istanbul-reporter-shield-badge": "^1.2.1",
