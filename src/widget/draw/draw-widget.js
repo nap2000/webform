@@ -320,6 +320,15 @@ class DrawWidget extends Widget {
                             });
                     } else {
                         console.log("pad not initialised yet");
+                        setTimeout(function() {
+                            that.pad.clear();
+                            that._loadFileIntoPad(url)
+                                .then(() => {
+                                    that._updateValue.call(that);
+                                    that._showFileName(url);
+                                    that.enable();
+                                }, 200);
+                        });
                     }
                 } else {
                     that._showFileName( null );
