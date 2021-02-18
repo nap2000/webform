@@ -59,6 +59,12 @@ SignaturePad.prototype.fromObjectURL = function( objectUrl, options ) {
             }
             resolve( objectUrl );
         };
+        image.onerror = function (e) {  // smap
+            console.log('Error', e.target.error.message);
+            //alert('Error', e.target.error.message);
+            reject(e);
+        };
+
         that._isEmpty = false;
     } );
 };
@@ -236,7 +242,7 @@ class DrawWidget extends Widget {
 
         const $input = this.$widget.find( 'input[type=file]' );
         const $fakeInput = this.$widget.find( '.fake-file-input' );
-        const $dynamicInput = this.$widget.parent().find( '.dynamic-input' );
+        const $dynamicInput = this.$widget.parent().find( '.dynamic-input' );   // smap
 
         // show loaded file name or placeholder regardless of whether widget is supported
         this._showFileName( loadedFileName );
@@ -304,13 +310,17 @@ class DrawWidget extends Widget {
 
                 if ( url ) {
                     // Update UI
-                    that.pad.clear();
-                    that._loadFileIntoPad( url )
-                        .then( () => {
-                            that._updateValue.call( that );
-                            that._showFileName( url );
-                            that.enable();
-                        } );
+                    if(that.pad) {
+                        that.pad.clear();
+                        that._loadFileIntoPad(url)
+                            .then(() => {
+                                that._updateValue.call(that);
+                                that._showFileName(url);
+                                that.enable();
+                            });
+                    } else {
+                        console.log("pad not initialised yet");
+                    }
                 } else {
                     that._showFileName( null );
                 }
