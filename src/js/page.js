@@ -7,7 +7,7 @@
 import $ from 'jquery';
 import events from './event';
 import config from 'enketo/config';
-import { getSiblingElements, getAncestors } from './dom-utils';
+import { getSiblingElement, getAncestors } from './dom-utils';
 import 'jquery-touchswipe';
 
 export default {
@@ -52,6 +52,7 @@ export default {
                 this.$btnFirst = this.$formFooter.find( '.first-page' );
                 this.$btnPrev = this.$formFooter.find( '.previous-page' );
                 this.$btnNext = this.$formFooter.find( '.next-page' );
+                this.$btnNext.attr( 'tabindex', 2 );
                 this.$btnLast = this.$formFooter.find( '.last-page' );
                 this.$toc = $( formWrapper.querySelector( '.pages-toc__list' ) );
                 this._updateAllActive( allPages );
@@ -263,7 +264,7 @@ export default {
                     // or-repeat-info is only considered a page by itself if it has no sibling repeats
                     // When there are siblings repeats, we use CSS trickery to show the + button underneath the last
                     // repeat.
-                    ( el.matches( '.or-repeat-info' ) && getSiblingElements( el, '.or-repeat' ).length === 0 ) );
+                    ( el.matches( '.or-repeat-info' ) && !getSiblingElement( el, '.or-repeat' ) ) );
         } );
         this._updateToc();
     },
@@ -367,6 +368,7 @@ export default {
             this._focusOnFirstQuestion( pageEl );
             this._toggleButtons( newIndex );
             pageEl.dispatchEvent( events.PageFlip() );
+            pageEl.setAttribute( 'tabindex', 1 );
         }
     },
     /**
@@ -398,6 +400,9 @@ export default {
             .find( 'input, select, textarea' )
             .eq( 0 )
             .trigger( 'fakefocus' );
+
+        // focus on element
+        pageEl.focus();
 
         pageEl.scrollIntoView();
     },

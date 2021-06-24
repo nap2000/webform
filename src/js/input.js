@@ -14,7 +14,7 @@ export default {
      * @return {Element} Wrap node
      */
     getWrapNode( control ) {
-        return control.closest( '.question, .calculation, .setvalue' );
+        return control.closest( '.question, .calculation, .setvalue, .setgeopoint' );
     },
     /**
      * @param {Array<Element>} controls - form controls HTML elements
@@ -209,7 +209,7 @@ export default {
         return value || '';
     },
     /**
-     * Finds a form control that is not a nested setvalue/xforms-value-changed directive
+     * Finds a form control that is not a nested xforms-value-changed action
      *
      * @param {string} name - name attribute value
      * @param {number} index - repeat index
@@ -310,9 +310,13 @@ export default {
             if ( curVal === undefined || curVal.toString() !== value.toString() ) {
                 switch ( type ) {
                     case 'radio': {
-                        const input = this.getWrapNode( control ).querySelector( `input[type="radio"][data-name="${name}"][value="${value}"]` );
-                        if ( input ) {
-                            input.checked = true;
+                        if ( value.toString() === '' ){
+                            inputs.forEach( input => input.checked = false );
+                        } else {
+                            const input = this.getWrapNode( control ).querySelector( `input[type="radio"][data-name="${name}"][value="${value}"]` );
+                            if ( input ) {
+                                input.checked = true;
+                            }
                         }
                         break;
                     }
@@ -342,7 +346,7 @@ export default {
                 // don't trigger on all radiobuttons/checkboxes
                 if ( event ) {
                     inputs[ 0 ].dispatchEvent( event );
-                    // Ensure that any calculations with form controls that serve as setvalue triggers
+                    // Ensure that any calculations with form controls that serve as action triggers
                     // the action.
                     if ( event.type === events.InputUpdate().type ){
                         inputs[0].dispatchEvent( events.XFormsValueChanged() );
@@ -363,10 +367,15 @@ export default {
     clear( grp, event1, event2 ){
         // See original pre-December 2020 plugin.js for some additional stuff with file-preview, loadedFileName and selectedIndex
         // which I think was no longer necessary, or should be moved to the widgets instead
-        grp.querySelectorAll( 'input:not(.ignore), select:not(.ignore), textarea:not(.ignore)' ).forEach( control => {
-            this.setVal( control, '', event1 );
-            if ( event2 ){
-                control.dispatchEvent( event2 );
+        // Note, issue https://github.com/enketo/enketo-core/issues/773, wrt to querySelectorAll use here.
+        const questions = grp.matches( '.question' ) ? [ grp ] : grp.querySelectorAll( '.question' );
+        questions.forEach( question => {
+            const control = question.querySelector( 'input:not(.ignore), select:not(.ignore), textarea:not(.ignore)' );
+            if ( control ){
+                this.setVal( control, '', event1 );
+                if ( event2 ){
+                    control.dispatchEvent( event2 );
+                }
             }
         } );
     },

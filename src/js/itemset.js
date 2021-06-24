@@ -6,7 +6,7 @@
 
 import { parseFunctionFromExpression } from './utils';
 import dialog from 'enketo/dialog';
-import { closestAncestorUntil, getChildren, getSiblingElements, elementDataStore as data } from './dom-utils';
+import { closestAncestorUntil, getChild, getSiblingElement, elementDataStore as data } from './dom-utils';
 import events from './event';
 import { t } from 'enketo/translator';
 
@@ -89,12 +89,12 @@ export default {
 
             let input;
             if ( templateNodeName === 'label' ) {
-                const optionInput = getChildren( template, 'input' )[ 0 ];
+                const optionInput = getChild( template, 'input' );
                 [].slice.call( optionInput.attributes ).forEach( attr => {
                     inputAttributes[ attr.name ] = attr.value;
                 } );
                 // If this is a ranking widget:
-                input = optionInput.classList.contains( 'ignore' ) ? getSiblingElements( optionInput.closest( '.option-wrapper' ), 'input.rank' )[ 0 ] : optionInput;
+                input = optionInput.classList.contains( 'ignore' ) ? getSiblingElement( optionInput.closest( '.option-wrapper' ), 'input.rank' ) : optionInput;
             } else if ( list && list.nodeName.toLowerCase() === 'select' ) {
                 input = list;
             } else if ( list && list.nodeName.toLowerCase() === 'datalist' ) {
@@ -102,11 +102,11 @@ export default {
                     // only the first input, is that okay?
                     input = that.form.view.html.querySelector( `input[name="${list.dataset.name}"]` );
                 } else {
-                    input = getSiblingElements( list, 'input:not(.widget)' )[ 0 ];
+                    input = getSiblingElement( list, 'input:not(.widget)' );
                 }
             }
 
-            const labelsContainer = getSiblingElements( template.closest( 'label, select, datalist' ), '.itemset-labels' )[ 0 ];
+            const labelsContainer = getSiblingElement( template.closest( 'label, select, datalist' ), '.itemset-labels' );
             const itemsXpath = template.dataset.itemsPath;
             let labelType = labelsContainer.dataset.labelType;
             let labelRef = labelsContainer.dataset.labelRef;
@@ -196,7 +196,7 @@ export default {
                                 translations = labels.map( label => {
                                     const lang = label.getAttribute( 'lang' );
                                     // Two falsy values should set active to true.
-                                    const active = ( !lang && !that.form.langs.currentLang ) || ( lang === that.form.langs.currentLang );
+                                    const active = ( !lang && !that.form.langs.currentLanguage ) || ( lang === that.form.langs.currentLanguage );
 
                                     return { language: lang, type: 'span', text: label.textContent, active };
                                 } );

@@ -1,7 +1,7 @@
 import { FormModel } from './form-model';
 import $ from 'jquery';
 import { parseFunctionFromExpression, stripQuotes, getFilename, joinPath } from './utils';
-import { getXPath, closestAncestorUntil, getSiblingElements } from './dom-utils';
+import { getXPath, getChild, closestAncestorUntil, getSiblingElement } from './dom-utils';
 import { t } from 'enketo/translator';
 import config from 'enketo/config';
 import inputHelper from './input';
@@ -158,7 +158,7 @@ Form.prototype = {
      * @type {string}
      */
     get id() {
-        return this.view.html.id;
+        return this.view.html.dataset.formId;
     },
     /**
      * To facilitate forks that support multiple constraints per question
@@ -181,6 +181,12 @@ Form.prototype = {
      */
     get languages() {
         return this.langs.languagesUsed;
+    },
+    /**
+     * @type {string}
+     */
+    get currentLanguage() {
+        return this.langs.currentLanguage;
     }
 };
 
@@ -226,16 +232,25 @@ Form.prototype.init = function() {
     this.readonly = this.addModule( readonlyModule );
 
     // Handle odk-instance-first-load event
-    this.model.events.addEventListener( events.InstanceFirstLoad().type, event => this.calc.setValue( event ) );
+    this.model.events.addEventListener( events.InstanceFirstLoad().type, event => {
+        this.calc.performAction( 'setvalue', event );
+        this.calc.performAction( 'setgeopoint', event );
+    } );
 
     // Handle odk-new-repeat event before initializing repeats
-    this.view.html.addEventListener( events.NewRepeat().type, event => this.calc.setValue( event ) );
+    this.view.html.addEventListener( events.NewRepeat().type, event => {
+        this.calc.performAction( 'setvalue', event );
+        this.calc.performAction( 'setgeopoint', event );
+    } );
 
     // Handle xforms-value-changed
-    this.view.html.addEventListener( events.XFormsValueChanged().type, event => this.calc.setValue( event ) );
+    this.view.html.addEventListener( events.XFormsValueChanged().type, event => {
+        this.calc.performAction( 'setvalue', event );
+        this.calc.performAction( 'setgeopoint', event );
+    } );
 
     // Before initializing form view and model, passthrough some model events externally
-    // Because of setvalue/instance-first-load, this should be done before the model is initialized. This is important for custom
+    // Because of instance-first-load actions, this should be done before the model is initialized. This is important for custom
     // applications that submit each individual value separately (opposed to a full XML model at the end).
     this.model.events.addEventListener( events.DataUpdate().type, event => {
         that.view.html.dispatchEvent( events.DataUpdate( event.detail ) );
@@ -419,19 +434,19 @@ Form.prototype.replaceChoiceNameFn = function( expr, resTypeStr, context, index,
             if ( !value || !inputs.length ) {
                 label = '';
             } else if (  nodeName === 'select' ) {
-                const found = inputs.filter( input => input.querySelector( `[value="${value}"]` ) );
-                label =  found ? found[0].querySelector( `[value="${value}"]` ).textContent : '';
+                const found = inputs.find( input => input.querySelector( `[value="${value}"]` ) );
+                label =  found ? found.querySelector( `[value="${value}"]` ).textContent : '';
             } else if (  nodeName === 'input' ) {
                 const list = inputs[0].getAttribute( 'list' );
 
                 if ( !list ){
-                    const found = inputs.filter( input => input.getAttribute( 'value' ) === value );
-                    const siblingLabelEls = getSiblingElements( found[0], '.option-label.active' );
-                    label = siblingLabelEls.length ? siblingLabelEls[0].textContent : '';
+                    const found = inputs.find( input => input.getAttribute( 'value' ) === value );
+                    const firstSiblingLabelEl = found ? getSiblingElement( found, '.option-label.active' ) : [];
+                    label = firstSiblingLabelEl ? firstSiblingLabelEl.textContent : '';
                 } else {
-                    const siblingListEls = getSiblingElements( inputs[0], `datalist#${CSS.escape( list )}` );
-                    if ( siblingListEls.length ){
-                        const optionEl = siblingListEls[0].querySelector( `[data-value="${value}"]` );
+                    const firstSiblingListEl = getSiblingElement( inputs[0], `datalist#${CSS.escape( list )}` );
+                    if ( firstSiblingListEl ){
+                        const optionEl = firstSiblingListEl.querySelector( `[data-value="${value}"]` );
                         label = optionEl ? optionEl.getAttribute( 'value' ) : '';
                     }
                 }
@@ -641,12 +656,11 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function() {
     // Since we are removing nodes, we need to go in reverse order to make sure
     // the indices are still correct!
     this.getRelatedNodes( 'data-relevant' ).reverse().each( function() {
-        const $node = $( this );
         const node = this;
         const relevant = that.input.getRelevant( node );
         const index = that.input.getIndex( node );
         const path = that.input.getName( node );
-        let context;
+        let target;
 
         /*
          * Copied from relevant.js:
@@ -654,10 +668,15 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function() {
          * If the relevant is placed on a group and that group contains repeats with the same name,
          * but currently has 0 repeats, the context will not be available.
          */
-        if ( $node.children( `.or-repeat-info[data-name="${path}"]` ).length && !$node.children( `.or-repeat[name="${path}"]` ).length ) {
-            context = null;
+        if ( getChild( node, `.or-repeat-info[data-name="${path}"]` ) && !getChild( node,  `.or-repeat[name="${path}"]` ) ) {
+            target = null;
         } else {
-            context = path;
+            // If a calculation without a form control (i.e. in .calculated-items) inside a repeat
+            // has a relevant, and there 0 instances of that repeat,
+            // there is nothing to remove (and target is undefined)
+            // https://github.com/enketo/enketo-core/issues/761
+            // TODO: It would be so much nicer if form-control-less calculations were placed inside the repeat instead.
+            target = modelClone.node( path, index ).getElement();
         }
 
         /*
@@ -666,8 +685,8 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function() {
          * - use cache of relevant.update
          * - check for repeatClones to avoid calculating index (as in relevant.update)
          */
-        if ( context && !that.model.evaluate( relevant, 'boolean', context, index ) ) {
-            modelClone.node( context, index ).remove();
+        if ( target && !that.model.evaluate( relevant, 'boolean',path, index ) ) {
+            target.remove();
         }
     } );
 
@@ -786,6 +805,7 @@ Form.prototype.setEventHandlers = function() {
         // update the form progress status
         this.progress.update( event.target );
     } );
+
     this.view.html.addEventListener( events.FakeFocus().type, event => {
         // update the form progress status
         this.progress.update( event.target );
@@ -1140,7 +1160,7 @@ Form.prototype.goToTarget = function( target ) {
             this.pages.flipToPageContaining( $( target ) );
         }
         // check if the target has a form control
-        if ( target.closest( '.calculation, .setvalue' ) ) {
+        if ( target.closest( '.calculation, .setvalue, .setgeopoint' ) ) {
             // It is up to the apps to decide what to do with this event.
             target.dispatchEvent( events.GoToInvisible() );
         }
@@ -1168,6 +1188,6 @@ Form.prototype.goToTarget = function( target ) {
  * @type {string}
  * @default
  */
-Form.requiredTransformerVersion = '1.41.6';
+Form.requiredTransformerVersion = '1.43.0';
 
 export { Form, FormModel };

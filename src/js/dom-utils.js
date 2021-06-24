@@ -7,11 +7,11 @@
  *
  * @static
  * @param {Node} element - Target element.
- * @param {string} [selector] - A CSS selector.
+ * @param {string} [selector] - A CSS selector for siblings (not for self).
  * @return {Array<Node>} Array of sibling nodes plus target element.
  */
 function getSiblingElementsAndSelf( element, selector ) {
-    return _getSiblingElements( element, selector, [ element ] );
+    return _getSiblingElements( element, selector, true );
 }
 
 /**
@@ -27,33 +27,46 @@ function getSiblingElements( element, selector ) {
 }
 
 /**
+ * Returns first sibling element (in DOM order) that optionally matches the provided selector.
+ *
+ * @param {Node} element - Target element.
+ * @param {string} [selector] - A CSS selector.
+ * @return {Node} First sibling element in DOM order
+ */
+function getSiblingElement( element, selector = '*' ){
+    let found;
+    let current = element.parentElement.firstElementChild;
+
+    while ( current && !found ) {
+        if ( current !== element && current.matches( selector ) ) {
+            found = current;
+        }
+        current = current.nextElementSibling;
+    }
+
+    return found;
+}
+
+/**
  * Gets siblings that match selector _in DOM order_.
  *
  * @param {Node} element - Target element.
  * @param {string} [selector] - A CSS selector.
- * @param {Array<Node>} [startArray] - Array of nodes to start with.
+ * @param {boolean} [includeSelf] - Whether to include self.
  * @return {Array<Node>} Array of sibling nodes.
  */
-function _getSiblingElements( element, selector = '*', startArray = [] ) {
-    const siblings = startArray;
-    let prev = element.previousElementSibling;
-    let next = element.nextElementSibling;
+function _getSiblingElements( element, selector = '*', includeSelf = false ) {
+    const results = [];
+    let current = element.parentElement.firstElementChild;
 
-    while ( prev ) {
-        if ( prev.matches( selector ) ) {
-            siblings.unshift( prev );
+    while ( current ) {
+        if ( ( current === element && includeSelf ) || ( current !== element && current.matches( selector ) ) ){
+            results.push( current );
         }
-        prev = prev.previousElementSibling;
+        current = current.nextElementSibling;
     }
 
-    while ( next ) {
-        if ( next.matches( selector ) ) {
-            siblings.push( next );
-        }
-        next = next.nextElementSibling;
-    }
-
-    return siblings;
+    return results;
 }
 
 /**
@@ -103,9 +116,28 @@ function closestAncestorUntil( element, filterSelector = '*', endSelector ) {
     return found;
 }
 
+/**
+ * Gets child elements, that (optionally) match a selector.
+ *
+ * @param {Node} element - Target element.
+ * @param {string} selector - A CSS selector.
+ * @return {Array<Node>} Array of child elements.
+ */
 function getChildren( element, selector = '*' ) {
     return [ ...element.children ]
         .filter( el => el.matches( selector ) );
+}
+
+/**
+ * Gets first child element, that (optionally) matches a selector.
+ *
+ * @param {Node} element - Target element.
+ * @param {string} selector - A CSS selector.
+ * @return {Node} - First child element.
+ */
+function getChild( element, selector = '*' ) {
+    return [ ...element.children ]
+        .find( el => el.matches( selector ) );
 }
 
 /**
@@ -377,8 +409,10 @@ export {
     elementDataStore,
     getSiblingElementsAndSelf,
     getSiblingElements,
+    getSiblingElement,
     getAncestors,
     getChildren,
+    getChild,
     getRepeatIndex,
     getXPath,
     hasPreviousCommentSiblingWithContent,
