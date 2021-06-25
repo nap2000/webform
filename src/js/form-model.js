@@ -60,7 +60,7 @@ FormModel.prototype = {
      * @type {string}
      */
     get version() {
-        return this.evaluate( '/node()/@version', 'string', null, null, true );
+        return this.evaluate( '/*/@version', 'string', null, null, true );
     },
     /**
      * @type {string}
@@ -1126,7 +1126,7 @@ FormModel.prototype.replaceVersionFn = function( expr ) {
     const versions = parseFunctionFromExpression( expr, 'version' );
 
     versions.forEach( versionPart => {
-        version = version || that.evaluate( '/node()/@version', 'string', null, 0, true );
+        version = version || that.evaluate( '/*/@version', 'string', null, 0, true );
         // ignore arguments
         expr = expr.replace( versionPart[ 0 ], `"${version}"` );
     } );

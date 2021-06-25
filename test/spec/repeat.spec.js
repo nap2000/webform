@@ -162,6 +162,22 @@ describe( 'repeat functionality', () => {
         expect( form.view.html.querySelectorAll( a )[ 0 ].querySelectorAll( b ).length ).toEqual( 1 );
     } );
 
+    // https://github.com/enketo/enketo-core/issues/720
+    it( 'adds nested repeats up to three deep', () => {
+        const form = loadForm( 'nested_repeats_triple.xml' );
+        form.init();
+
+        // add repeats by clicking the add buttons
+        form.view.html.querySelector( '.or-repeat-info[data-name="/data/outer/inner/third"] .add-repeat-btn' ).click();
+        form.view.html.querySelector( '.or-repeat-info[data-name="/data/outer/inner"] .add-repeat-btn' ).click();
+        // Prior to the fix, adding an instance of the outermost repeat would not add instances of any of the inner repeats
+        form.view.html.querySelector( '.or-repeat-info[data-name="/data/outer"] .add-repeat-btn' ).click();
+
+        expect(
+            form.getDataStr().replace( />\s+</g, '><' )
+        ).toContain( '<outer><inner><third><value/></third><third><value/></third></inner><inner><third><value/></third></inner></outer><outer><inner><third><value/></third></inner></outer>' );
+    } );
+
     it( 'doesn\'t duplicate date widgets in a cloned repeat', () => {
         const form = loadForm( 'nested_repeats.xml' );
         form.init();

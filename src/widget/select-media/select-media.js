@@ -1,5 +1,5 @@
 import Widget from '../../js/widget';
-import { getSiblingElements } from '../../js/dom-utils';
+import { getSiblingElement } from '../../js/dom-utils';
 
 import $ from 'jquery';
 
@@ -18,7 +18,7 @@ class MediaPicker extends Widget {
 
     _init() {
         this.element.querySelectorAll( '.option-label' ).forEach( function( optionLabel ) {
-            if ( getSiblingElements( optionLabel, 'img, video, audio' ).length > 0 ) {
+            if ( getSiblingElement( optionLabel, 'img, video, audio' ) ) {
                 optionLabel.style.display = 'none';
             }
         } );

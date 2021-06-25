@@ -4,7 +4,7 @@
  * @module language
  */
 
-import { getSiblingElements } from './dom-utils';
+import { getSiblingElement } from './dom-utils';
 import events from './event';
 
 export default {
@@ -37,12 +37,13 @@ export default {
             }
         }
         this.formLanguages = root.querySelector( '#form-languages' );
+        this.defaultLanguage = this.formLanguages.dataset.defaultLang || undefined;
 
         if ( overrideLang && this.languages.includes( overrideLang ) && this.languages.length > 1 ) {
             this._currentLang = overrideLang;
             this.setFormUi( this._currentLang );
         } else {
-            this._currentLang = this.formLanguages.dataset.defaultLang || this.languages[ 0 ] || '';
+            this._currentLang = this.defaultLanguage || this.languages[ 0 ] || '';
         }
 
         const langOption = this.formLanguages.querySelector( `[value="${this._currentLang}"]` );
@@ -67,7 +68,7 @@ export default {
     /**
      * @type {string}
      */
-    get currentLang() {
+    get currentLanguage() {
         return this._currentLang;
     },
     /**
@@ -92,7 +93,7 @@ export default {
         translations.forEach( el => el.classList.remove( 'active' ) );
         translations
             .filter( el => el.matches( `[lang="${lang}"], [lang=""]` ) &&
-                ( !el.classList.contains( 'or-form-short' ) || ( el.classList.contains( 'or-form-short' ) && getSiblingElements( el, '.or-form-long' ).length === 0 ) ) )
+                ( !el.classList.contains( 'or-form-short' ) || ( el.classList.contains( 'or-form-short' ) && !getSiblingElement( el, '.or-form-long' ) ) ) )
             .forEach( el => el.classList.add(
                 'active'
             ) );

@@ -36,8 +36,11 @@ temp
 node_modules/
 build/js/
 test/mock/forms.js
+.idea/inspectionProfiles/
+.idea/jsLinters/
 test-coverage/
 temp
 .DS_Store
 Thumbs.db
 lib/jquery-xpath
+lib/xpath

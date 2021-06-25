@@ -1,11 +1,14 @@
 ### How to develop Enketo Core
 
-1. install [node](http://nodejs.org/) version 8 until [this issue](https://github.com/enketo/enketo-transformer/issues/53) is closed, and [grunt-cli](http://gruntjs.com/getting-started)
+1. install prerequisites:
+  - [Node](https://nodejs.org/) version 12.x
+  - [npm CLI](https://docs.npmjs.com/cli/) version 6.x - comes bundled with Node, make sure it's not version 7.x, as it will not work
+  - [grunt-cli](https://gruntjs.com/getting-started)
 2. install dependencies with `npm install`
-3. build with `grunt`
+3. build with `grunt` (`npx grunt`)
 4. start built-in auto-reloading development server with `npm start`
 5. browse to [http://localhost:8005](http://localhost:8005/) and load an XForm url with the `xform` queryparameter or load a local from the /tests/forms folder in this repo
-6. run tests with `npm test` (headless chrome) and `npm run test-browsers` (browsers)
+6. run tests with `npm test` (headless chrome) and `npm run test-browsers` (browsers); **note:** running tests updates the coverage badge in README.md, but these changes should not be committed except when preparing a release
 7. adding the querystring `touch=true` and reducing the window size allows you to simulate mobile touchscreens
 
 ### Notes for JavaScript Developers

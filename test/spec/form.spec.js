@@ -9,6 +9,15 @@ import dialog from '../../src/js/fake-dialog';
 
 dialog.confirm = () => Promise.resolve( true );
 
+describe( 'Getters ', () => {
+    const form = loadForm( 'thedata.xml' );
+    form.init();
+
+    it( 'id() returns the formID', () => {
+        expect( form.id ).toEqual( 'thedata' );
+    } );
+} );
+
 describe( 'Output functionality ', () => {
     // These tests were orginally meant for modilabs/enketo issue #141. However, they passed when they were
     // failing in the enketo client itself (same form). It appeared the issue was untestable (except manually)
@@ -1119,7 +1128,7 @@ describe( 'required enketo-transformer version', () => {
         const actual = Form.requiredTransformerVersion;
 
         expect( actual ).toBe( expected,
-            `It looks like enketo-transformer has been updated in package.json from ${actual} to ${expected}.  You also need to update the value returned by From.getRequiredTransformerVersion() to the new version number.` );
+            `It looks like enketo-transformer has been updated in package.json from ${actual} to ${expected}.  You also need to update the value returned by From.requiredTransformerVersion to the new version number.` );
     } );
 } );
 
@@ -1184,7 +1193,7 @@ describe( 'jr:choice-name', () => {
     } );
 
     it( 'should work with radio buttons', () => {
-        const form = loadForm( 'jr_choice_name_repeats.xml' );
+        const form = loadForm( 'jr-choice-name-repeats.xml' );
         form.init();
 
         expect( form.view.html.querySelector( '[data-name="/data/r1/province_name"]' ).checked ).toEqual( false );
@@ -1195,6 +1204,15 @@ describe( 'jr:choice-name', () => {
         expect( form.view.html.querySelector( '[data-value=" ../province_label "]' ).innerText ).toEqual( 'Central' );
     } );
 
+    it( 'should work with **empty** lists in pulldown selects', () => {
+        const form = loadForm( 'jr-choice-name-external.xml' );
+        const loadErrors = form.init();
+        // Check that form loads without error (due to empty list when choice is evaluated the first time during initialization)
+        // https://github.com/enketo/enketo-core/issues/738
+        expect( loadErrors.length ).toEqual( 0 );
+        // Check that it actually works (with a default value)
+        expect( form.model.xml.querySelector( 'questionname' ).textContent ).toEqual( 'A' );
+    } );
 
 } );
 
