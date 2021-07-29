@@ -1240,3 +1240,7 @@ label.itemset-template {
     left: unset;
 }
 
+.or-appearance-hidden {
+    display:none;
+}
+

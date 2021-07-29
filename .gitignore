@@ -2,6 +2,11 @@
 !/node_modules/enketo-xpathjs
 /node_modules/enketo-xpathjs/*
 !/node_modules/enketo-xpathjs/src
+
+!/node_modules/openrosa-xpath-evaluator
+/node_modules/openrosa-xpath-evaluator/*
+!/node_modules/openrosa-xpath-evaluator/src
+
 /lib/xpath
 lib/xpath
 package-lock.json

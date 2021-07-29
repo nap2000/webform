@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6f327aeb-bf59-46a9-9fa9-44036497c49d" name="Default" comment="">
+    <list default="true" id="8171336b-d8a7-4eb9-a744-e7f118e579f5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/css/webform.css" beforeDir="false" afterPath="$PROJECT_DIR$/build/css/webform.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath" beforeDir="false" afterPath="$PROJECT_DIR$/lib/xpath" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/parser.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -23,23 +24,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/webform/controller-webform.js">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="32" column="15" lean-forward="true" selection-start-line="32" selection-start-column="15" selection-end-line="32" selection-end-column="15" />
-              <folding>
-                <element signature="e#49#91#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="146">
+              <caret line="5528" selection-start-line="5528" selection-end-line="5528" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webform/store.js">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1440">
-              <caret line="96" column="15" selection-start-line="96" selection-start-column="10" selection-end-line="96" selection-end-column="15" />
+            <state relative-caret-position="250">
+              <caret line="101" column="21" selection-start-line="101" selection-start-column="17" selection-end-line="101" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -48,13 +46,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>footer</find>
-      <find>previous</find>
-      <find>starts</find>
-      <find>in</find>
-      <find>parameterButton</find>
-      <find>return control.dataset.typeXml.toLowerCase()</find>
-      <find>Not allowed to</find>
       <find>flv</find>
       <find>/key</find>
       <find>uploadRecords</find>
@@ -78,6 +69,13 @@
       <find>columns</find>
       <find>custom_reports</find>
       <find>Openrosaxpath</find>
+      <find>this.readonly.update()</find>
+      <find>evaluationC</find>
+      <find>readonly</find>
+      <find>readonly.up</find>
+      <find>asString</find>
+      <find>lookup</find>
+      <find>smap</find>
     </findStrings>
     <replaceStrings>
       <replace>Webform</replace>
@@ -152,9 +150,11 @@
   <component name="PackageJsonUpdateNotifier">
     <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
-  <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="width" value="1280" />
-    <option name="height" value="800" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-1920" />
+    <option name="y" value="25" />
+    <option name="width" value="1920" />
+    <option name="height" value="979" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -172,18 +172,13 @@
             <path>
               <item name="webform" type="b2602c69:ProjectViewProjectNode" />
               <item name="webform" type="462c0819:PsiDirectoryNode" />
-              <item name="build" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
               <item name="webform" type="462c0819:PsiDirectoryNode" />
-              <item name="build" type="462c0819:PsiDirectoryNode" />
-              <item name="css" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="webform" type="b2602c69:ProjectViewProjectNode" />
               <item name="webform" type="462c0819:PsiDirectoryNode" />
               <item name="webform" type="462c0819:PsiDirectoryNode" />
+              <item name="backups" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -400,12 +395,13 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="426409000" />
+    <option name="totallyTimeSpent" value="431999000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
+    <frame x="-1920" y="25" width="1920" height="979" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.23424879" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15654951" />
       <window_info id="Structure" order="1" weight="0.24959612" />
       <window_info id="MaxCompute Job Explorer" order="2" />
       <window_info id="MaxCompute Project Explorer" order="3" />
@@ -527,19 +523,6 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/widget/horizontal-choices/horizontalchoices.js" />
-    <entry file="file://$PROJECT_DIR$/lib/file-manager/src/file-manager.js" />
-    <entry file="file://$PROJECT_DIR$/src/widget/compact/compactpicker.js" />
-    <entry file="file://$PROJECT_DIR$/src/widget/select-mobile/selectpicker.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="151">
-          <caret line="14" column="13" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#37#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/widget/select-desktop/selectpicker.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="199">
@@ -651,16 +634,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3030">
           <caret line="202" column="46" selection-start-line="202" selection-start-column="46" selection-end-line="202" selection-end-column="64" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/js/form.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7335">
-          <caret line="510" column="36" selection-start-line="510" selection-start-column="36" selection-end-line="510" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#41#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -886,20 +859,58 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webform/connection.js" />
+    <entry file="file://$PROJECT_DIR$/webform/store.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1065">
+          <caret line="71" column="8" selection-start-line="71" selection-start-column="8" selection-end-line="71" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/webform/controller-webform.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="32" column="15" lean-forward="true" selection-start-line="32" selection-start-column="15" selection-end-line="32" selection-end-column="15" />
+        <state relative-caret-position="155">
+          <caret line="401" column="85" selection-start-line="401" selection-start-column="85" selection-end-line="401" selection-end-column="85" />
           <folding>
             <element signature="e#49#91#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webform/store.js">
+    <entry file="file://$PROJECT_DIR$/src/js/form.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1440">
-          <caret line="96" column="15" selection-start-line="96" selection-start-column="10" selection-end-line="96" selection-end-column="15" />
+        <state relative-caret-position="201">
+          <caret line="213" selection-start-line="213" selection-end-line="213" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#41#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/readonly.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="107">
+          <caret line="11" column="81" selection-start-line="11" selection-start-column="8" selection-end-line="11" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/backups/digest.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" selection-start-line="7" selection-end-line="7" selection-end-column="80" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="146">
+          <caret line="5528" selection-start-line="5528" selection-end-line="5528" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="250">
+          <caret line="101" column="21" selection-start-line="101" selection-start-column="17" selection-end-line="101" selection-end-column="21" />
         </state>
       </provider>
     </entry>
