@@ -320,6 +320,17 @@ const openrosa_xpath_extensions = function() {
 
             return XPR.string("");
         },
+        /**
+         * The default function is ignored in Webforms
+         * It is only included for compatability with fieldTask
+         *
+         * @return {StringType}
+         */
+        default : function(a) {
+
+            return XPR.string(asString(a));
+
+        },
 
         /*
 		 * End Smap
