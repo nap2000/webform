@@ -3,11 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="8171336b-d8a7-4eb9-a744-e7f118e579f5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/css/webform.css" beforeDir="false" afterPath="$PROJECT_DIR$/build/css/webform.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath" beforeDir="false" afterPath="$PROJECT_DIR$/lib/xpath" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/parser.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.min.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -27,17 +28,24 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="146">
-              <caret line="5528" selection-start-line="5528" selection-end-line="5528" />
+            <state relative-caret-position="153">
+              <caret line="21" column="39" selection-start-line="21" selection-start-column="39" selection-end-line="21" selection-end-column="39" />
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1037" />
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="250">
-              <caret line="101" column="21" selection-start-line="101" selection-start-column="17" selection-end-line="101" selection-end-column="21" />
+            <state relative-caret-position="160">
+              <caret line="333" selection-start-line="333" selection-end-line="333" />
             </state>
           </provider>
         </entry>
@@ -46,11 +54,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>flv</find>
-      <find>/key</find>
-      <find>uploadRecords</find>
-      <find>_uploadOne</find>
-      <find>submitOneForced</find>
       <find>uploadOngoingID</find>
       <find>Not allowed to post data to this data server</find>
       <find>getNewKe</find>
@@ -74,8 +77,13 @@
       <find>readonly</find>
       <find>readonly.up</find>
       <find>asString</find>
-      <find>lookup</find>
       <find>smap</find>
+      <find>get_media</find>
+      <find>getPath</find>
+      <find>lookup</find>
+      <find>default</find>
+      <find>getPa</find>
+      <find>shuffle</find>
     </findStrings>
     <replaceStrings>
       <replace>Webform</replace>
@@ -93,7 +101,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/locales/sw/translation-combined.json" />
         <option value="$PROJECT_DIR$/locales/sw/translation.json" />
         <option value="$PROJECT_DIR$/locales/vi/translation-combined.json" />
         <option value="$PROJECT_DIR$/locales/vi/translation.json" />
@@ -144,6 +151,7 @@
         <option value="$PROJECT_DIR$/webform/connection.js" />
         <option value="$PROJECT_DIR$/build/css/grid.css" />
         <option value="$PROJECT_DIR$/build/css/grid-print.css" />
+        <option value="$PROJECT_DIR$/webform/backups/openrosa-extensions.js" />
       </list>
     </option>
   </component>
@@ -168,6 +176,11 @@
             <path>
               <item name="webform" type="b2602c69:ProjectViewProjectNode" />
               <item name="webform" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="webform" type="b2602c69:ProjectViewProjectNode" />
@@ -395,7 +408,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="431999000" />
+    <option name="totallyTimeSpent" value="435908000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1920" y="25" width="1920" height="979" extended-state="0" />
@@ -523,13 +536,6 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/widget/select-desktop/selectpicker.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="199">
-          <caret line="26" column="22" selection-start-line="26" selection-start-column="22" selection-end-line="26" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/js/dropdown.jquery.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="735">
@@ -902,15 +908,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="146">
-          <caret line="5528" selection-start-line="5528" selection-end-line="5528" />
+        <state relative-caret-position="153">
+          <caret line="21" column="39" selection-start-line="21" selection-start-column="39" selection-end-line="21" selection-end-column="39" />
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1037" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="101" column="21" selection-start-line="101" selection-start-column="17" selection-end-line="101" selection-end-column="21" />
+        <state relative-caret-position="160">
+          <caret line="333" selection-start-line="333" selection-end-line="333" />
         </state>
       </provider>
     </entry>
