@@ -284,9 +284,16 @@ class Geopicker extends Widget {
             // set worldview in case permissions take too long (e.g. in FF);
             this._updateMap( [ 0, 0 ], 1 );
             if ( this.props.detect ) {
+                // start smap
+                navigator.geolocation.getCurrentPosition( position => {
+                    that._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
+                } );
+                /* the following does not work
                 getCurrentPosition().then( position => {
                     that._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
                 } ).catch( () => {} );
+                 */
+                // end smap
             }
         } else {
             // center map around first loaded geopoint value
