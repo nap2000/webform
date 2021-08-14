@@ -43,6 +43,7 @@ build/js/
 test/mock/forms.js
 .idea/inspectionProfiles/
 .idea/jsLinters/
+.idea/workspace.xml
 test-coverage/
 temp
 .DS_Store

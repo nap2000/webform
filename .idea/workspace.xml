@@ -8,7 +8,6 @@
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.min.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -28,7 +27,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
+            <state relative-caret-position="315">
               <caret line="21" column="39" selection-start-line="21" selection-start-column="39" selection-end-line="21" selection-end-column="39" />
             </state>
           </provider>
@@ -36,16 +35,23 @@
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1037" />
+            <state relative-caret-position="130">
+              <caret line="331" selection-start-line="331" selection-end-line="331" />
+            </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
+        <entry file="file://$PROJECT_DIR$/src/widget/geo/geopicker.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="333" selection-start-line="333" selection-end-line="333" />
+            <state relative-caret-position="246">
+              <caret line="547" column="30" selection-start-line="547" selection-start-column="12" selection-end-line="547" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -54,16 +60,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>uploadOngoingID</find>
-      <find>Not allowed to post data to this data server</find>
-      <find>getNewKe</find>
-      <find>setRecord</find>
-      <find>gStore</find>
-      <find>getKe</find>
-      <find>getNewKey</find>
-      <find>getNew</find>
-      <find>gui.alert('Warning: Storage of large attachments is not supported</find>
-      <find>getSubmissionUrl</find>
       <find>_sessionkey</find>
       <find>sessionk</find>
       <find>form.recordName = recordName;</find>
@@ -84,6 +80,16 @@
       <find>default</find>
       <find>getPa</find>
       <find>shuffle</find>
+      <find>adminreport</find>
+      <find>geodetect</find>
+      <find>_updateInputs</find>
+      <find>_update</find>
+      <find>defaultZoom</find>
+      <find>updateDyn</find>
+      <find>_updateMap</find>
+      <find>$detect</find>
+      <find>updateMap</find>
+      <find>getCurrentPosition</find>
     </findStrings>
     <replaceStrings>
       <replace>Webform</replace>
@@ -112,7 +118,6 @@
         <option value="$PROJECT_DIR$/src/js/form.js" />
         <option value="$PROJECT_DIR$/src/js/settings.js" />
         <option value="$PROJECT_DIR$/Gruntfile.js" />
-        <option value="$PROJECT_DIR$/src/widget/geo/geopicker.js" />
         <option value="$PROJECT_DIR$/app.js" />
         <option value="$PROJECT_DIR$/src/js/translator.js" />
         <option value="$PROJECT_DIR$/build/js/webform-bundle.js" />
@@ -152,6 +157,7 @@
         <option value="$PROJECT_DIR$/build/css/grid.css" />
         <option value="$PROJECT_DIR$/build/css/grid-print.css" />
         <option value="$PROJECT_DIR$/webform/backups/openrosa-extensions.js" />
+        <option value="$PROJECT_DIR$/src/widget/geo/geopicker.js" />
       </list>
     </option>
   </component>
@@ -181,6 +187,19 @@
               <item name="webform" type="b2602c69:ProjectViewProjectNode" />
               <item name="webform" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="widget" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webform" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="widget" type="462c0819:PsiDirectoryNode" />
+              <item name="geo" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="webform" type="b2602c69:ProjectViewProjectNode" />
@@ -267,7 +286,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="6f327aeb-bf59-46a9-9fa9-44036497c49d" name="Default" comment="" />
+      <changelist id="8171336b-d8a7-4eb9-a744-e7f118e579f5" name="Default Changelist" comment="" />
       <created>1489792257263</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -404,17 +423,17 @@
       <workItem from="1592356527271" duration="43000" />
       <workItem from="1593869633804" duration="919000" />
       <workItem from="1627429241607" duration="799000" />
+      <workItem from="1627984284069" duration="2535000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="435908000" />
+    <option name="totallyTimeSpent" value="439148000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1920" y="25" width="1920" height="979" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15654951" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15814696" />
       <window_info id="Structure" order="1" weight="0.24959612" />
       <window_info id="MaxCompute Job Explorer" order="2" />
       <window_info id="MaxCompute Project Explorer" order="3" />
@@ -647,13 +666,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3120">
           <caret line="216" column="5" selection-start-line="216" selection-start-column="5" selection-end-line="216" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/widget/geo/geopicker.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="145">
-          <caret line="653" lean-forward="true" selection-start-line="653" selection-end-line="653" />
         </state>
       </provider>
     </entry>
@@ -908,20 +920,25 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
+        <state relative-caret-position="315">
           <caret line="21" column="39" selection-start-line="21" selection-start-column="39" selection-end-line="21" selection-end-column="39" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1037" />
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="333" selection-start-line="333" selection-end-line="333" />
+        <state relative-caret-position="130">
+          <caret line="331" selection-start-line="331" selection-end-line="331" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/widget/geo/geopicker.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="246">
+          <caret line="547" column="30" selection-start-line="547" selection-start-column="12" selection-end-line="547" selection-end-column="30" />
         </state>
       </provider>
     </entry>
