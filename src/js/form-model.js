@@ -1176,7 +1176,7 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
         let searchXPath;
         const params = pullData[ 1 ];
 
-        if ( params.length === 4 ) {
+        if ( params.length === 4 || params.length === 6 ) {     // Smap add 6 parameter form
 
             // strip quotes
             params[ 1 ] = stripQuotes( params[ 1 ] );
@@ -1191,6 +1191,13 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
             searchXPath = `instance(${params[ 0 ]})/root/item[${params[ 2 ]} = ${searchValue}]/${params[ 1 ]}`;
 
             replacements[ pullData[ 0 ] ] = searchXPath;
+
+        }  else if ( params.length === 3 ) {    // smap
+            params[ 1 ] = stripQuotes( params[ 1 ] );
+            searchValue = `'${that.evaluate( params[ 2 ], 'string', selector, index, true )}'`;
+            searchXPath = `instance(${params[ 0 ]})/root/item[${searchValue}]/${params[ 1 ]}`;
+            replacements[ pullData[ 0 ] ] = searchXPath;
+        } else if ( params.length === 5 ) {    // smap
 
         } else {
             throw new FormLogicError( `pulldata with incorrect number of parameters found: ${pullData[ 0 ]}` );

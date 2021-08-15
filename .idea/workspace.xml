@@ -8,6 +8,10 @@
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.min.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/openrosa-extensions.js" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/openrosa-extensions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/js/form-model.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/js/form-model.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webform/backups/engine.js" beforeDir="false" afterPath="$PROJECT_DIR$/webform/backups/engine.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webform/backups/openrosa-extensions.js" beforeDir="false" afterPath="$PROJECT_DIR$/webform/backups/openrosa-extensions.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -27,27 +31,43 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="21" column="39" selection-start-line="21" selection-start-column="39" selection-end-line="21" selection-end-column="39" />
+            <state relative-caret-position="-29">
+              <caret line="5559" column="21" selection-start-line="5557" selection-start-column="20" selection-end-line="5559" selection-end-column="21" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="130">
-              <caret line="331" selection-start-line="331" selection-end-line="331" />
+            <state relative-caret-position="266">
+              <caret line="18" column="6" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="778">
+              <caret line="1098" selection-start-line="1098" selection-end-line="1098" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/js/form-model.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="171">
+              <caret line="1176" column="37" selection-start-line="1176" selection-start-column="37" selection-end-line="1176" selection-end-column="37" />
+              <folding>
+                <element signature="e#0#41#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/widget/geo/geopicker.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="246">
@@ -60,11 +80,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>_sessionkey</find>
-      <find>sessionk</find>
-      <find>form.recordName = recordName;</find>
-      <find>p_auto_annotate</find>
-      <find>or-appearance-columns</find>
       <find>columns</find>
       <find>custom_reports</find>
       <find>Openrosaxpath</find>
@@ -76,7 +91,6 @@
       <find>smap</find>
       <find>get_media</find>
       <find>getPath</find>
-      <find>lookup</find>
       <find>default</find>
       <find>getPa</find>
       <find>shuffle</find>
@@ -90,6 +104,12 @@
       <find>$detect</find>
       <find>updateMap</find>
       <find>getCurrentPosition</find>
+      <find>lookup</find>
+      <find>${</find>
+      <find>getpath</find>
+      <find>pulldata</find>
+      <find>FormModel.prototype.convertPullDataFn</find>
+      <find>WEIRD ARGS</find>
     </findStrings>
     <replaceStrings>
       <replace>Webform</replace>
@@ -107,7 +127,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/locales/sw/translation.json" />
         <option value="$PROJECT_DIR$/locales/vi/translation-combined.json" />
         <option value="$PROJECT_DIR$/locales/vi/translation.json" />
         <option value="$PROJECT_DIR$/locales/zh/translation-combined.json" />
@@ -134,7 +153,6 @@
         <option value="$PROJECT_DIR$/src/widget/datetime/datetimepicker-extended.js" />
         <option value="$PROJECT_DIR$/lib/xpath/build.xml" />
         <option value="$PROJECT_DIR$/lib/xpath/src/engine.js" />
-        <option value="$PROJECT_DIR$/src/js/form-model.js" />
         <option value="$PROJECT_DIR$/build/webFormTest.html" />
         <option value="$PROJECT_DIR$/src/js/language.js" />
         <option value="$PROJECT_DIR$/build/css/formhub.css" />
@@ -156,8 +174,10 @@
         <option value="$PROJECT_DIR$/webform/connection.js" />
         <option value="$PROJECT_DIR$/build/css/grid.css" />
         <option value="$PROJECT_DIR$/build/css/grid-print.css" />
-        <option value="$PROJECT_DIR$/webform/backups/openrosa-extensions.js" />
         <option value="$PROJECT_DIR$/src/widget/geo/geopicker.js" />
+        <option value="$PROJECT_DIR$/webform/backups/engine.js" />
+        <option value="$PROJECT_DIR$/src/js/form-model.js" />
+        <option value="$PROJECT_DIR$/webform/backups/openrosa-extensions.js" />
       </list>
     </option>
   </component>
@@ -424,16 +444,18 @@
       <workItem from="1593869633804" duration="919000" />
       <workItem from="1627429241607" duration="799000" />
       <workItem from="1627984284069" duration="2535000" />
+      <workItem from="1628924664773" duration="7138000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="439148000" />
+    <option name="totallyTimeSpent" value="446286000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1920" y="25" width="1920" height="979" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15814696" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15974441" />
       <window_info id="Structure" order="1" weight="0.24959612" />
       <window_info id="MaxCompute Job Explorer" order="2" />
       <window_info id="MaxCompute Project Explorer" order="3" />
@@ -718,16 +740,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/js/form-model.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="20" column="14" selection-start-line="20" selection-start-column="14" selection-end-line="20" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#41#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/jquery.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="109">
@@ -918,27 +930,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="21" column="39" selection-start-line="21" selection-start-column="39" selection-end-line="21" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="331" selection-start-line="331" selection-end-line="331" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/widget/geo/geopicker.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="246">
           <caret line="547" column="30" selection-start-line="547" selection-start-column="12" selection-end-line="547" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-29">
+          <caret line="5559" column="21" selection-start-line="5557" selection-start-column="20" selection-end-line="5559" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="18" column="6" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/js/form-model.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="1176" column="37" selection-start-line="1176" selection-start-column="37" selection-end-line="1176" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#41#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="778">
+          <caret line="1098" selection-start-line="1098" selection-end-line="1098" />
         </state>
       </provider>
     </entry>

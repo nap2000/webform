@@ -2,7 +2,7 @@ require('./date-extensions');
 const { asGeopoints, area, distance } = require('./geo');
 const digest = require('./digest');
 const { randomToken } = require('./random-token');
-const { DATE_STRING, dateToDays, dateStringToDays, isValidDate} = require('./utils/date');
+const { DATE_STRING, dateStringToDays, isValidDate } = require('./utils/date');
 const shuffle = require('./utils/shuffle');
 const { asBoolean, asNumber, asString } = require('./utils/xpath-cast');
 const sortByDocumentOrder = require('./utils/sort-by-document-order');
@@ -32,17 +32,10 @@ const openrosa_xpath_extensions = function() {
             format = asString(format);
             if(isNaN(date)) return 'Invalid Date';
             let c, i, sb = '';
-            const f = {
-                year: 1900 + date.getYear(),
-                month: 1 + date.getMonth(),
-                day: date.getDate(),
-                hour: date.getHours(),
-                minute: date.getMinutes(),
-                second: date.getSeconds(),
-                millis: date.getMilliseconds(),
-                secTicks: date.getTime(),
-                dow: 1 + date.getDay(),
-            };
+            const year = 1900 + date.getYear();
+            const month = 1 + date.getMonth();
+            const day = date.getDate();
+            const hour = date.getHours();
             const locale = window ? window.enketoFormLocale : undefined;
 
             for(i=0; i<format.length; ++i) {
@@ -57,32 +50,31 @@ const openrosa_xpath_extensions = function() {
                     if (c === '%') { // literal '%'
                         sb += '%';
                     } else if (c === 'Y') {  //4-digit year
-                        sb += _zeroPad(f.year, 4);
+                        sb += _zeroPad(year, 4);
                     } else if (c === 'y') {  //2-digit year
-                        sb += _zeroPad(f.year, 4).substring(2);
+                        sb += _zeroPad(year, 4).substring(2);
                     } else if (c === 'm') {  //0-padded month
-                        sb += _zeroPad(f.month, 2);
+                        sb += _zeroPad(month, 2);
                     } else if (c === 'n') {  //numeric month
-                        sb += f.month;
+                        sb += month;
                     } else if (c === 'b') {  //short text month
-                        sb += date.toLocaleDateString( locale, { month: 'short' } );
+                        sb += date.toLocaleDateString(locale, { month: 'short' });
                     } else if (c === 'd') {  //0-padded day of month
-                        sb += _zeroPad(f.day, 2);
+                        sb += _zeroPad(day, 2);
                     } else if (c === 'e') {  //day of month
-                        sb += f.day;
+                        sb += day;
                     } else if (c === 'H') {  //0-padded hour (24-hr time)
-                        sb += _zeroPad(f.hour, 2);
+                        sb += _zeroPad(hour, 2);
                     } else if (c === 'h') {  //hour (24-hr time)
-                        sb += f.hour;
+                        sb += hour;
                     } else if (c === 'M') {  //0-padded minute
-                        sb += _zeroPad(f.minute, 2);
+                        sb += _zeroPad(date.getMinutes(), 2);
                     } else if (c === 'S') {  //0-padded second
-                        sb += _zeroPad(f.second, 2);
+                        sb += _zeroPad(date.getSeconds(), 2);
                     } else if (c === '3') {  //0-padded millisecond ticks (000-999)
-                        // sb += _zeroPad(f.secTicks, 3);
-                        sb += _zeroPad(f.millis, 3);
+                        sb += _zeroPad(date.getMilliseconds(), 3);
                     } else if (c === 'a') {  //Three letter short text day
-                        sb += date.toLocaleDateString( locale, { weekday: 'short' } );
+                        sb += date.toLocaleDateString(locale, { weekday: 'short' });
                     } else if (c === 'Z' || c === 'A' || c === 'B') {
                         throw new Error('unsupported escape in date format string [%' + c + ']');
                     } else {
@@ -175,38 +167,75 @@ const openrosa_xpath_extensions = function() {
         },
         lookup: function(source, data_column, key_column, key_value, index, searchType) {
             var i;
+            var url;
+            var exp;
+            var extractedPaths;
 
-            if(!window.wfcache) {
+            if (!window.wfcache) {
                 window.wfcache = {};
                 window.wfcache.ongoing = {};
             }
 
-            if(key_value && asString(key_value).length > 0) {
-                var url = window.location.protocol + '//' + window.location.hostname;
-                url += '/lookup/' + surveyData.surveyIdent;
-                url += '/' + source.v;
+            url = window.location.protocol + '//' + window.location.hostname;
+            url += '/lookup/' + surveyData.surveyIdent;
+            url += '/' + source.v;
+            if (searchType) {
+                // 6 parameter version
                 url += "/" + key_column.v;
                 url += "/" + key_value.v[0].innerHTML;
+                url += '?index=' + index;
+                url += '&searchType=' + searchType;
+            } else if (index) {
+                // 5 parameter version
+                url += "/" + null;
+                url += "/" + null;
+                url += '?index=' + index;   // should be eval
 
-                if(searchType) {
-                    url += '?index=' + index;
-                    url += '&searchType=' + searchType;
+                var exp = asString(key_column);
+                extractedPaths = getPathsFromExpression(exp);
+                exp = evaluateExpressionNodes(exp);
+                url += "&expression=" + encodeURIComponent(exp);
+            } else if (key_value) {
+                // 4 parameters
+                url += "/" + key_column.v;
+                var kv = key_value.v[0].innerHTML;
+                if(kv == "") {
+                    kv = "_none"; // must send aomething to the url signature
                 }
+                url += "/" + kv;
+            } else if(key_column) {
+                // 3 parameter version
+                url += "/" + null;
+                url += "/" + null;
+                exp = asString(key_column);
+                extractedPaths = getPathsFromExpression(exp);
+                exp = evaluateExpressionNodes(exp);
+                url += "?expression=" + encodeURIComponent(exp);
+            } else {
+                url = undefined;
+            }
 
+            if (url) {
                 if (!window.wfcache.ongoing[url]) {
                     if (!window.wfcache[url]) {
                         var xmlHttp = new XMLHttpRequest();
                         xmlHttp.onreadystatechange = function () {
                             let theUrl = url;
                             let sourceNode = key_value;
+                            let expPaths = extractedPaths;
                             if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
                                 window.wfcache[theUrl] = xmlHttp.responseText;
                                 window.wfcache.ongoing[theUrl] = undefined;
 
-                                if ( sourceNode ) {
+                                if (sourceNode) {
                                     let sourcePath = getPath(sourceNode.v[0]);
                                     let sourceElement = document.getElementsByName(sourcePath)[0];
-                                    sourceElement.dispatchEvent(new Event( 'datarefresh', { bubbles: true } ));
+                                    sourceElement.dispatchEvent(new Event('datarefresh', {bubbles: true}));
+                                } else if (expPaths && expPaths.length > 0) {
+                                    for(i = 0; i < expPaths.length; i++) {
+                                        let sourceElement = document.getElementsByName(expPaths[i])[0];
+                                        sourceElement.dispatchEvent(new Event('datarefresh', {bubbles: true}));
+                                    }
                                 }
 
                             } else if (xmlHttp.readyState == 4) {
@@ -224,14 +253,16 @@ const openrosa_xpath_extensions = function() {
                         //console.log("using cache: " + url);
                     }
                 }
-            }
 
-            if(window.wfcache[url]) {
-                var obj = JSON.parse(window.wfcache[url]);
-                if(searchType && index == -1) {
-                    return XPR.string(obj["_count"]);
+                if (window.wfcache[url]) {
+                    var obj = JSON.parse(window.wfcache[url]);
+                    if (searchType && index == -1) {
+                        return XPR.string(obj["_count"]);
+                    } else {
+                        return XPR.string(obj[data_column.v]);
+                    }
                 } else {
-                    return XPR.string(obj[data_column.v]);
+                    return XPR.string("");
                 }
             } else {
                 return XPR.string("");
@@ -332,6 +363,7 @@ const openrosa_xpath_extensions = function() {
 
         },
 
+
         /*
 		 * End Smap
 		 */
@@ -398,7 +430,7 @@ const openrosa_xpath_extensions = function() {
         date: function(it) {
             return XPR.date(asDate(it));
         },
-        'decimal-date': function(date) {
+        'decimal-date-time': function(date) {
             if(arguments.length > 1) throw TOO_MANY_ARGS;
             const res = Date.parse(asString(date)) / MILLIS_PER_DAY;
             return XPR.number(res);
@@ -406,7 +438,7 @@ const openrosa_xpath_extensions = function() {
         'decimal-time': function(r) {
             if(arguments.length > 1) throw TOO_MANY_ARGS;
             if(r.t === 'num') return XPR.number(NaN);
-            const time = r.v;
+            const time = asString(r);
             // There is no Time type, and so far we don't need it so we do all validation
             // and conversion here, manually.
             const m = time.match(/^(\d\d):(\d\d):(\d\d)(\.\d\d?\d?)?(\+|-)(\d\d):(\d\d)$/);
@@ -437,8 +469,8 @@ const openrosa_xpath_extensions = function() {
             if(arguments.length === 0) throw TOO_FEW_ARGS;
             return XPR.number(distance(asGeopoints(r)));
         },
-        exp: function(r) { return XPR.number(Math.exp(r.v)); },
-        exp10: function(r) { return XPR.number(Math.pow(10, r.v)); },
+        exp: function(r) { return XPR.number(Math.exp(asNumber(r))); },
+        exp10: function(r) { return XPR.number(Math.pow(10, asNumber(r))); },
         'false': function() {
             if(arguments.length) throw TOO_MANY_ARGS;
             return XPR.boolean(false);
@@ -447,12 +479,12 @@ const openrosa_xpath_extensions = function() {
             if(arguments.length < 2) throw new Error('format-date() :: not enough args');
             return XPR.string(format_date(date, format)); },
         if: function(con, a, b) {
-            return XPR.string(asBoolean(con) ? asString(a) : asString(b));
+            return asBoolean(con) ? a : b;
         },
         'ends-with': function(a, b) {
             if(arguments.length > 2) throw TOO_MANY_ARGS;
             if(arguments.length < 2) throw TOO_FEW_ARGS;
-            return XPR.boolean(a.v.endsWith(b.v));
+            return XPR.boolean(asString(a).endsWith(asString(b)));
         },
         int: function(v) {
             return XPR.number(asInteger(v));
@@ -481,8 +513,8 @@ const openrosa_xpath_extensions = function() {
             // See: https://www.w3.org/TR/1999/REC-xpath-19991116/#function-name
             return XPR.string(getNodeName(this, r));
         },
-        log: function(r) { return XPR.number(Math.log(r.v)); },
-        log10: function(r) { return XPR.number(Math.log10(r.v)); },
+        log: function(r) { return XPR.number(Math.log(asNumber(r))); },
+        log10: function(r) { return XPR.number(Math.log10(asNumber(r))); },
         max: function(...args) {
             const nums = mapFn(asNumber, ...args);
             if(!nums.length || nums.some(v => isNaN(v))) return XPR.number(NaN);
@@ -530,7 +562,7 @@ const openrosa_xpath_extensions = function() {
         not: function(r) {
             if(arguments.length === 0) throw TOO_FEW_ARGS;
             if(arguments.length > 1) throw TOO_MANY_ARGS;
-            return XPR.boolean(!r.v);
+            return XPR.boolean(!asBoolean(r));
         },
         now: function() {
             return XPR.date(new Date());
@@ -585,9 +617,12 @@ const openrosa_xpath_extensions = function() {
         randomize: function(r, seed) {
             if(!arguments.length) throw TOO_FEW_ARGS;//only rT passed
             if(arguments.length > 2) throw TOO_MANY_ARGS;
+            if(!r || r.t !== 'arr') throw new Error('randomize() must be called on a nodeset');
 
-            seed = seed && asNumber(seed);
+            seed = seed ? asNumber(seed) : undefined;  // smap
+            //seed = seed && asNumber(seed);
 
+            let newSet = shuffle(r.v, seed);    // debug
             return { t:'arr', v:shuffle(r.v, seed) };
         },
         regex: function(haystack, pattern) {
@@ -615,7 +650,7 @@ const openrosa_xpath_extensions = function() {
             return XPR.string(asString(list).split(' ')[asInteger(index)] || '');
         },
         sin: function(r) { return XPR.number(Math.sin(asNumber(r))); },
-        sqrt: function(r) { return XPR.number(Math.sqrt(r.v)); },
+        sqrt: function(r) { return XPR.number(Math.sqrt(asNumber(r))); },
         string: function(r) {
             if(arguments.length > 1) throw new Error(`string() passed wrong arg count (expected 0 or 1, but got ${arguments.length})`);
             return XPR.string(asString(r || this.cN));
@@ -641,7 +676,7 @@ const openrosa_xpath_extensions = function() {
             return XPR.boolean(true);
         },
         uuid: function(r) {
-            if(r && r.v) return XPR.string(randomToken(r.v));
+            if(r) return XPR.string(randomToken(asNumber(r)));
             return XPR.string(uuid());
         },
         'weighted-checklist': function(min, max, ...list) {
@@ -668,7 +703,6 @@ const openrosa_xpath_extensions = function() {
 
     // function aliases
     func['date-time'] = func.date;
-    func['decimal-date-time'] = func['decimal-date'];
     func['format-date-time'] = func['format-date'];
 
     const process = {
@@ -682,10 +716,10 @@ const openrosa_xpath_extensions = function() {
             if(r.t === 'date') {
                 switch(resultType) {
                     case XPathResult.BOOLEAN_TYPE: return { resultType, booleanValue:!isNaN(r.v) };
-                    case XPathResult.NUMBER_TYPE:  return { resultType, numberValue:dateToDays(r.v) };
+                    case XPathResult.NUMBER_TYPE:  return { resultType, numberValue:asNumber(r) };
                     case XPathResult.ANY_TYPE:
                     case XPathResult.STRING_TYPE:
-                        return { resultType, stringValue:r.v.toISOLocalString().replace(/T00:00:00.000.*/, '') };
+                        return { resultType, stringValue:asString(r) };
                     default: throw new Error(`toExternalResult() doesn't know how to convert a date to ${resultType}`);
                 }
             }
@@ -847,6 +881,7 @@ function getNode(ctx, r) {
  *
  * Get the path of a node
  */
+
 function getPath(n) {
     var name = n.tagName;
     if(name === 'main') {
@@ -854,6 +889,19 @@ function getPath(n) {
     } else {
         return getPath(n.parentNode) + '/' + name;
     }
+};
+
+function getPathsFromExpression(exp) {
+
+    let paths = [];
+    let args = exp.split(" ");
+    var i;
+    for(i = 0; i < args.length; i++) {
+        if(args[i].indexOf("/main") == 0) {
+            paths.push(args[i]);
+        }
+    }
+    return paths;
 };
 
 function getChildByClass(b, c) {
@@ -933,10 +981,12 @@ var evaluateExpressionNodes = function(input) {
 
                 }
             }
-            if (expression.length > 0) {
-                expression += " ";
+            if(s.trim().length > 0) {
+                if (expression.length > 0) {
+                    expression += " ";
+                }
+                expression += s;
             }
-            expression += s;
         }
     }
     return expression;
