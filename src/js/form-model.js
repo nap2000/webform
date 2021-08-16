@@ -1173,6 +1173,7 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
 
     pullDatas.forEach( pullData => {
         let searchValue;
+        let expression;     // smap
         let searchXPath;
         const params = pullData[ 1 ];
 
@@ -1194,8 +1195,21 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
 
         }  else if ( params.length === 3 ) {    // smap
             params[ 1 ] = stripQuotes( params[ 1 ] );
-            searchValue = `'${that.evaluate( params[ 2 ], 'string', selector, index, true )}'`;
-            searchXPath = `instance(${params[ 0 ]})/root/item[${searchValue}]/${params[ 1 ]}`;
+
+            expression = params[ 2 ];
+            expression = stripQuotes( expression.trim() );
+            let paths = getPathsFromExpression(expression);
+            for(let i = 0; i < paths.length; i++) {
+                let v = `'${that.evaluate( paths[ i ], 'string', selector, index, true )}'`;
+                expression = expression.replace(paths [ i], v);
+            }
+            // remove #{ syntax
+            expression = expression.replaceAll("\'#{", "");
+            expression = expression.replaceAll("#{", "");
+            expression = expression.replaceAll("}\'", "");
+            expression = expression.replaceAll("}", "");
+
+            searchXPath = `instance(${params[ 0 ]})/root/item[${expression}]/${params[ 1 ]}`;
             replacements[ pullData[ 0 ] ] = searchXPath;
         } else if ( params.length === 5 ) {    // smap
 
@@ -1206,6 +1220,21 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
 
     return replacements;
 };
+
+// start smap functions
+function getPathsFromExpression(exp) {
+
+    let paths = [];
+    let args = exp.split(" ");
+    var i;
+    for(i = 0; i < args.length; i++) {
+        if(args[i].indexOf("/main") == 0) {
+            paths.push(args[i]);
+        }
+    }
+    return paths;
+};
+// end smap functions
 
 /**
  * Evaluates an XPath Expression using XPathJS_javarosa (not native XPath 1.0 evaluator)
