@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/xpath/build/xpathjs_javarosa.min.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/openrosa-extensions.js" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/openrosa-xpath-evaluator/src/openrosa-extensions.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -25,29 +26,27 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webform/backups/engine.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="21" column="39" selection-start-line="21" selection-start-column="39" selection-end-line="21" selection-end-column="39" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="130">
-              <caret line="331" selection-start-line="331" selection-end-line="331" />
+            <state relative-caret-position="266">
+              <caret line="18" column="6" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/js/form-model.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="306">
+              <caret line="1199" column="24" selection-start-line="1199" selection-start-column="24" selection-end-line="1199" selection-end-column="24" />
+              <folding>
+                <element signature="e#0#41#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/widget/geo/geopicker.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="246">
@@ -200,17 +199,6 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="widget" type="462c0819:PsiDirectoryNode" />
               <item name="geo" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
-              <item name="webform" type="462c0819:PsiDirectoryNode" />
-              <item name="webform" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="webform" type="b2602c69:ProjectViewProjectNode" />
-              <item name="webform" type="462c0819:PsiDirectoryNode" />
-              <item name="webform" type="462c0819:PsiDirectoryNode" />
-              <item name="backups" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -428,12 +416,13 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="439148000" />
+    <option name="totallyTimeSpent" value="439745000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1920" y="25" width="1920" height="979" extended-state="0" />
+    <frame x="-1460" y="55" width="1920" height="979" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15814696" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15974441" />
       <window_info id="Structure" order="1" weight="0.24959612" />
       <window_info id="MaxCompute Job Explorer" order="2" />
       <window_info id="MaxCompute Project Explorer" order="3" />
@@ -720,8 +709,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/js/form-model.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="20" column="14" selection-start-line="20" selection-start-column="14" selection-end-line="20" selection-end-column="14" />
+        <state relative-caret-position="306">
+          <caret line="1199" column="24" selection-start-line="1199" selection-start-column="24" selection-end-line="1199" selection-end-column="24" />
           <folding>
             <element signature="e#0#41#0" expanded="true" />
           </folding>
@@ -926,7 +915,11 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor" />
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="18" column="6" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webform/backups/openrosa-extensions.js">
       <provider selected="true" editor-type-id="text-editor">
