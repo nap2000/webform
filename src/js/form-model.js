@@ -1148,8 +1148,28 @@ FormModel.prototype.replacePullDataFn = function( expr, selector, index ) {
     for ( const pullData in replacements ) {
         if ( Object.prototype.hasOwnProperty.call( replacements, pullData ) ) {
             // We evaluate this here, so we can use the native evaluator safely. This speeds up pulldata() by about a factor *740*!
-            pullDataResult = that.evaluate( replacements[ pullData ], 'string', selector, index, true );
-            expr = expr.replace( pullData, `"${pullDataResult}"` );
+            let indexFn = getPulldataIndex(pullData);   //smap
+            let resTypeStr = 'string';          // smap
+            if(indexFn) {
+                resTypeStr = 'nodes';
+            }
+            pullDataResult = that.evaluate( replacements[ pullData ], resTypeStr, selector, index, true );
+            if(indexFn && pullDataResult.length > 0) {   // smap
+                // smap
+                let fnResult = '';
+                if(indexFn == 'list' || indexFn == '-1') {
+                    for(let i = 0; i < pullDataResult.length; i++) {
+                        if(i > 0) {
+                            fnResult += ' ';
+                        }
+                        fnResult += pullDataResult[i].textContent;
+                    }
+
+                }
+                expr = expr.replace(pullData, `"${fnResult}"`);
+            } else {
+                expr = expr.replace(pullData, `"${pullDataResult}"`);
+            }
         }
     }
 
@@ -1189,7 +1209,17 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
             // as the context for the complete expression, so we have to evaluate the position separately. Otherwise
             // relative paths would break.
             searchValue = `'${that.evaluate( params[ 3 ], 'string', selector, index, true )}'`;
-            searchXPath = `instance(${params[ 0 ]})/root/item[${params[ 2 ]} = ${searchValue}]/${params[ 1 ]}`;
+            if(params.length === 4) {
+                searchXPath = `instance(${params[ 0 ]})/root/item[${params[ 2 ]} = ${searchValue}]/${params[ 1 ]}`;
+            } else {
+                let index = stripQuotes( params[ 4 ] );
+                let searchType = stripQuotes( params[ 5 ] );
+                if(searchType === 'matches') {
+                    searchXPath = `instance(${params[0]})/root/item[${params[2]} = ${searchValue}]/${params[1]}`;
+                } else {
+
+                }
+            }
 
             replacements[ pullData[ 0 ] ] = searchXPath;
 
@@ -1222,6 +1252,31 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
 };
 
 // start smap functions
+/**
+ * @param {string} expr - The XPath expression
+ * @param {string} selector - context path
+ * @param {number} index - index of context node
+ * @return {string} Converted XPath expression
+ */
+function getPulldataIndex( expr ) {
+    const that = this;
+    const pullDatas = parseFunctionFromExpression( expr, 'pulldata' );
+    let index = undefined;
+
+    if ( !pullDatas.length ) {
+        return index;
+    }
+
+    let pullData = pullDatas[0];
+    const params = pullData[ 1 ];
+
+    if ( params.length === 5 || params.length === 6 ) {
+        index = stripQuotes( params[ 4 ] );
+    }
+
+    return index;
+};
+
 function getPathsFromExpression(exp) {
 
     let paths = [];
