@@ -1148,7 +1148,7 @@ FormModel.prototype.replacePullDataFn = function( expr, selector, index ) {
     for ( const pullData in replacements ) {
         if ( Object.prototype.hasOwnProperty.call( replacements, pullData ) ) {
             // We evaluate this here, so we can use the native evaluator safely. This speeds up pulldata() by about a factor *740*!
-            let indexFn = getPulldataIndex(pullData);   //smap
+            let indexFn = that.getPulldataIndex(pullData, selector, index);   //smap
             let resTypeStr = 'string';          // smap
             if(indexFn) {
                 resTypeStr = 'nodes';
@@ -1157,14 +1157,50 @@ FormModel.prototype.replacePullDataFn = function( expr, selector, index ) {
             if(indexFn && pullDataResult.length > 0) {   // smap
                 // smap
                 let fnResult = '';
-                if(indexFn == 'list' || indexFn == '-1') {
+                if(indexFn == 'count' || indexFn == '-1') {
+                        fnResult = pullDataResult.length;
+                } else if(indexFn == 'list' || indexFn == '0') {
                     for(let i = 0; i < pullDataResult.length; i++) {
                         if(i > 0) {
                             fnResult += ' ';
                         }
                         fnResult += pullDataResult[i].textContent;
                     }
-
+                } else if(indexFn == 'sum' || indexFn == 'mean') {
+                    let val = 0;
+                    for(let i = 0; i < pullDataResult.length; i++) {
+                        val += Number(pullDataResult[i].textContent);
+                    }
+                    if(indexFn == 'mean') {
+                        val = val / pullDataResult.length;
+                    }
+                    fnResult = val;
+                } else if(indexFn == 'min') {
+                    let val = Number.MAX_VALUE;
+                    for(let i = 0; i < pullDataResult.length; i++) {
+                        if(Number(pullDataResult[i].textContent) < val) {
+                            val = Number(pullDataResult[i].textContent);
+                        }
+                    }
+                    fnResult = val;
+                } else if(indexFn == 'max') {
+                    let val = Number.MIN_VALUE;
+                    for(let i = 0; i < pullDataResult.length; i++) {
+                        if(Number(pullDataResult[i].textContent) > val) {
+                            val = Number(pullDataResult[i].textContent);
+                        }
+                    }
+                    fnResult = val;
+                } else {
+                    // assume index
+                    let idx = parseInt(indexFn, 10);
+                    idx--;  // Index starts from 1, convert it to start from 0
+                    if (isNaN(idx) || idx < 0) {
+                        idx = 0;
+                    }
+                    if(idx < pullDataResult.length) {
+                        fnResult = pullDataResult[idx].textContent;
+                    }
                 }
                 expr = expr.replace(pullData, `"${fnResult}"`);
             } else {
@@ -1258,23 +1294,28 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
  * @param {number} index - index of context node
  * @return {string} Converted XPath expression
  */
-function getPulldataIndex( expr ) {
+
+
+FormModel.prototype.getPulldataIndex = function( expr, selector, index ) {
     const that = this;
     const pullDatas = parseFunctionFromExpression( expr, 'pulldata' );
-    let index = undefined;
+    let indexFn;
 
     if ( !pullDatas.length ) {
-        return index;
+        return indexFn;
     }
 
     let pullData = pullDatas[0];
     const params = pullData[ 1 ];
 
     if ( params.length === 5 || params.length === 6 ) {
-        index = stripQuotes( params[ 4 ] );
+        indexFn = stripQuotes( params[ 4 ] );
+    }
+    if(indexFn.startsWith("position")) {
+        indexFn = that.evaluate( params[ 4 ], 'string', selector, index, true );
     }
 
-    return index;
+    return indexFn;
 };
 
 function getPathsFromExpression(exp) {
