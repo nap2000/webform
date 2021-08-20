@@ -1252,8 +1252,48 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
                 let searchType = stripQuotes( params[ 5 ] );
                 if(searchType === 'matches') {
                     searchXPath = `instance(${params[0]})/root/item[${params[2]} = ${searchValue}]/${params[1]}`;
-                } else {
+                } else if(searchType === 'startswith') {
+                    searchXPath = `instance(${params[0]})/root/item[starts-with(${params[2]}, ${searchValue})]/${params[1]}`;
+                } else if(searchType === 'endswith') {
+                    searchXPath = `instance(${params[0]})/root/item[ends-with(${params[2]}, ${searchValue})]/${params[1]}`;
+                } else if(searchType === 'contains') {
+                    searchXPath = `instance(${params[0]})/root/item[contains(${params[2]}, ${searchValue})]/${params[1]}`;
+                } else if(searchType === 'in') {
+                    let svArray = searchValue.split(' ');
+                    let expr = '';
+                    for(let i =0; i < svArray.length; i++) {
+                        if(i > 0) {
+                            expr += ' or ';
+                        }
+                        // Single quotes are around all the in values we want them around each in value
+                        if(svArray[i][svArray[i].length - 1] != "'") {
+                            svArray[i] += "'";
+                        }
+                        if(svArray[i][0] != "'") {
+                            svArray[i] = "'" + svArray[i];
+                        }
 
+                        expr += `${params[2]} = ${svArray[i]}`;
+                    }
+                    searchXPath = `instance(${params[0]})/root/item[${expr}]/${params[1]}`;
+                } else if(searchType === 'not in') {
+                    let svArray = searchValue.split(' ');
+                    let expr = '';
+                    for(let i =0; i < svArray.length; i++) {
+                        if(i > 0) {
+                            expr += ' and ';
+                        }
+                        // Single quotes are around all the in values we want them around each in value
+                        if(svArray[i][svArray[i].length - 1] != "'") {
+                            svArray[i] += "'";
+                        }
+                        if(svArray[i][0] != "'") {
+                            svArray[i] = "'" + svArray[i];
+                        }
+
+                        expr += `${params[2]} != ${svArray[i]}`;
+                    }
+                    searchXPath = `instance(${params[0]})/root/item[${expr}]/${params[1]}`;
                 }
             }
 
