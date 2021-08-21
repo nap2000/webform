@@ -1299,7 +1299,7 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
 
             replacements[ pullData[ 0 ] ] = searchXPath;
 
-        }  else if ( params.length === 3 ) {    // smap
+        }  else if ( params.length === 3 || params.length === 5 ) {    // smap
             params[ 1 ] = stripQuotes( params[ 1 ] );
 
             expression = params[ 2 ];
@@ -1317,8 +1317,6 @@ FormModel.prototype.convertPullDataFn = function( expr, selector, index ) {
 
             searchXPath = `instance(${params[ 0 ]})/root/item[${expression}]/${params[ 1 ]}`;
             replacements[ pullData[ 0 ] ] = searchXPath;
-        } else if ( params.length === 5 ) {    // smap
-
         } else {
             throw new FormLogicError( `pulldata with incorrect number of parameters found: ${pullData[ 0 ]}` );
         }
@@ -1348,11 +1346,13 @@ FormModel.prototype.getPulldataIndex = function( expr, selector, index ) {
     let pullData = pullDatas[0];
     const params = pullData[ 1 ];
 
-    if ( params.length === 5 || params.length === 6 ) {
+    if ( params.length === 5 ) {
+        indexFn = stripQuotes( params[ 3 ] );
+    } else if ( params.length === 6 ) {
         indexFn = stripQuotes( params[ 4 ] );
     }
     if(indexFn.startsWith("position")) {
-        indexFn = that.evaluate( params[ 4 ], 'string', selector, index, true );
+        indexFn = that.evaluate( indexFn, 'string', selector, index, true );
     }
 
     return indexFn;
