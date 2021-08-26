@@ -1351,7 +1351,7 @@ FormModel.prototype.getPulldataIndex = function( expr, selector, index ) {
     } else if ( params.length === 6 ) {
         indexFn = stripQuotes( params[ 4 ] );
     }
-    if(indexFn.startsWith("position")) {
+    if(indexFn && indexFn.startsWith("position")) {
         indexFn = that.evaluate( indexFn, 'string', selector, index, true );
     }
 
