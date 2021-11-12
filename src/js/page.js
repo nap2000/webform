@@ -422,9 +422,9 @@ export default {
 
         // smap hide the submit form button and powered by enketo logo except on last page
         if(next) {
-            $('#submit-form, .enketo-power, .draft').hide();
+            $('#submit-form, #submit-form-single, .enketo-power, .draft').hide();
         } else {
-            $('#submit-form, .enketo-power, .draft').show();
+            $('#submit-form, #submit-form-single, .enketo-power, .draft').show();
         }
         // end smap
     },
