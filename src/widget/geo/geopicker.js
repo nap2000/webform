@@ -595,7 +595,7 @@ class Geopicker extends Widget {
                                 that._updateMap( [ latLng.lat, latLng.lng ], defaultZoom );
                                 that.$search.closest( '.input-group' ).removeClass( 'has-error' );
                             } else {
-                                //TODO: add error message
+                                that.$search.closest( 'input' ).val( response.error_message ); // smap
                                 that.$search.closest( '.input-group' ).addClass( 'has-error' );
                                 console.warn( `Location "${address}" not found` );
                             }
