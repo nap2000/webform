@@ -1244,3 +1244,36 @@ label.itemset-template {
     display:none;
 }
 
+/* properties*/
+.smap-geopoint-blue-circle-marker {
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border-radius: 8px;
+    border: 1px solid #4e4e4e;
+    background: #0000ff; }
+
+.smap-geopoint-blue-circle-marker-active {
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border-radius: 8px;
+    border: 4px solid #6783ec;
+    background: #0000ff; }
+
+.smap-geopoint-red-circle-marker {
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border-radius: 8px;
+    border: 1px solid #4e4e4e;
+    background: #ff0000; }
+
+.smap-geopoint-red-circle-marker-active {
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border-radius: 8px;
+    border: 4px solid #6783ec;
+    background: #ff0000; }
+
