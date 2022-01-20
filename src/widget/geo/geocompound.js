@@ -1261,6 +1261,19 @@ class Geocompound extends Widget {
         return coordinates;
     }
 
+    /*
+     * Get goordinates from a point
+     * smap
+     */
+    _getGeopoint(point) {
+        const lat = typeof point[ 0 ] === 'number' ? point[ 0 ] : ( typeof point.lat === 'number' ? point.lat : null );
+        const lng = typeof point[ 1 ] === 'number' ? point[ 1 ] : ( typeof point.lng === 'number' ? point.lng : null );
+        const alt = typeof point[ 2 ] === 'number' ? point[ 2 ] : 0.0;
+        const acc = typeof point[ 3 ] === 'number' ? point[ 3 ] : 0.0;
+
+        return ( lat && lng ) ? `${lat} ${lng} ${alt} ${acc}` : '';
+    }
+
     /**
      * Check if a polyline created from the current collection of points
      * where one point is added or edited would have intersections.
@@ -1346,19 +1359,25 @@ class Geocompound extends Widget {
 
     /**
      * @type {string}
+     *
+     * Include coordinates of line as well as points that have a property
+     * Separate
+     *     features with '#'
+     *     feature components with ':'  (type, coords, properties)
+     *     coordinates with ';'
      */
     get value() {
-        let newValue = '';
+
+        if(this.points.length === 0) {
+            return '';
+        }
+
+        // Add line
+        let newValue = 'line:';      // Open features
         // all points should be valid geopoints and only the last item may be empty
         this.points.forEach( ( point, index, array ) => {
-            let geopoint;
-            const lat = typeof point[ 0 ] === 'number' ? point[ 0 ] : ( typeof point.lat === 'number' ? point.lat : null );
-            const lng = typeof point[ 1 ] === 'number' ? point[ 1 ] : ( typeof point.lng === 'number' ? point.lng : null );
-            const alt = typeof point[ 2 ] === 'number' ? point[ 2 ] : 0.0;
-            const acc = typeof point[ 3 ] === 'number' ? point[ 3 ] : 0.0;
-
-            geopoint = ( lat && lng ) ? `${lat} ${lng} ${alt} ${acc}` : '';
-
+            let geopoint = this._getGeopoint(point);
+            
             // only last item may be empty
             // TODO: it is not great to have markAsInvalid functionality in the value getter.
             if ( !this._isValidGeopoint( geopoint ) && !( geopoint === '' && index === array.length - 1 ) ) {
@@ -1376,6 +1395,17 @@ class Geocompound extends Widget {
             }
         } );
 
+        // Add points with properties
+        this.properties.forEach( (feature, index, array) => {
+            if(feature !== '') {
+                newValue += '#point:';
+                newValue += this._getGeopoint(this.points[index]);
+                newValue += ":index=" + index;
+                newValue += ";type=" + feature;
+            }
+        });
+
+        console.debug( 'Value ', newValue );
         return newValue;
     }
 
