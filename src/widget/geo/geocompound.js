@@ -33,7 +33,7 @@ const iconMultiActive = L.divIcon( {
     className: 'enketo-geopoint-circle-marker-active'
 } );
 
-// Add colored icons to show properties - smap
+// Add colored icons to show types - smap
 const iconBlueMulti = L.divIcon( {
     iconSize: 16,
     className: 'smap-geopoint-blue-circle-marker'
@@ -111,17 +111,18 @@ class Geocompound extends Widget {
         this._addDomElements();
         this.currentIndex = 0;
         this.points = [];
-        this.properties = [];       // smap - properties
+        this.markerTypes = [];       // smap
 
         // load default value
         if ( loadedVal ) {
             this.value = loadedVal;
         }
 
-        // Handle a change to the property for a point smap - properties
-        this.$widget.find( '[name="property"]' ).on( 'change', event => {
+        // Handle a change to the type for a marker smap
+        this.$widget.find( '[name="markerType"]' ).on( 'change', event => {
             event.stopImmediatePropagation();
-            that.properties[ that.currentIndex ] = that.$property.val();
+            that.markerTypes[ that.currentIndex ] = that.$markerType.val();
+            that._updateValue();
         } );
 
         // handle point input changes
@@ -141,7 +142,7 @@ class Geocompound extends Widget {
             // if the points array contains empty points, skip the intersection check, it will be done before closing the polygon
             if ( event.namespace !== 'bymap' && event.namespace !== 'bysearch' && that.polyline && that.props.type === 'geoshape' && !that.containsEmptyPoints( that.points, that.currentIndex ) && that.updatedPolylineWouldIntersect( latLng, that.currentIndex ) ) {
                 that._showIntersectError();
-                that._updateInputs( that.points[ that.currentIndex ], 'nochange' );
+                that._updateInputs( that.points[ that.currentIndex ], 'nochange', that.currentIndex );
             } else {
                 that._editPoint( [ lat, lng, alt, acc ] );
 
@@ -164,7 +165,7 @@ class Geocompound extends Widget {
             setTimeout( () => {
                 // mimic manual input point-by-point
                 coords.forEach( ( latLng, index ) => {
-                    that._updateInputs( latLng );
+                    that._updateInputs( latLng, undefined, index );
                     if ( index < coords.length - 1 ) {
                         $addPointBtn.click();
                     }
@@ -218,7 +219,7 @@ class Geocompound extends Widget {
         // handle point remove click
         this.$widget.find( '.btn-remove' ).on( 'click', () => {
             if ( that.points.length < 2 ) {
-                that._updateInputs( [] );
+                that._updateInputs(  [], undefined, -1 );
             } else {
                 dialog.confirm( t( 'geopicker.removePoint' ) )
                     .then( confirmed => {
@@ -396,9 +397,9 @@ class Geocompound extends Widget {
                         <input class="ignore" name="acc" type="number" step="0.1" />
                     </label>
 
-                     <label class="geo prop">  <!-- properties -->
-                        <span>Property</span>
-                        <select class="ignore" name="property">
+                     <label class="geo marker">  <!-- smap -->
+                        <span>Marker Type</span>
+                        <select class="ignore" name="markerType">
                             <option value="none">None</option>
                             <option value="pit">Pit</option>
                             <option value="fault">Fault</option>
@@ -461,7 +462,7 @@ class Geocompound extends Widget {
         this.$lng = this.$widget.find( '[name="long"]' );
         this.$alt = this.$widget.find( '[name="alt"]' );
         this.$acc = this.$widget.find( '[name="acc"]' );
-        this.$property = this.$widget.find( '[name="property"]' );
+        this.$markerType = this.$widget.find( '[name="markerType"]' );
 
 
         $( this.element ).hide().after( this.$widget ).parent().addClass( 'clearfix' );
@@ -561,7 +562,7 @@ class Geocompound extends Widget {
     _setCurrent( index ) {
         this.currentIndex = index;
         this.$points.find( '.point' ).removeClass( 'active' ).eq( index ).addClass( 'active' );
-        this._updateInputs( this.points[ index ], '' );
+        this._updateInputs( this.points[ index ], '', index );
         // make sure that the current marker is marked as active
         if ( this.map && ( !this.props.touch || this._inFullScreenMode() ) ) {
             this._updateMarkers();
@@ -588,7 +589,7 @@ class Geocompound extends Widget {
                     const { lat, lng, position } = result;
                     //that.points[that.currentIndex] = [ position.coords.latitude, position.coords.longitude ];
                     //that._updateMap( );
-                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ] );
+                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], '', -1 );
                     // if current index is last of points, automatically create next point
                     if ( that.currentIndex === that.points.length - 1 && that.props.type !== 'geopoint' ) {
                         that._addPoint();
@@ -738,10 +739,10 @@ class Geocompound extends Widget {
                             that._showIntersectError();
                         } else {
                             if ( !that.$lat.val() || !that.$lng.val() || that.props.type === 'geopoint' ) {
-                                that._updateInputs( latLng, 'change.bymap' );
+                                that._updateInputs( latLng, 'change.bymap', -1 );
                             } else if ( that.$lat.val() && that.$lng.val() ) {
                                 that._addPoint();
-                                that._updateInputs( latLng, 'change.bymap' );
+                                that._updateInputs( latLng, 'change.bymap', -1 );
                             } else {
                                 // do nothing if the field has a current marker
                                 // instead the user will have to drag to change it by map
@@ -954,11 +955,11 @@ class Geocompound extends Widget {
         }
 
         this.points.forEach( ( latLng, index ) => {
-            // Set the icon - smap - properties
+            // Set the icon - smap
             let icon;
-            if(that.properties[index] === 'pit') {
+            if(that.markerTypes[index] === 'pit') {
                 icon = that.props.type === 'geopoint' ? iconSingle : (index === that.currentIndex ? iconBlueMultiActive : iconBlueMulti);
-            } else  if(that.properties[index] === 'fault') {
+            } else  if(that.markerTypes[index] === 'fault') {
                 icon = that.props.type === 'geopoint' ? iconSingle : (index === that.currentIndex ? iconRedMultiActive : iconRedMulti);
             } else {
                 icon = that.props.type === 'geopoint' ? iconSingle : (index === that.currentIndex ? iconMultiActive : iconMulti);
@@ -992,7 +993,7 @@ class Geocompound extends Widget {
                     } else {
                         // first set the current index the point dragged
                         that._setCurrent( index );
-                        that._updateInputs( latLng, 'change.bymap' );
+                        that._updateInputs( latLng, 'change.bymap', index );
                         that._updateMap();
                     }
                 } ) );
@@ -1133,7 +1134,7 @@ class Geocompound extends Widget {
     _addPoint() {
         this._addPointBtn();
         this.points.push( [] );
-        this.properties.push("");   // properties
+        this.markerTypes.push("");   // properties
         this._setCurrent( this.points.length - 1 );
         this._updateValue();
     }
@@ -1164,7 +1165,7 @@ class Geocompound extends Widget {
     _removePoint() {
         let newIndex = this.currentIndex;
         this.points.splice( this.currentIndex, 1 );
-        this.properties.splice( this.currentIndex, 1 );     // properties
+        this.markerTypes.splice( this.currentIndex, 1 );     // properties
         this._updateValue();
         this.$points.find( '.point' ).eq( this.currentIndex ).remove();
         if ( typeof this.points[ this.currentIndex ] === 'undefined' ) {
@@ -1203,7 +1204,7 @@ class Geocompound extends Widget {
             return this._showIntersectError();
         }
 
-        this._updateInputs( this.points[ 0 ] );
+        this._updateInputs( 0, this.points[ 0 ] );
     }
 
     /**
@@ -1212,7 +1213,7 @@ class Geocompound extends Widget {
      * @param {LatLngArray|LatLngObj} coords - Latitude, longitude, altitude and accuracy.
      * @param {string} [ev] - Event to dispatch.
      */
-    _updateInputs( coords, ev ) {
+    _updateInputs( coords, ev, index ) {  // smap add index
         const lat = coords[ 0 ] || coords.lat || '';
         const lng = coords[ 1 ] || coords.lng || '';
         const alt = coords[ 2 ] || coords.alt || '';
@@ -1220,11 +1221,15 @@ class Geocompound extends Widget {
 
         ev = ( typeof ev !== 'undefined' ) ? ev : 'change';
 
+        if(index >= 0) {
+            this.$markerType.val(this.markerTypes[index]);    // smap
+        }
         this.$lat.val( lat || '' );
         this.$lng.val( lng || '' );
         this.$alt.val( alt || '' );
         this.$acc.val( acc || '' ).trigger( ev );
     }
+
 
     /**
      * Converts the contents of a single KML <coordinates> element (may inlude the coordinates tags as well) to an array
@@ -1377,7 +1382,7 @@ class Geocompound extends Widget {
         // all points should be valid geopoints and only the last item may be empty
         this.points.forEach( ( point, index, array ) => {
             let geopoint = this._getGeopoint(point);
-            
+
             // only last item may be empty
             // TODO: it is not great to have markAsInvalid functionality in the value getter.
             if ( !this._isValidGeopoint( geopoint ) && !( geopoint === '' && index === array.length - 1 ) ) {
@@ -1395,10 +1400,10 @@ class Geocompound extends Widget {
             }
         } );
 
-        // Add points with properties
-        this.properties.forEach( (feature, index, array) => {
+        // Add markers
+        this.markerTypes.forEach( (feature, index, array) => {
             if(feature !== '') {
-                newValue += '#point:';
+                newValue += '#marker:';
                 newValue += this._getGeopoint(this.points[index]);
                 newValue += ":index=" + index;
                 newValue += ";type=" + feature;
