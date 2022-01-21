@@ -123,6 +123,7 @@ class Geocompound extends Widget {
             event.stopImmediatePropagation();
             that.markerTypes[ that.currentIndex ] = that.$markerType.val();
             that._updateValue();
+            that._updateMap();
         } );
 
         // handle point input changes
@@ -344,7 +345,7 @@ class Geocompound extends Widget {
      * Adds a point button in the point navigation bar
      */
     _addPointBtn() {
-        this.$points.find( '.addpoint' ).before( '<a href="#" class="point" aria-label="point"> </a>' );
+        this.$points.find( '.addpoint' ).before( '<a href="#" class="point-list point" aria-label="point"> </a>' );
     }
 
     /**
@@ -544,14 +545,14 @@ class Geocompound extends Widget {
      * @param {number} index - Index of point
      */
     _markAsInvalid( index ) {
-        this.$points.find( '.point' ).eq( index ).addClass( 'has-error' );
+        this.$points.find( '.point-list' ).eq( index ).addClass( 'has-error' );
     }
 
     /**
      * Marks all points as valid in the points navigation bar
      */
     _markAsValid() {
-        this.$points.find( '.point' ).removeClass( 'has-error' );
+        this.$points.find( '.point-list' ).removeClass( 'has-error' );
     }
 
     /**
@@ -561,7 +562,7 @@ class Geocompound extends Widget {
      */
     _setCurrent( index ) {
         this.currentIndex = index;
-        this.$points.find( '.point' ).removeClass( 'active' ).eq( index ).addClass( 'active' );
+        this.$points.find( '.point-list' ).removeClass( 'active' ).eq( index ).addClass( 'active' );
         this._updateInputs( this.points[ index ], '', index );
         // make sure that the current marker is marked as active
         if ( this.map && ( !this.props.touch || this._inFullScreenMode() ) ) {
@@ -959,6 +960,7 @@ class Geocompound extends Widget {
             let icon;
             if(that.markerTypes[index] === 'pit') {
                 icon = that.props.type === 'geopoint' ? iconSingle : (index === that.currentIndex ? iconBlueMultiActive : iconBlueMulti);
+
             } else  if(that.markerTypes[index] === 'fault') {
                 icon = that.props.type === 'geopoint' ? iconSingle : (index === that.currentIndex ? iconRedMultiActive : iconRedMulti);
             } else {
@@ -1167,7 +1169,7 @@ class Geocompound extends Widget {
         this.points.splice( this.currentIndex, 1 );
         this.markerTypes.splice( this.currentIndex, 1 );     // properties
         this._updateValue();
-        this.$points.find( '.point' ).eq( this.currentIndex ).remove();
+        this.$points.find( '.point-list' ).eq( this.currentIndex ).remove();
         if ( typeof this.points[ this.currentIndex ] === 'undefined' ) {
             newIndex = this.currentIndex - 1;
         }
@@ -1204,7 +1206,7 @@ class Geocompound extends Widget {
             return this._showIntersectError();
         }
 
-        this._updateInputs( 0, this.points[ 0 ] );
+        this._updateInputs( 0, this.points[ 0 ], -1 );
     }
 
     /**
@@ -1415,12 +1417,40 @@ class Geocompound extends Widget {
     }
 
     set value( value ) {
-        value.trim().split( ';' ).forEach( ( el, i ) => {
-            // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
-            this.points[ i ] = el.trim().split( ' ' );
-            this.points[ i ].forEach( ( str, i, arr ) => {
-                arr[ i ] = Number( str );
-            } );
+        console.log("Set value: " + value);
+        value.trim().split('#').forEach( ( el, i ) => {
+            if(el.indexOf('line:') === 0) {
+                el = el.substring(el.indexOf(':') + 1);
+                el.trim().split(';').forEach((el, i) => {
+                    // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
+                    this.points[i] = el.trim().split(' ');
+                    this.points[i].forEach((str, i, arr) => {
+                        arr[i] = Number(str);
+                    });
+                });
+            }
+            if(el.indexOf('marker:') === 0) {
+                el.trim().split(':').forEach((el, i) => {
+                    if(i == 1) {
+                        let props = el.trim().split(';');
+                        let index = -1;
+                        let type;
+                        props.forEach((prop, i, arr) => {
+                            let propc = prop.trim().split("=");
+                            if(propc.length > 1) {
+                                if(propc[0] === 'index') {
+                                    index = Number(propc[1]);
+                                } else if(propc[0] === 'type') {
+                                    type = propc[1];
+                                }
+                            }
+                        });
+                        if(index >= 0 && type) {
+                            this.markerTypes[index] = type;
+                        }
+                    }
+                });
+            }
         } );
     }
 
