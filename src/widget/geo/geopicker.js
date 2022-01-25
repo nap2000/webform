@@ -14,7 +14,7 @@ const defaultZoom = 15;
 // MapBox TileJSON format
 const maps = ( config && config.maps && config.maps.length > 0 ) ? config.maps : [ {
     'name': 'streets',
-    'maxzoom': 24,
+    'maxzoom': 19,
     'tiles': [ 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' ],
     'attribution': '© <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="www.openstreetmap.org/copyright">Terms</a>'
 } ];
@@ -831,7 +831,7 @@ class Geopicker extends Widget {
 
         return {
             id: map.id || name,
-            maxZoom: map.maxzoom || 18,
+            maxZoom: map.maxzoom || 19,
             minZoom: map.minzoom || 0,
             name,
             attribution: map.attribution || ''
