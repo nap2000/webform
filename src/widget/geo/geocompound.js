@@ -303,7 +303,7 @@ class Geocompound extends Widget {
                 that._addPointBtn();
             } );
         } else {
-            this._addPoint();
+            this._addPoint();  // smap
         }
 
         // set map location on load
@@ -563,7 +563,7 @@ class Geocompound extends Widget {
     _setCurrent( index ) {
         this.currentIndex = index;
         this.$points.find( '.point-list' ).removeClass( 'active' ).eq( index ).addClass( 'active' );
-        this._updateInputs( this.points[ index ], '', index );
+        this._updateInputs( this.points[ index ], undefined, index );
         // make sure that the current marker is marked as active
         if ( this.map && ( !this.props.touch || this._inFullScreenMode() ) ) {
             this._updateMarkers();
@@ -590,7 +590,7 @@ class Geocompound extends Widget {
                     const { lat, lng, position } = result;
                     //that.points[that.currentIndex] = [ position.coords.latitude, position.coords.longitude ];
                     //that._updateMap( );
-                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], '', -1 );
+                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], undefined, -1 );
                     // if current index is last of points, automatically create next point
                     if ( that.currentIndex === that.points.length - 1 && that.props.type !== 'geopoint' ) {
                         that._addPoint();
@@ -1206,7 +1206,7 @@ class Geocompound extends Widget {
             return this._showIntersectError();
         }
 
-        this._updateInputs( 0, this.points[ 0 ], -1 );
+        this._updateInputs( this.points[ 0 ],  undefined,-1 );
     }
 
     /**
@@ -1223,8 +1223,11 @@ class Geocompound extends Widget {
 
         ev = ( typeof ev !== 'undefined' ) ? ev : 'change';
 
+        // smap - set the marker type
         if(index >= 0) {
-            this.$markerType.val(this.markerTypes[index]);    // smap
+            this.$markerType.val(this.markerTypes[index]);
+        } else {
+            this.$markerType.val('');
         }
         this.$lat.val( lat || '' );
         this.$lng.val( lng || '' );
