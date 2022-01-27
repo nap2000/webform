@@ -303,7 +303,7 @@ class Geocompound extends Widget {
                 that._addPointBtn();
             } );
         } else {
-            this._addPoint();  // smap
+            //this._addPoint();  // smap
         }
 
         // set map location on load
@@ -578,6 +578,7 @@ class Geocompound extends Widget {
         const that = this;
         const options = {
             enableHighAccuracy: true,
+            timeout: 5000,
             maximumAge: 0
         };
         this.$detect.click( event => {
@@ -590,11 +591,13 @@ class Geocompound extends Widget {
                     const { lat, lng, position } = result;
                     //that.points[that.currentIndex] = [ position.coords.latitude, position.coords.longitude ];
                     //that._updateMap( );
-                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], undefined, -1 );
+                    that._addPoint();
+                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], 'change.bymap', -1 );
                     // if current index is last of points, automatically create next point
-                    if ( that.currentIndex === that.points.length - 1 && that.props.type !== 'geopoint' ) {
-                        that._addPoint();
-                    }
+                    //if ( that.currentIndex === that.points.length - 1 && that.props.type !== 'geopoint' ) {
+                    //    that._addPoint();
+                    //}
+                    //that._editPoint( [ lat, lng, alt, acc ] );  // smap
                 }
             } ).catch( () => {
                 console.error( 'error occurred trying to obtain position' );
