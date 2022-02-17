@@ -1284,7 +1284,7 @@ class Geocompound extends Widget {
         const alt = typeof point[ 2 ] === 'number' ? point[ 2 ] : 0.0;
         const acc = typeof point[ 3 ] === 'number' ? point[ 3 ] : 0.0;
 
-        return ( lat && lng ) ? `${lat} ${lng} ${alt} ${acc}` : '';
+        return ( lat && lng ) ? `${lat} ${lng} ${alt} ${acc}` : '0.0 0.0 0.0 0.0';
     }
 
     /**
