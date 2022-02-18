@@ -1430,6 +1430,7 @@ class Geocompound extends Widget {
                 el.trim().split(';').forEach((el, i) => {
                     // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
                     this.points[i] = el.trim().split(' ');
+                    this.markerTypes[i] = "";
                     this.points[i].forEach((str, i, arr) => {
                         arr[i] = Number(str);
                     });
@@ -1437,7 +1438,8 @@ class Geocompound extends Widget {
             }
             if(el.indexOf('marker:') === 0) {
                 el.trim().split(':').forEach((el, i) => {
-                    if(i == 1) {
+                    // For legacy reason the properties could be in the 2nd index or (more recently) the 3rd
+                    if(i == 1 || i == 2) {
                         let props = el.trim().split(';');
                         let index = -1;
                         let type;
