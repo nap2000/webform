@@ -402,8 +402,8 @@ class Geocompound extends Widget {
                         <span>Marker Type</span>
                         <select class="ignore" name="markerType">
                             <option value="none">None</option>
-                            <option value="pit">Pit</option>
-                            <option value="fault">Fault</option>
+                            <option value="pit">Chamber</option>
+                            <option value="fault">Blockage</option>
                         </select>
                     </label>
                     <button type="button" class="btn-icon-only btn-remove" aria-label="remove"><span class="icon icon-trash"> </span></button>
