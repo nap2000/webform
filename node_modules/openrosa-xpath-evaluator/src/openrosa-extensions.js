@@ -885,7 +885,7 @@ function asDate(r) {
                 let timePartSeconds = timePart[2].split('.');
                 timePartTemp += _zeroPad(timePartSeconds[0]);
                 timePartTemp += '.';
-                if(timePartSeconds.length > 0) {
+                if(timePartSeconds.length > 1) {
                     timePartTemp += _zeroPad(timePartSeconds[1], 3);
                 } else {
                     timePartTemp += '000';
