@@ -558,8 +558,8 @@ class Geopicker extends Widget {
                         that._addPoint();
                     }
                 }
-            } ).catch( () => {
-                console.error( 'error occurred trying to obtain position' );
+            } ).catch( (err) => {
+                console.error( 'error occurred trying to obtain position: ' + err.message );
             } );
 
             return false;
