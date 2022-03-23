@@ -85,7 +85,22 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
     if (submit.isSuccess(response.status) ) {
         $(document).trigger('submissionsuccess', [record.name, record.instanceID]);
         if (autoClose) {
-            reloadForm();
+            if(surveyData.chain && surveyData.chain.length > 0 ) {
+                var parser = new DOMParser();
+                var xml = parser.parseFromString(record.data,"text/xml");
+                var jsonRecord = xml2json(xml);
+                console.log(jsonRecord);
+
+                // Get chain rule
+                var url = getChainRule(surveyData.chain, record);
+                if(url) {
+                    window.location.href = url;
+                } else {
+                    reloadForm();
+                }
+            } else {
+                reloadForm();
+            }
         }
     } else if (response.status == 403 || response.status == 401) {
         getNewKey(record);
@@ -173,6 +188,71 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
     console.log("Finished submission");
     return response;
 
+}
+
+function getChainRule(rules, record) {
+
+    var url,
+        i;
+
+    if(rules && rules.length > 0) {
+        for(i = 0; i < rules.length; i++) {
+            if(fireChainRule(rules[i].rule, record)) {
+                url = constructChainUrl(rules[i].url, record);
+                break;
+            }
+        }
+    }
+    return url;
+}
+
+/*
+ * Test to see if a chaining rule should be fired
+ */
+function fireChainRule(rule, record) {
+    var fire = false;
+    if(!rule) {
+        fire = true;        // fire rule if there is no rule
+    }
+    return fire;
+}
+
+function constructChainUrl(url, record) {
+
+    // Add instanceid
+    if(url.indexOf('${instanceid}') >= 0) {
+        url = url.replaceAll('${instanceid}', record.instanceID);
+    }
+    return url;
+}
+
+function xml2json(xml) {
+    try {
+        var obj = {};
+        if (xml.children.length > 0) {
+            for (var i = 0; i < xml.children.length; i++) {
+                var item = xml.children.item(i);
+                var nodeName = item.nodeName;
+
+                if (typeof (obj[nodeName]) == "undefined") {
+                    obj[nodeName] = xml2json(item);
+                } else {
+                    if (typeof (obj[nodeName].push) == "undefined") {
+                        var old = obj[nodeName];
+
+                        obj[nodeName] = [];
+                        obj[nodeName].push(old);
+                    }
+                    obj[nodeName].push(xml2json(item));
+                }
+            }
+        } else {
+            obj = xml.textContent;
+        }
+        return obj;
+    } catch (e) {
+        console.log(e.message);
+    }
 }
 
 function post(url, content) {

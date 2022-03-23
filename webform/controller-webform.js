@@ -353,7 +353,7 @@
             gui.confirm(texts, choices, {
                 'record-name': recordName
             });
-        } 
+        }
 
         recordResult.key = recordName;
         return recordResult;
@@ -460,7 +460,7 @@
      */
     function closeAfterSending() {
 
-        if (surveyData.assignmentId || surveyData.closeAfterSending) {
+        if (surveyData.assignmentId || surveyData.closeAfterSending || (surveyData.chain && surveyData.chain.length > 0)) {
             console.log("Close after saving");
             return true;
         } else {
