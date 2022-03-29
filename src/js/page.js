@@ -426,9 +426,14 @@ export default {
     //        $('#submit-form, #submit-form-single, .enketo-power, .draft').hide();
    //     } else {
    //         $('#submit-form, #submit-form-single, .enketo-power, .draft').show();
-            $('.form-footer [name="draft"]').prop('checked', true);
+
             $('.enketo-power, .draft').hide();
-            $('#submit-form').text(t( 'formfooter.savedraft.btn' )).show();
+            if($('.form-footer [name="draft"]').length > 0) {   // if draft button exists
+                $('.form-footer [name="draft"]').prop('checked', true);
+                $('#submit-form').text(t('formfooter.savedraft.btn')).show();
+            } else {
+                $('#submit-form').text(t( 'formfooter.submit.btn' )).hide();
+            }
         } else {
             $('.form-footer [name="draft"]').prop('checked', false);
             $('#submit-form').text(t( 'formfooter.submit.btn' )).show();
