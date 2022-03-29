@@ -266,7 +266,7 @@
 
             form.validate()
                 .then( function( valid ) {
-                    if ( !valid ) {
+                    if ( !valid && !draft) {
                         gui.alert(t("alert.validationerror.msg"));
                         return;
                     } else {

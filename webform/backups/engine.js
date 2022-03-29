@@ -5447,7 +5447,14 @@ module.exports = (function(){
                     var imagePath = image.toString();
                     var urlNode = url.toNodeSet()[0];
 
+<<<<<<< HEAD
                     var inputElem = document.getElementsByName(imagePath)[0];
+=======
+                    var inputName = getNameFromPath(imagePath);
+                    var inputIndex = getIndexFromPath(imagePath) - 1;
+                    var inputElem = document.getElementsByName(inputName)[inputIndex];
+
+>>>>>>> production
                     if(inputElem) {
                         var parentElem = inputElem.parentElement;
                         var dynamicInput = getChildByClass(parentElem, 'dynamic-input');
@@ -5902,6 +5909,35 @@ module.exports = (function(){
         image.src = url;
     }
 
+<<<<<<< HEAD
+=======
+    function getNameFromPath(path) {
+
+        const regex = /\[[0-9]\]/g;
+        let name = path.replace(regex, '');
+        return name;
+    }
+
+    // There must be a better way - this only works for single level subforms
+    function getIndexFromPath(path) {
+
+        let idx = 1;
+
+        const regex = /\[[0-9]\]/g;
+        const matches = [...path.matchAll(regex)];
+        if(matches.length > 0) {
+            let v = matches[0];
+            if(v.length > 0) {
+                let vs = v[0];
+                vs = vs.substring(1, vs.length - 1)
+                idx = parseInt(vs, 10);
+            }
+        }
+
+        return idx;
+    }
+
+>>>>>>> production
     /*
 	 * End Smap
 	 */

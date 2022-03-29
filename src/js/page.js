@@ -9,6 +9,7 @@ import events from './event';
 import config from 'enketo/config';
 import { getSiblingElement, getAncestors } from './dom-utils';
 import 'jquery-touchswipe';
+import {t} from "./translator";
 
 export default {
     /**
@@ -420,11 +421,18 @@ export default {
         this.$btnPrev.add( this.$btnFirst ).toggleClass( 'disabled', !prev );
         this.$formFooter.toggleClass( 'end', !next );
 
-        // smap hide the submit form button and powered by enketo logo except on last page
+        // smap hide the submit form button and powered by enketo logo except on last page. Show the draft button on non final pages
         if(next) {
-            $('#submit-form, #submit-form-single, .enketo-power, .draft').hide();
+    //        $('#submit-form, #submit-form-single, .enketo-power, .draft').hide();
+   //     } else {
+   //         $('#submit-form, #submit-form-single, .enketo-power, .draft').show();
+            $('.form-footer [name="draft"]').prop('checked', true);
+            $('.enketo-power, .draft').hide();
+            $('#submit-form').text(t( 'formfooter.savedraft.btn' )).show();
         } else {
-            $('#submit-form, #submit-form-single, .enketo-power, .draft').show();
+            $('.form-footer [name="draft"]').prop('checked', false);
+            $('#submit-form').text(t( 'formfooter.submit.btn' )).show();
+            $('.enketo-power, .draft').show();
         }
         // end smap
     },
