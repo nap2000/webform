@@ -19,6 +19,7 @@ const maps = ( config && config.maps && config.maps.length > 0 ) ? config.maps :
     'attribution': '© <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="www.openstreetmap.org/copyright">Terms</a>'
 } ];
 let searchSource = 'https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}';
+let searchReverse = 'https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}&key={api_key}';
 var googleApiKey = config.googleApiKey || config.google_api_key;        // smap make googleApiKey not a constant
 const iconSingle = L.divIcon( {
     iconSize: 24,
@@ -616,8 +617,10 @@ class Geocompound extends Widget {
 
         if ( googleApiKey ) {
             searchSource = searchSource.replace( '{api_key}', googleApiKey );
+            searchReverse = searchReverse.replace( '{api_key}', googleApiKey );
         } else {
             searchSource = searchSource.replace( '&key={api_key}', '' );
+            searchReverse = searchReverse.replace( '&key={api_key}', '' );
         }
 
         this.$search
@@ -651,6 +654,29 @@ class Geocompound extends Widget {
                         } );
                 }
             } );
+    }
+
+    /**
+     * Performs a reverese geocode
+     */
+    _updateAddress(lat, lng) {
+        const that = this;
+
+        $.get( searchReverse.replace( '{lat}', lat ).replace('{lng}', lng), response => {
+            let address;
+            if ( response.results && response.results.length > 0 && response.results[ 0 ].formatted_address ) {
+                this.$search.val(response.results[0].formatted_address);
+            }
+        }, 'json' )
+            .fail( () => {
+                //TODO: add error message
+                that.$search.closest( '.input-group' ).addClass( 'has-error' );
+                console.error( 'Error. Geocoding service may not be available or app is offline' );
+            } )
+            .always( () => {
+
+            } );
+
     }
 
     /**
@@ -1229,6 +1255,11 @@ class Geocompound extends Widget {
         // smap - set the marker type
         if(index >= 0) {
             this.$markerType.val(this.markerTypes[index]);
+            if(this.markerTypes[index] && this.markerTypes[index].length > 0) {    // only reverse geocode if there is a point of interest
+                this._updateAddress(lat, lng);
+            } else {
+                this.$search.val('');
+            }
         } else {
             this.$markerType.val('');
         }
