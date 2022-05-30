@@ -86,6 +86,8 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
         $(document).trigger('submissionsuccess', [record.name, record.instanceID]);
         if (autoClose) {
             reloadForm();
+        } else if (surveyData.showDonePage) {
+            window.location.href = "/app/myWork/done.html";
         }
     } else if (response.status == 403 || response.status == 401) {
         getNewKey(record);
