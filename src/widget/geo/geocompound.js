@@ -721,8 +721,8 @@ class Geocompound extends Widget {
         // update last requested map coordinates to be used to initialize map in mobile fullscreen view
         if ( latLng ) {
             this.lastLatLng = latLng;
-            this.lastZoom = zoom;
         }
+        this.lastZoom = zoom;  // zooming issue
 
         // update the map if it is visible
         if ( !this.props.touch || this._inFullScreenMode() ) {
@@ -1041,7 +1041,7 @@ class Geocompound extends Widget {
             // don't use this for multiple markers, it messed up map clicks to place points
             if ( this.points.length === 1 || !this._isValidLatLngList( this.points ) ) {
                 // center the map, keep zoom level unchanged
-                this.map.setView( coords[ 0 ], this.lastZoom || defaultZoom );
+                //this.map.setView( coords[ 0 ], this.lastZoom || defaultZoom );   // Zooming issue. Don't do this automatically. Should be manual
             }
         }
     }
@@ -1092,10 +1092,10 @@ class Geocompound extends Widget {
             this.polyline.setLatLngs( polylinePoints );
         }
 
-        // possible bug in Leaflet, using timeout to work around
-        setTimeout( () => {
-            that.map.fitBounds( that.polyline.getBounds() );
-        }, 0 );
+        // // Zooming issue. Don't do this automatically. Should be manual
+        //setTimeout( () => {
+        //    that.map.fitBounds( that.polyline.getBounds() );
+        //}, 0 );
     }
 
     /**
