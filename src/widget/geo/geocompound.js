@@ -612,15 +612,8 @@ class Geocompound extends Widget {
                     that._showIntersectError();
                 } else {
                     const { lat, lng, position } = result;
-                    //that.points[that.currentIndex] = [ position.coords.latitude, position.coords.longitude ];
-                    //that._updateMap( );
                     that._addPoint();
                     that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], 'change.bymap', -1 );
-                    // if current index is last of points, automatically create next point
-                    //if ( that.currentIndex === that.points.length - 1 && that.props.type !== 'geopoint' ) {
-                    //    that._addPoint();
-                    //}
-                    //that._editPoint( [ lat, lng, alt, acc ] );  // smap
                 }
             } ).catch( () => {
                 console.error( 'error occurred trying to obtain position' );
@@ -1119,7 +1112,19 @@ class Geocompound extends Widget {
         if ( !this.polyline ) {
             this.polyline = L.polyline( polylinePoints, {
                 color: 'red'
-            } );
+            } ).on('click', function (e) {
+                L.DomEvent.stopPropagation(e);
+                let path = e.sourceTarget.editing.latlngs[0];
+                if(path.length > 1) {
+                    for(let i = 0; i < path.length - 1; i++) {
+                        if(that.belongsSegment(e.latlng, path[i], path[i + 1])) {
+                            that._insertPoint(i + 1);
+                            that._updateInputs( e.latlng, 'change.bymap', i + 1 )
+                            break;
+                        }
+                    }
+                }
+            });
             this.map.addLayer( this.polyline );
         } else {
             this.polyline.setLatLngs( polylinePoints );
@@ -1131,6 +1136,17 @@ class Geocompound extends Widget {
                 that.map.fitBounds(that.polyline.getBounds());
             }, 0);
         }
+    }
+
+    /*
+     * return true if the point is on a segment between the points in params 2 and 3
+     * Copied from https://makinacorpus.github.io/Leaflet.GeometryUtil/   The full library should probably be included
+     */
+    belongsSegment(latlng, latlngA, latlngB, tolerance) {
+        tolerance = tolerance === undefined ? 0.2 : tolerance;
+        var hypotenuse = latlngA.distanceTo(latlngB),
+            delta = latlngA.distanceTo(latlng) + latlng.distanceTo(latlngB) - hypotenuse;
+        return delta/hypotenuse < tolerance;
     }
 
     /**
@@ -1202,6 +1218,17 @@ class Geocompound extends Widget {
         this.points.push( [] );
         this.markerTypes.push("");   // properties
         this._setCurrent( this.points.length - 1 );
+        this._updateValue();
+    }
+
+    /**
+     * Inserts a point at the specified index
+     */
+    _insertPoint(index) {
+        this._addPointBtn();
+        this.points.splice( index, 0, [] );
+        this.markerTypes.splice(index, 0, "");   // properties
+        this._setCurrent( index );
         this._updateValue();
     }
 
