@@ -113,6 +113,12 @@ class Geocompound extends Widget {
         this.currentIndex = 0;
         this.points = [];
         this.markerTypes = [];       // smap
+        this.markerSelectContent =
+            `<select id="markerType" className="ignore" name="markerType">
+                <option value="none">None</option>
+                <option value="pit">Chamber</option>
+                <option value="fault">Blockage</option>
+            </select>`;
 
         // load default value
         if ( loadedVal ) {
@@ -120,12 +126,14 @@ class Geocompound extends Widget {
         }
 
         // Handle a change to the type for a marker smap
+        /*
         this.$widget.find( '[name="markerType"]' ).on( 'change', event => {
             event.stopImmediatePropagation();
             that.markerTypes[ that.currentIndex ] = that.$markerType.val();
             that._updateValue();
             that._updateMap();
         } );
+        */
 
         // handle point input changes
         this.$widget.find( '[name="lat"], [name="long"], [name="alt"], [name="acc"]' ).on( 'change change.bymap change.bysearch', event => {
@@ -331,6 +339,16 @@ class Geocompound extends Widget {
         }
     }
 
+    /*
+     * Updates the marker type based on selection of a type in a popup on the marker
+     */
+    _markerTypePopupChanged(val) {
+        this.markerTypes[ this.currentIndex ] = val;
+        this.$markerType.text(val);
+        this._updateValue();
+        this._updateMap();
+    }
+
     /**
      * @param {string} type - Type of input to switch to
      */
@@ -399,14 +417,18 @@ class Geocompound extends Widget {
                         <input class="ignore" name="acc" type="number" step="0.1" />
                     </label>
 
-                     <label class="geo marker">  <!-- smap -->
+                     <label class="geo marker">
                         <span>Marker Type</span>
+                        <span name="markerVal""></span>
+                        <!--
                         <select class="ignore" name="markerType">
                             <option value="none">None</option>
                             <option value="pit">Chamber</option>
                             <option value="fault">Blockage</option>
                         </select>
+                        -->
                     </label>
+
                     <button type="button" class="btn-icon-only btn-remove" aria-label="remove"><span class="icon icon-trash"> </span></button>
                 </div>
             </div>`
@@ -464,7 +486,7 @@ class Geocompound extends Widget {
         this.$lng = this.$widget.find( '[name="long"]' );
         this.$alt = this.$widget.find( '[name="alt"]' );
         this.$acc = this.$widget.find( '[name="acc"]' );
-        this.$markerType = this.$widget.find( '[name="markerType"]' );
+        this.$markerType = this.$widget.find( '[name="markerVal"]' );
 
 
         $( this.element ).hide().after( this.$widget ).parent().addClass( 'clearfix' );
@@ -1005,11 +1027,22 @@ class Geocompound extends Widget {
                     alt: index,
                     opacity: 0.9
                 } ).on( 'click', e => {
+                    L
+                        .popup( {minWidth: 200}
+                        )
+                        .setLatLng( e.target.getLatLng())
+                        .setContent( this.markerSelectContent )
+                        .openOn( this.map );
+
                     if ( e.target.options.alt === 0 && that.props.type === 'geoshape' ) {
                         that._closePolygon();
                     } else {
                         that._setCurrent( e.target.options.alt );
                     }
+                    $('#markerType').change(function(){
+                        that._markerTypePopupChanged($(this).val());
+                        that.map.closePopup();
+                    });
                 } ).on( 'dragend', e => {
                     const latLng = e.target.getLatLng(),
                         index = e.target.options.alt;
@@ -1254,14 +1287,14 @@ class Geocompound extends Widget {
 
         // smap - set the marker type
         if(index >= 0) {
-            this.$markerType.val(this.markerTypes[index]);
+            this.$markerType.text(this.markerTypes[index]);
             if(this.markerTypes[index] && this.markerTypes[index].length > 0) {    // only reverse geocode if there is a point of interest
                 this._updateAddress(lat, lng);
             } else {
                 this.$search.val('');
             }
         } else {
-            this.$markerType.val('');
+            this.$markerType.text('');
         }
         this.$lat.val( lat || '' );
         this.$lng.val( lng || '' );
