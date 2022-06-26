@@ -334,7 +334,7 @@ class Geocompound extends Widget {
         } else {
             // center map around first loaded geopoint value
             //this._updateMap( L.latLng( this.points[ 0 ][ 0 ], this.points[ 0 ][ 1 ] ) );
-            this._updateMap();
+            this._updateMap(undefined, undefined, true);
             this._setCurrent( this.currentIndex );
         }
     }
@@ -722,7 +722,7 @@ class Geocompound extends Widget {
      * @param {LatLngArray|LatLngObj} latLng - Latitude and longitude coordinates
      * @param {number} [zoom] - zoom level
      */
-    _updateMap( latLng, zoom ) {
+    _updateMap( latLng, zoom, fitMap ) {
         const that = this;
 
         // check if the widget is supposed to have a map
@@ -751,7 +751,7 @@ class Geocompound extends Widget {
             this.loadMap = this.loadMap || this._addDynamicMap();
             this.loadMap
                 .then( () => {
-                    that._updateDynamicMapView( latLng, zoom );
+                    that._updateDynamicMapView( latLng, zoom, fitMap );
                 } )
                 .catch( () => {} );
 
@@ -827,9 +827,9 @@ class Geocompound extends Widget {
      * @param {LatLngArray|LatLngObj} latLng - Latitude and longitude coordinates
      * @param {number} [zoom] - zoom level
      */
-    _updateDynamicMapView( latLng, zoom ) {
+    _updateDynamicMapView( latLng, zoom, fitMap ) {
         if ( !latLng ) {
-            this._updatePolyline();
+            this._updatePolyline(fitMap);
             this._updateMarkers();
             if ( this.points.length === 1 && this.points[ 0 ].toString() === '' ) {
                 if ( this.lastLatLng ) {
@@ -1082,7 +1082,7 @@ class Geocompound extends Widget {
     /**
      * Updates the polyline on the dynamic map from the current list of points
      */
-    _updatePolyline() {
+    _updatePolyline(fitMap) {
         let polylinePoints;
         const that = this;
 
@@ -1126,9 +1126,11 @@ class Geocompound extends Widget {
         }
 
         // // Zooming issue. Don't do this automatically. Should be manual
-        //setTimeout( () => {
-        //    that.map.fitBounds( that.polyline.getBounds() );
-        //}, 0 );
+        if(fitMap) {
+            setTimeout(() => {
+                that.map.fitBounds(that.polyline.getBounds());
+            }, 0);
+        }
     }
 
     /**
