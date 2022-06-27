@@ -245,7 +245,14 @@ class Geocompound extends Widget {
         this.$map.find( '.show-map-btn' ).on( 'click', () => {
             that.$widget.find( '.search-bar' ).removeClass( 'hide-search' );
             that.$widget.addClass( 'full-screen' );
-            that._updateMap();
+
+            this._updateMap( [ 0, 0 ], 1 );
+            if ( this.props.detect ) {
+                // start smap
+                navigator.geolocation.getCurrentPosition(position => {
+                    that._updateMap([position.coords.latitude, position.coords.longitude], defaultZoom);
+                });
+            }
 
             return false;
         } );
@@ -1020,7 +1027,7 @@ class Geocompound extends Widget {
             this.markerLayer.clearLayers();
         }
 
-        if ( this.points.length < 2 && this.points[ 0 ].join() === '' ) {
+        if ( this.points.length == 0 || (this.points.length == 1  && this.points[ 0 ].join() === '')) {
             return;
         }
 
