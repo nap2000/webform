@@ -246,13 +246,7 @@ class Geocompound extends Widget {
             that.$widget.find( '.search-bar' ).removeClass( 'hide-search' );
             that.$widget.addClass( 'full-screen' );
 
-            this._updateMap( [ 0, 0 ], 1 );
-            if ( this.props.detect ) {
-                // start smap
-                navigator.geolocation.getCurrentPosition(position => {
-                    that._updateMap([position.coords.latitude, position.coords.longitude], defaultZoom);
-                });
-            }
+            this._showMap();
 
             return false;
         } );
@@ -323,6 +317,8 @@ class Geocompound extends Widget {
         }
 
         // set map location on load
+        this._showMap();
+        /*
         if ( !loadedVal ) {
             // set worldview in case permissions take too long (e.g. in FF);
             this._updateMap( [ 0, 0 ], 1 );
@@ -331,18 +327,33 @@ class Geocompound extends Widget {
                 navigator.geolocation.getCurrentPosition( position => {
                     that._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
                 } );
-                /* the following does not work
-                getCurrentPosition().then( position => {
-                    that._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
-                } ).catch( () => {} );
-                 */
-                // end smap
             }
         } else {
             // center map around first loaded geopoint value
-            //this._updateMap( L.latLng( this.points[ 0 ][ 0 ], this.points[ 0 ][ 1 ] ) );
             this._updateMap(undefined, undefined, true);
             this._setCurrent( this.currentIndex );
+        }
+        */
+    }
+
+    /*
+     * Show the map
+     */
+    _showMap() {
+
+        if ( this.originalInputValue ) {
+            // center map around first loaded geopoint value
+            this._updateMap(undefined, undefined, true);
+            this._setCurrent( this.currentIndex );
+
+        } else {
+            this._updateMap( [ 0, 0 ], 1 );
+            if ( this.props.detect ) {
+                // Center map on current location
+                navigator.geolocation.getCurrentPosition(position => {
+                    this._updateMap([position.coords.latitude, position.coords.longitude], defaultZoom);
+                });
+            }
         }
     }
 
@@ -1146,7 +1157,7 @@ class Geocompound extends Widget {
                 color: 'red'
             } ).on('click', function (e) {
                 L.DomEvent.stopPropagation(e);
-                let path = e.sourceTarget.editing.latlngs[0];
+                let path = e.sourceTarget.getLatLngs();
                 if(path.length > 1) {
                     for(let i = 0; i < path.length - 1; i++) {
                         if(that.belongsSegment(e.latlng, path[i], path[i + 1])) {
