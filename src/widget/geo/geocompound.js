@@ -766,6 +766,7 @@ class Geocompound extends Widget {
                 that.map = L.map( `map${that.mapId}`, options )
                     .on( 'click', e => {
                         let latLng;
+                        let path = [];
                         let indexToPlacePoint;
 
                         if ( that.props.readonly ) {
@@ -773,6 +774,9 @@ class Geocompound extends Widget {
                         }
 
                         latLng = e.latlng;
+                        if(that.points.length > 1) {
+                            path = that.points.map(point => that._convertLatLng(point));
+                        }
                         indexToPlacePoint = ( that.$lat.val() && that.$lng.val() ) ? that.points.length : that.currentIndex;
 
                         // reduce precision to 6 decimals
@@ -786,8 +790,22 @@ class Geocompound extends Widget {
                             if ( !that.$lat.val() || !that.$lng.val() || that.props.type === 'geopoint' ) {
                                 that._updateInputs( latLng, 'change.bymap', -1 );
                             } else if ( that.$lat.val() && that.$lng.val() ) {
-                                that._addPoint();
-                                that._updateInputs( latLng, 'change.bymap', -1 );
+
+                                let inserted = false;
+                                if(path.length > 1) {
+                                    for(let i = 0; i < path.length - 1; i++) {
+                                        if(that.belongsSegment(latLng, path[i], path[i + 1], 0.05)) {
+                                            that._insertPoint(i + 1);
+                                            that._updateInputs( latLng, 'change.bymap', i + 1 )
+                                            inserted = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(!inserted) {
+                                    that._addPoint();
+                                    that._updateInputs(latLng, 'change.bymap', -1);
+                                }
                             } else {
                                 // do nothing if the field has a current marker
                                 // instead the user will have to drag to change it by map
@@ -814,6 +832,13 @@ class Geocompound extends Widget {
                     that.$widget.find( '.leaflet-control-container input' ).addClass( 'ignore no-unselect' ).next( 'span' ).addClass( 'option-label' );
                 } );
             } );
+    }
+
+    /*
+     * Convert a point to a LatLng
+     */
+    _convertLatLng(p) {
+        return new L.latLng(p[0], p[1]);
     }
 
     /**
