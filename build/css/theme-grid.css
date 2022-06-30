@@ -7958,7 +7958,6 @@ h4 + .or-repeat {
     margin: 0px;
     padding: 6px 6px 13px 6px; }
 .question .question-label {
-    text-transform: uppercase;
     font-weight: normal;
     font-size: 12px;
     width: calc(100% - 30px);
