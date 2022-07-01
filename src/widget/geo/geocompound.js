@@ -113,27 +113,13 @@ class Geocompound extends Widget {
         this.currentIndex = 0;
         this.points = [];
         this.markerTypes = [];       // smap
-        this.markerSelectContent =
-            `<select id="markerType" className="ignore" name="markerType">
-                <option value="none">None</option>
-                <option value="pit">Chamber</option>
-                <option value="fault">Blockage</option>
-            </select>`;
+        this.markers = this._getMarkers(this.props);
+        this.markerSelectContent = this._getMarkerSelect(this.markers);
 
         // load default value
         if ( loadedVal ) {
             this.value = loadedVal;
         }
-
-        // Handle a change to the type for a marker smap
-        /*
-        this.$widget.find( '[name="markerType"]' ).on( 'change', event => {
-            event.stopImmediatePropagation();
-            that.markerTypes[ that.currentIndex ] = that.$markerType.val();
-            that._updateValue();
-            that._updateMap();
-        } );
-        */
 
         // handle point input changes
         this.$widget.find( '[name="lat"], [name="long"], [name="alt"], [name="acc"]' ).on( 'change change.bymap change.bysearch', event => {
@@ -318,22 +304,70 @@ class Geocompound extends Widget {
 
         // set map location on load
         this._showMap();
-        /*
-        if ( !loadedVal ) {
-            // set worldview in case permissions take too long (e.g. in FF);
-            this._updateMap( [ 0, 0 ], 1 );
-            if ( this.props.detect ) {
-                // start smap
-                navigator.geolocation.getCurrentPosition( position => {
-                    that._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
-                } );
+
+    }
+
+    /*
+     * Get markers passed in appearances
+     * marker:{type}:{name}:{label}:{color}
+     * For backward compatability, if no markers are specified then the previous hardcoded values are used
+     */
+    _getMarkers(appearances) {
+        let markers = {};
+        let hasMarkers = false;
+
+        if(appearances.length > 0) {
+            for(let i = 0; i < appearances.length; i++) {
+                if(appearances[i].indexOf("marker") === 0) {
+                    hasMarkers = true;
+                }
             }
-        } else {
-            // center map around first loaded geopoint value
-            this._updateMap(undefined, undefined, true);
-            this._setCurrent( this.currentIndex );
         }
-        */
+
+        if(!hasMarkers) {
+            //Set hardcoded values
+            markers.pit = {
+                name: "Chamber",
+                label: "J",
+                color: "blue"
+            }
+            markers.fault = {
+                name: "Blockage",
+                label: "Blockage",
+                color: "red"
+            }
+        }
+        return markers;
+    }
+
+    /*
+     * Get the HTML to select a marker
+     */
+    _getMarkerSelect(markers) {
+        var h = [];
+        var idx = -1;
+
+        h[++idx] = '<select id="markerType" className="ignore" name="markerType">';
+        h[++idx] = '<option value="none">None</option>';
+
+        for(let mType in markers) {
+            let m = markers[mType];
+            h[++idx] = '<option value="';
+            h[++idx] = mType;
+            h[++idx] = '">';
+            h[++idx] = this.htmlEncode(m.name);
+            h[++idx] = '</option>';
+        }
+        h[++idx] = '</select>';
+        return h.join('');
+    }
+
+    htmlEncode(input) {
+        if(input) {
+            return $('<div>').text(input).html();
+        } else {
+            return;
+        }
     }
 
     /*
@@ -362,7 +396,6 @@ class Geocompound extends Widget {
      */
     _markerTypePopupChanged(val) {
         this.markerTypes[ this.currentIndex ] = val;
-        this.$markerType.text(val);
         this._updateValue();
         this._updateMap();
     }
@@ -435,18 +468,6 @@ class Geocompound extends Widget {
                         <input class="ignore" name="acc" type="number" step="0.1" />
                     </label>
 
-                     <label class="geo marker">
-                        <span>Marker Type</span>
-                        <span name="markerVal""></span>
-                        <!--
-                        <select class="ignore" name="markerType">
-                            <option value="none">None</option>
-                            <option value="pit">Chamber</option>
-                            <option value="fault">Blockage</option>
-                        </select>
-                        -->
-                    </label>
-
                     <button type="button" class="btn-icon-only btn-remove" aria-label="remove"><span class="icon icon-trash"> </span></button>
                 </div>
             </div>`
@@ -504,7 +525,6 @@ class Geocompound extends Widget {
         this.$lng = this.$widget.find( '[name="long"]' );
         this.$alt = this.$widget.find( '[name="alt"]' );
         this.$acc = this.$widget.find( '[name="acc"]' );
-        this.$markerType = this.$widget.find( '[name="markerVal"]' );
 
 
         $( this.element ).hide().after( this.$widget ).parent().addClass( 'clearfix' );
@@ -696,9 +716,9 @@ class Geocompound extends Widget {
         const that = this;
 
         $.get( searchReverse.replace( '{lat}', lat ).replace('{lng}', lng), response => {
-            let address;
             if ( response.results && response.results.length > 0 && response.results[ 0 ].formatted_address ) {
                 this.$search.val(response.results[0].formatted_address);
+                // update any questions that have the same name as the label
             }
         }, 'json' )
             .fail( () => {
@@ -1063,18 +1083,19 @@ class Geocompound extends Widget {
                     alt: index,
                     opacity: 0.9
                 } ).on( 'click', e => {
-                    L
-                        .popup( {minWidth: 200}
-                        )
-                        .setLatLng( e.target.getLatLng())
-                        .setContent( this.markerSelectContent )
-                        .openOn( this.map );
 
                     if ( e.target.options.alt === 0 && that.props.type === 'geoshape' ) {
                         that._closePolygon();
                     } else {
                         that._setCurrent( e.target.options.alt );
                     }
+
+                    L.popup( {minWidth: 200}
+                        )
+                        .setLatLng( e.target.getLatLng())
+                        .setContent( this._getMarkerPopup() )
+                        .openOn( this.map );
+
                     $('#markerType').change(function(){
                         that._markerTypePopupChanged($(this).val());
                         that.map.closePopup();
@@ -1113,6 +1134,36 @@ class Geocompound extends Widget {
                 //this.map.setView( coords[ 0 ], this.lastZoom || defaultZoom );   // Zooming issue. Don't do this automatically. Should be manual
             }
         }
+    }
+
+    /*
+     * Get the HTML for a marker popup
+     */
+    _getMarkerPopup() {
+        let h = [],
+            idx = -1;
+        h[idx++] = '<h1>';
+        h[++idx] = this.htmlEncode(this._getMarkerLabel(this.currentIndex));
+        h[++idx] = '</h1>';
+        h[++idx] = this.markerSelectContent;
+        return h.join('');
+    }
+
+    _getMarkerLabel(index) {
+        let label = '';
+        let markerType = this.markerTypes[index];
+        if(markerType && markerType.length > 0) {
+            let labelIdx = 1;
+            if(index > 0) {
+                for(let i = 0; i < index; i++) {
+                    if(this.markerTypes[i] === markerType) {
+                        labelIdx++;
+                    }
+                }
+            }
+            label = this.markers[markerType].label + labelIdx;
+        }
+        return label;
     }
 
     /**
@@ -1359,14 +1410,11 @@ class Geocompound extends Widget {
 
         // smap - set the marker type
         if(index >= 0) {
-            this.$markerType.text(this.markerTypes[index]);
             if(this.markerTypes[index] && this.markerTypes[index].length > 0) {    // only reverse geocode if there is a point of interest
                 this._updateAddress(lat, lng);
             } else {
                 this.$search.val('');
             }
-        } else {
-            this.$markerType.text('');
         }
         this.$lat.val( lat || '' );
         this.$lng.val( lng || '' );
