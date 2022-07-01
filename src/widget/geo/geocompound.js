@@ -34,7 +34,7 @@ const iconMultiActive = L.divIcon( {
     className: 'enketo-geopoint-circle-marker-active'
 } );
 
-// Add colored icons to show types - smap
+// Add colored icons to show types for geocompound
 const iconBlueMulti = L.divIcon( {
     iconSize: 16,
     className: 'smap-geopoint-blue-circle-marker'
@@ -112,9 +112,11 @@ class Geocompound extends Widget {
         this._addDomElements();
         this.currentIndex = 0;
         this.points = [];
-        this.markerTypes = [];       // smap
-        this.markers = this._getMarkers(this.props);
-        this.markerSelectContent = this._getMarkerSelect(this.markers);
+        if ( this.props.type === 'geocompound' ) {
+            this.markerTypes = [];       // smap
+            this.markers = this._getMarkers(this.props);
+            this.markerSelectContent = this._getMarkerSelect(this.markers);
+        }
 
         // load default value
         if ( loadedVal ) {
@@ -299,7 +301,7 @@ class Geocompound extends Widget {
                 that._addPointBtn();
             } );
         } else {
-            //this._addPoint();  // smap
+            //this._addPoint();  // geocompound?
         }
 
         // set map location on load
@@ -1083,7 +1085,6 @@ class Geocompound extends Widget {
                     alt: index,
                     opacity: 0.9
                 } ).on( 'click', e => {
-
                     if ( e.target.options.alt === 0 && that.props.type === 'geoshape' ) {
                         that._closePolygon();
                     } else {
@@ -1409,11 +1410,13 @@ class Geocompound extends Widget {
         ev = ( typeof ev !== 'undefined' ) ? ev : 'change';
 
         // smap - set the marker type
-        if(index >= 0) {
-            if(this.markerTypes[index] && this.markerTypes[index].length > 0) {    // only reverse geocode if there is a point of interest
-                this._updateAddress(lat, lng);
-            } else {
-                this.$search.val('');
+        if(this.props.type === 'geocompound') {
+            if (index >= 0) {
+                if (this.markerTypes[index] && this.markerTypes[index].length > 0) {    // only reverse geocode if there is a point of interest
+                    this._updateAddress(lat, lng);
+                } else {
+                    this.$search.val('');
+                }
             }
         }
         this.$lat.val( lat || '' );
@@ -1421,7 +1424,6 @@ class Geocompound extends Widget {
         this.$alt.val( alt || '' );
         this.$acc.val( acc || '' ).trigger( ev );
     }
-
 
     /**
      * Converts the contents of a single KML <coordinates> element (may inlude the coordinates tags as well) to an array
@@ -1556,12 +1558,6 @@ class Geocompound extends Widget {
 
     /**
      * @type {string}
-     *
-     * Include coordinates of line as well as points that have a property
-     * Separate
-     *     features with '#'
-     *     feature components with ':'  (type, coords, properties)
-     *     coordinates with ';'
      */
     get value() {
 
@@ -1593,57 +1589,69 @@ class Geocompound extends Widget {
         } );
 
         // Add markers
-        this.markerTypes.forEach( (feature, index, array) => {
-            if(feature !== '') {
-                newValue += '#marker:';
-                newValue += this._getGeopoint(this.points[index]);
-                newValue += ":index=" + index;
-                newValue += ";type=" + feature;
-            }
-        });
+        if(this.props.type === 'geocompound') {
+            this.markerTypes.forEach((feature, index, array) => {
+                if (feature !== '') {
+                    newValue += '#marker:';
+                    newValue += this._getGeopoint(this.points[index]);
+                    newValue += ":index=" + index;
+                    newValue += ";type=" + feature;
+                }
+            });
 
-        console.debug( 'Value ', newValue );
+            console.debug('Value ', newValue);
+        }
         return newValue;
     }
 
     set value( value ) {
-        console.log("Set value: " + value);
-        value.trim().split('#').forEach( ( el, i ) => {
-            if(el.indexOf('line:') === 0) {
-                el = el.substring(el.indexOf(':') + 1);
-                el.trim().split(';').forEach((el, i) => {
-                    // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
-                    this.points[i] = el.trim().split(' ');
-                    this.markerTypes[i] = "";
-                    this.points[i].forEach((str, i, arr) => {
-                        arr[i] = Number(str);
-                    });
-                });
-            }
-            if(el.indexOf('marker:') === 0) {
-                el.trim().split(':').forEach((el, i) => {
-                    // For legacy reason the properties could be in the 2nd index or (more recently) the 3rd
-                    if(i == 1 || i == 2) {
-                        let props = el.trim().split(';');
-                        let index = -1;
-                        let type;
-                        props.forEach((prop, i, arr) => {
-                            let propc = prop.trim().split("=");
-                            if(propc.length > 1) {
-                                if(propc[0] === 'index') {
-                                    index = Number(propc[1]);
-                                } else if(propc[0] === 'type') {
-                                    type = propc[1];
-                                }
-                            }
+        if(this.props.type === 'geocompound') {
+            console.log("Set value: " + value);
+            value.trim().split('#').forEach((el, i) => {
+                if (el.indexOf('line:') === 0) {
+                    el = el.substring(el.indexOf(':') + 1);
+                    el.trim().split(';').forEach((el, i) => {
+                        // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
+                        this.points[i] = el.trim().split(' ');
+                        this.markerTypes[i] = "";
+                        this.points[i].forEach((str, i, arr) => {
+                            arr[i] = Number(str);
                         });
-                        if(index >= 0 && type) {
-                            this.markerTypes[index] = type;
+                    });
+                }
+                if (el.indexOf('marker:') === 0) {
+                    el.trim().split(':').forEach((el, i) => {
+                        // For legacy reason the properties could be in the 2nd index or (more recently) the 3rd
+                        if (i == 1 || i == 2) {
+                            let props = el.trim().split(';');
+                            let index = -1;
+                            let type;
+                            props.forEach((prop, i, arr) => {
+                                let propc = prop.trim().split("=");
+                                if (propc.length > 1) {
+                                    if (propc[0] === 'index') {
+                                        index = Number(propc[1]);
+                                    } else if (propc[0] === 'type') {
+                                        type = propc[1];
+                                    }
+                                }
+                            });
+                            if (index >= 0 && type) {
+                                this.markerTypes[index] = type;
+                            }
                         }
-                    }
-                });
-            }
-        } );
+                    });
+                }
+            });
+        } else {
+            value.trim().split( ';' ).forEach( ( el, i ) => {
+                // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
+                this.points[ i ] = el.trim().split( ' ' );
+                this.points[ i ].forEach( ( str, i, arr ) => {
+                    arr[ i ] = Number( str );
+                } );
+            } );
+        }
     }
 
     /**

@@ -19,6 +19,7 @@ const maps = ( config && config.maps && config.maps.length > 0 ) ? config.maps :
     'attribution': '© <a href="http://openstreetmap.org">OpenStreetMap</a> | <a href="www.openstreetmap.org/copyright">Terms</a>'
 } ];
 let searchSource = 'https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}';
+let searchReverse = 'https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}&key={api_key}';
 var googleApiKey = config.googleApiKey || config.google_api_key;        // smap make googleApiKey not a constant
 const iconSingle = L.divIcon( {
     iconSize: 24,
@@ -31,6 +32,24 @@ const iconMulti = L.divIcon( {
 const iconMultiActive = L.divIcon( {
     iconSize: 16,
     className: 'enketo-geopoint-circle-marker-active'
+} );
+
+// Add colored icons to show types for geocompound
+const iconBlueMulti = L.divIcon( {
+    iconSize: 16,
+    className: 'smap-geopoint-blue-circle-marker'
+} );
+const iconBlueMultiActive = L.divIcon( {
+    iconSize: 16,
+    className: 'smap-geopoint-blue-circle-marker-active'
+} );
+const iconRedMulti = L.divIcon( {
+    iconSize: 16,
+    className: 'smap-geopoint-red-circle-marker'
+} );
+const iconRedMultiActive = L.divIcon( {
+    iconSize: 16,
+    className: 'smap-geopoint-red-circle-marker-active'
 } );
 
 // Leaflet extensions.
@@ -63,7 +82,7 @@ class Geopicker extends Widget {
      * @type {string}
      */
     static get selector() {
-        return '.question input[data-type-xml="geopoint"]:not([data-setgeopoint]), .question input[data-type-xml="geotrace"], .question input[data-type-xml="geoshape"]';
+        return '.question input[data-type-xml="geopoint"]:not([data-setgeopoint]), .question input[data-type-xml="geotrace"], .question input[data-type-xml="geoshape"], .question input[data-type-xml="geocompound"]';
     }
 
     /**
@@ -93,6 +112,11 @@ class Geopicker extends Widget {
         this._addDomElements();
         this.currentIndex = 0;
         this.points = [];
+        this.markerTypes = [];       // smap
+        if ( this.props.type === 'geocompound' ) {
+            this.markers = this._getMarkers(this.props);
+            this.markerSelectContent = this._getMarkerSelect(this.markers);
+        }
 
         // load default value
         if ( loadedVal ) {
@@ -116,7 +140,7 @@ class Geopicker extends Widget {
             // if the points array contains empty points, skip the intersection check, it will be done before closing the polygon
             if ( event.namespace !== 'bymap' && event.namespace !== 'bysearch' && that.polyline && that.props.type === 'geoshape' && !that.containsEmptyPoints( that.points, that.currentIndex ) && that.updatedPolylineWouldIntersect( latLng, that.currentIndex ) ) {
                 that._showIntersectError();
-                that._updateInputs( that.points[ that.currentIndex ], 'nochange' );
+                that._updateInputs( that.points[ that.currentIndex ], 'nochange', that.currentIndex );
             } else {
                 that._editPoint( [ lat, lng, alt, acc ] );
 
@@ -139,7 +163,7 @@ class Geopicker extends Widget {
             setTimeout( () => {
                 // mimic manual input point-by-point
                 coords.forEach( ( latLng, index ) => {
-                    that._updateInputs( latLng );
+                    that._updateInputs( latLng, undefined, index );
                     if ( index < coords.length - 1 ) {
                         $addPointBtn.click();
                     }
@@ -193,7 +217,7 @@ class Geopicker extends Widget {
         // handle point remove click
         this.$widget.find( '.btn-remove' ).on( 'click', () => {
             if ( that.points.length < 2 ) {
-                that._updateInputs( [] );
+                that._updateInputs(  [], undefined, -1 );
             } else {
                 dialog.confirm( t( 'geopicker.removePoint' ) )
                     .then( confirmed => {
@@ -209,7 +233,8 @@ class Geopicker extends Widget {
         this.$map.find( '.show-map-btn' ).on( 'click', () => {
             that.$widget.find( '.search-bar' ).removeClass( 'hide-search' );
             that.$widget.addClass( 'full-screen' );
-            that._updateMap();
+
+            this._showMap();
 
             return false;
         } );
@@ -276,31 +301,110 @@ class Geopicker extends Widget {
                 that._addPointBtn();
             } );
         } else {
-            this._addPoint();
+            //this._addPoint();  // geocompound?
         }
 
         // set map location on load
-        if ( !loadedVal ) {
-            // set worldview in case permissions take too long (e.g. in FF);
+        this._showMap();
+
+    }
+
+    /*
+     * Get markers passed in appearances
+     * marker:{type}:{name}:{label}:{color}
+     * For backward compatability, if no markers are specified then the previous hardcoded values are used
+     */
+    _getMarkers(appearances) {
+        let markers = {};
+        let hasMarkers = false;
+
+        if(appearances.length > 0) {
+            for(let i = 0; i < appearances.length; i++) {
+                if(appearances[i].indexOf("marker") === 0) {
+                    hasMarkers = true;
+                }
+            }
+        }
+
+        if(!hasMarkers) {
+            //Set hardcoded values
+            markers.pit = {
+                name: "Chamber",
+                label: "J",
+                color: "blue"
+            }
+            markers.fault = {
+                name: "Blockage",
+                label: "Blockage",
+                color: "red"
+            }
+        }
+        return markers;
+    }
+
+    /*
+     * Get the HTML to select a marker
+     */
+    _getMarkerSelect(markers) {
+        var h = [];
+        var idx = -1;
+
+        h[++idx] = '<select id="markerType" className="ignore" name="markerType">';
+        h[++idx] = '<option value="none">None</option>';
+
+        for(let mType in markers) {
+            let m = markers[mType];
+            h[++idx] = '<option value="';
+            h[++idx] = mType;
+            h[++idx] = '">';
+            h[++idx] = this.htmlEncode(m.name);
+            h[++idx] = '</option>';
+        }
+        h[++idx] = '</select>';
+        return h.join('');
+    }
+
+    htmlEncode(input) {
+        if(input) {
+            return $('<div>').text(input).html();
+        } else {
+            return;
+        }
+    }
+
+    /*
+     * Show the map
+     */
+    _showMap() {
+
+        if ( this.originalInputValue ) {
+            // center map around first loaded geopoint value
+
+            if ( this.props.type === 'geopoint' ) {
+                this._updateMap(L.latLng(this.points[0][0], this.points[0][1]), undefined, false)
+            } else {
+                this._updateMap(undefined, undefined, true);
+            }
+            this._setCurrent( this.currentIndex );
+
+        } else {
             this._updateMap( [ 0, 0 ], 1 );
             if ( this.props.detect ) {
-                // start smap
-                navigator.geolocation.getCurrentPosition( position => {
-                    that._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
-                } );
-                /* the following does not work
-                getCurrentPosition().then( position => {
-                    that._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
-                } ).catch( () => {} );
-                 */
-                // end smap
+                // Center map on current location
+                navigator.geolocation.getCurrentPosition(position => {
+                    this._updateMap([position.coords.latitude, position.coords.longitude], defaultZoom);
+                });
             }
-        } else {
-            // center map around first loaded geopoint value
-            //this._updateMap( L.latLng( this.points[ 0 ][ 0 ], this.points[ 0 ][ 1 ] ) );
-            this._updateMap();
-            this._setCurrent( this.currentIndex );
         }
+    }
+
+    /*
+     * Updates the marker type based on selection of a type in a popup on the marker
+     */
+    _markerTypePopupChanged(val) {
+        this.markerTypes[ this.currentIndex ] = val;
+        this._updateValue();
+        this._updateMap();
     }
 
     /**
@@ -318,7 +422,7 @@ class Geopicker extends Widget {
      * Adds a point button in the point navigation bar
      */
     _addPointBtn() {
-        this.$points.find( '.addpoint' ).before( '<a href="#" class="point" aria-label="point"> </a>' );
+        this.$points.find( '.addpoint' ).before( '<a href="#" class="point-list point" aria-label="point"> </a>' );
     }
 
     /**
@@ -507,14 +611,14 @@ class Geopicker extends Widget {
      * @param {number} index - Index of point
      */
     _markAsInvalid( index ) {
-        this.$points.find( '.point' ).eq( index ).addClass( 'has-error' );
+        this.$points.find( '.point-list' ).eq( index ).addClass( 'has-error' );
     }
 
     /**
      * Marks all points as valid in the points navigation bar
      */
     _markAsValid() {
-        this.$points.find( '.point' ).removeClass( 'has-error' );
+        this.$points.find( '.point-list' ).removeClass( 'has-error' );
     }
 
     /**
@@ -524,8 +628,8 @@ class Geopicker extends Widget {
      */
     _setCurrent( index ) {
         this.currentIndex = index;
-        this.$points.find( '.point' ).removeClass( 'active' ).eq( index ).addClass( 'active' );
-        this._updateInputs( this.points[ index ], '' );
+        this.$points.find( '.point-list' ).removeClass( 'active' ).eq( index ).addClass( 'active' );
+        this._updateInputs( this.points[ index ], undefined, index );
         // make sure that the current marker is marked as active
         if ( this.map && ( !this.props.touch || this._inFullScreenMode() ) ) {
             this._updateMarkers();
@@ -540,6 +644,7 @@ class Geopicker extends Widget {
         const that = this;
         const options = {
             enableHighAccuracy: true,
+            timeout: 5000,
             maximumAge: 0
         };
         this.$detect.click( event => {
@@ -550,13 +655,10 @@ class Geopicker extends Widget {
                     that._showIntersectError();
                 } else {
                     const { lat, lng, position } = result;
-                    //that.points[that.currentIndex] = [ position.coords.latitude, position.coords.longitude ];
-                    //that._updateMap( );
-                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ] );
-                    // if current index is last of points, automatically create next point
-                    if ( that.currentIndex === that.points.length - 1 && that.props.type !== 'geopoint' ) {
+                    if ( that.props.type !== 'geopoint' ) {
                         that._addPoint();
                     }
+                    that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], 'change.bymap', -1 );
                 }
             } ).catch( (err) => {
                 console.error( 'error occurred trying to obtain position: ' + err.message );
@@ -575,8 +677,10 @@ class Geopicker extends Widget {
 
         if ( googleApiKey ) {
             searchSource = searchSource.replace( '{api_key}', googleApiKey );
+            searchReverse = searchReverse.replace( '{api_key}', googleApiKey );
         } else {
             searchSource = searchSource.replace( '&key={api_key}', '' );
+            searchReverse = searchReverse.replace( '&key={api_key}', '' );
         }
 
         this.$search
@@ -613,6 +717,29 @@ class Geopicker extends Widget {
     }
 
     /**
+     * Performs a reverese geocode
+     */
+    _updateAddress(lat, lng) {
+        const that = this;
+
+        $.get( searchReverse.replace( '{lat}', lat ).replace('{lng}', lng), response => {
+            if ( response.results && response.results.length > 0 && response.results[ 0 ].formatted_address ) {
+                this.$search.val(response.results[0].formatted_address);
+                // update any questions that have the same name as the label
+            }
+        }, 'json' )
+            .fail( () => {
+                //TODO: add error message
+                that.$search.closest( '.input-group' ).addClass( 'has-error' );
+                console.error( 'Error. Geocoding service may not be available or app is offline' );
+            } )
+            .always( () => {
+
+            } );
+
+    }
+
+    /**
      * @return {boolean} Whether map is available for manipulation
      */
     _dynamicMapAvailable() {
@@ -633,7 +760,7 @@ class Geopicker extends Widget {
      * @param {LatLngArray|LatLngObj} latLng - Latitude and longitude coordinates
      * @param {number} [zoom] - zoom level
      */
-    _updateMap( latLng, zoom ) {
+    _updateMap( latLng, zoom, fitMap ) {
         const that = this;
 
         // check if the widget is supposed to have a map
@@ -654,15 +781,15 @@ class Geopicker extends Widget {
         // update last requested map coordinates to be used to initialize map in mobile fullscreen view
         if ( latLng ) {
             this.lastLatLng = latLng;
-            this.lastZoom = zoom;
         }
+        this.lastZoom = zoom;  // zooming issue
 
         // update the map if it is visible
         if ( !this.props.touch || this._inFullScreenMode() ) {
             this.loadMap = this.loadMap || this._addDynamicMap();
             this.loadMap
                 .then( () => {
-                    that._updateDynamicMapView( latLng, zoom );
+                    that._updateDynamicMapView( latLng, zoom, fitMap );
                 } )
                 .catch( () => {} );
 
@@ -684,6 +811,7 @@ class Geopicker extends Widget {
                 that.map = L.map( `map${that.mapId}`, options )
                     .on( 'click', e => {
                         let latLng;
+                        let path = [];
                         let indexToPlacePoint;
 
                         if ( that.props.readonly ) {
@@ -691,6 +819,9 @@ class Geopicker extends Widget {
                         }
 
                         latLng = e.latlng;
+                        if(that.points.length > 1) {
+                            path = that.points.map(point => that._convertLatLng(point));
+                        }
                         indexToPlacePoint = ( that.$lat.val() && that.$lng.val() ) ? that.points.length : that.currentIndex;
 
                         // reduce precision to 6 decimals
@@ -702,10 +833,24 @@ class Geopicker extends Widget {
                             that._showIntersectError();
                         } else {
                             if ( !that.$lat.val() || !that.$lng.val() || that.props.type === 'geopoint' ) {
-                                that._updateInputs( latLng, 'change.bymap' );
+                                that._updateInputs( latLng, 'change.bymap', -1 );
                             } else if ( that.$lat.val() && that.$lng.val() ) {
-                                that._addPoint();
-                                that._updateInputs( latLng, 'change.bymap' );
+
+                                let inserted = false;
+                                if(path.length > 1) {
+                                    for(let i = 0; i < path.length - 1; i++) {
+                                        if(that.belongsSegment(latLng, path[i], path[i + 1], 0.05)) {
+                                            that._insertPoint(i + 1);
+                                            that._updateInputs( latLng, 'change.bymap', i + 1 )
+                                            inserted = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(!inserted) {
+                                    that._addPoint();
+                                    that._updateInputs(latLng, 'change.bymap', -1);
+                                }
                             } else {
                                 // do nothing if the field has a current marker
                                 // instead the user will have to drag to change it by map
@@ -734,13 +879,20 @@ class Geopicker extends Widget {
             } );
     }
 
+    /*
+     * Convert a point to a LatLng
+     */
+    _convertLatLng(p) {
+        return new L.latLng(p[0], p[1]);
+    }
+
     /**
      * @param {LatLngArray|LatLngObj} latLng - Latitude and longitude coordinates
      * @param {number} [zoom] - zoom level
      */
-    _updateDynamicMapView( latLng, zoom ) {
+    _updateDynamicMapView( latLng, zoom, fitMap ) {
         if ( !latLng ) {
-            this._updatePolyline();
+            this._updatePolyline(fitMap);
             this._updateMarkers();
             if ( this.points.length === 1 && this.points[ 0 ].toString() === '' ) {
                 if ( this.lastLatLng ) {
@@ -750,6 +902,7 @@ class Geopicker extends Widget {
                 }
             }
         } else {
+            this._updateMarkers();
             this.map.setView( latLng, zoom || defaultZoom );
         }
     }
@@ -831,7 +984,7 @@ class Geopicker extends Widget {
 
         return {
             id: map.id || name,
-            maxZoom: map.maxzoom || 19,
+            maxZoom: map.maxzoom || 19,   // smap increased from 18
             minZoom: map.minzoom || 0,
             name,
             attribution: map.attribution || ''
@@ -913,12 +1066,26 @@ class Geopicker extends Widget {
             this.markerLayer.clearLayers();
         }
 
-        if ( this.points.length < 2 && this.points[ 0 ].join() === '' ) {
+        if ( this.points.length == 0 || (this.points.length == 1  && this.points[ 0 ].join() === '')) {
             return;
         }
 
         this.points.forEach( ( latLng, index ) => {
-            const icon = that.props.type === 'geopoint' ? iconSingle : ( index === that.currentIndex ? iconMultiActive : iconMulti );
+            // Set the icon - smap
+            let icon;
+            if(that.props.type === 'geocompound') {
+                if (that.markerTypes[index] === 'pit') {
+                    icon = index === that.currentIndex ? iconBlueMultiActive : iconBlueMulti;
+
+                } else if (that.markerTypes[index] === 'fault') {
+                    icon = index === that.currentIndex ? iconRedMultiActive : iconRedMulti;
+                } else {
+                    icon = index === that.currentIndex ? iconMultiActive : iconMulti;
+                }
+            } else {
+                icon = that.props.type === 'geopoint' ? iconSingle : (index === that.currentIndex ? iconMultiActive : iconMulti);
+            }
+
             if ( that._isValidLatLng( latLng ) ) {
                 coords.push( that._cleanLatLng( latLng ) );
                 markers.push( L.marker( that._cleanLatLng( latLng ), {
@@ -932,6 +1099,18 @@ class Geopicker extends Widget {
                         that._closePolygon();
                     } else {
                         that._setCurrent( e.target.options.alt );
+                    }
+                    if(that.props.type === 'geocompound') {
+                        L.popup({minWidth: 200}
+                        )
+                            .setLatLng(e.target.getLatLng())
+                            .setContent(this._getMarkerPopup())
+                            .openOn(this.map);
+
+                        $('#markerType').change(function () {
+                            that._markerTypePopupChanged($(this).val());
+                            that.map.closePopup();
+                        });
                     }
                 } ).on( 'dragend', e => {
                     const latLng = e.target.getLatLng(),
@@ -947,7 +1126,7 @@ class Geopicker extends Widget {
                     } else {
                         // first set the current index the point dragged
                         that._setCurrent( index );
-                        that._updateInputs( latLng, 'change.bymap' );
+                        that._updateInputs( latLng, 'change.bymap', index );
                         that._updateMap();
                     }
                 } ) );
@@ -969,10 +1148,40 @@ class Geopicker extends Widget {
         }
     }
 
+    /*
+     * Get the HTML for a marker popup
+     */
+    _getMarkerPopup() {
+        let h = [],
+            idx = -1;
+        h[idx++] = '<h1>';
+        h[++idx] = this.htmlEncode(this._getMarkerLabel(this.currentIndex));
+        h[++idx] = '</h1>';
+        h[++idx] = this.markerSelectContent;
+        return h.join('');
+    }
+
+    _getMarkerLabel(index) {
+        let label = '';
+        let markerType = this.markerTypes[index];
+        if(markerType && markerType.length > 0) {
+            let labelIdx = 1;
+            if(index > 0) {
+                for(let i = 0; i < index; i++) {
+                    if(this.markerTypes[i] === markerType) {
+                        labelIdx++;
+                    }
+                }
+            }
+            label = this.markers[markerType].label + labelIdx;
+        }
+        return label;
+    }
+
     /**
      * Updates the polyline on the dynamic map from the current list of points
      */
-    _updatePolyline() {
+    _updatePolyline(fitMap) {
         let polylinePoints;
         const that = this;
 
@@ -1009,16 +1218,41 @@ class Geopicker extends Widget {
         if ( !this.polyline ) {
             this.polyline = L.polyline( polylinePoints, {
                 color: 'red'
-            } );
+            } ).on('click', function (e) {
+                L.DomEvent.stopPropagation(e);
+                let path = e.sourceTarget.getLatLngs();
+                if(path.length > 1) {
+                    for(let i = 0; i < path.length - 1; i++) {
+                        if(that.belongsSegment(e.latlng, path[i], path[i + 1])) {
+                            that._insertPoint(i + 1);
+                            that._updateInputs( e.latlng, 'change.bymap', i + 1 )
+                            break;
+                        }
+                    }
+                }
+            });
             this.map.addLayer( this.polyline );
         } else {
             this.polyline.setLatLngs( polylinePoints );
         }
 
-        // possible bug in Leaflet, using timeout to work around
-        setTimeout( () => {
-            that.map.fitBounds( that.polyline.getBounds() );
-        }, 0 );
+        // // Zooming issue. Don't do this automatically. Should be manual
+        if(fitMap) {
+            setTimeout(() => {
+                that.map.fitBounds(that.polyline.getBounds());
+            }, 0);
+        }
+    }
+
+    /*
+     * return true if the point is on a segment between the points in params 2 and 3
+     * Copied from https://makinacorpus.github.io/Leaflet.GeometryUtil/   The full library should probably be included
+     */
+    belongsSegment(latlng, latlngA, latlngB, tolerance) {
+        tolerance = tolerance === undefined ? 0.2 : tolerance;
+        var hypotenuse = latlngA.distanceTo(latlngB),
+            delta = latlngA.distanceTo(latlng) + latlng.distanceTo(latlngB) - hypotenuse;
+        return delta/hypotenuse < tolerance;
     }
 
     /**
@@ -1088,7 +1322,23 @@ class Geopicker extends Widget {
     _addPoint() {
         this._addPointBtn();
         this.points.push( [] );
+        if(this.props.type === 'geocompound') {
+            this.markerTypes.push("");   // properties
+        }
         this._setCurrent( this.points.length - 1 );
+        this._updateValue();
+    }
+
+    /**
+     * Inserts a point at the specified index
+     */
+    _insertPoint(index) {
+        this._addPointBtn();
+        this.points.splice( index, 0, [] );
+        if(this.props.type === 'geocompound') {
+            this.markerTypes.splice(index, 0, "");   // properties
+        }
+        this._setCurrent( index );
         this._updateValue();
     }
 
@@ -1118,8 +1368,11 @@ class Geopicker extends Widget {
     _removePoint() {
         let newIndex = this.currentIndex;
         this.points.splice( this.currentIndex, 1 );
+        if(this.props.type === 'geocompound') {
+            this.markerTypes.splice(this.currentIndex, 1);     // properties
+        }
         this._updateValue();
-        this.$points.find( '.point' ).eq( this.currentIndex ).remove();
+        this.$points.find( '.point-list' ).eq( this.currentIndex ).remove();
         if ( typeof this.points[ this.currentIndex ] === 'undefined' ) {
             newIndex = this.currentIndex - 1;
         }
@@ -1156,7 +1409,7 @@ class Geopicker extends Widget {
             return this._showIntersectError();
         }
 
-        this._updateInputs( this.points[ 0 ] );
+        this._updateInputs( this.points[ 0 ],  undefined,-1 );
     }
 
     /**
@@ -1165,7 +1418,7 @@ class Geopicker extends Widget {
      * @param {LatLngArray|LatLngObj} coords - Latitude, longitude, altitude and accuracy.
      * @param {string} [ev] - Event to dispatch.
      */
-    _updateInputs( coords, ev ) {
+    _updateInputs( coords, ev, index ) {  // smap add index
         const lat = coords[ 0 ] || coords.lat || '';
         const lng = coords[ 1 ] || coords.lng || '';
         const alt = coords[ 2 ] || coords.alt || '';
@@ -1173,6 +1426,16 @@ class Geopicker extends Widget {
 
         ev = ( typeof ev !== 'undefined' ) ? ev : 'change';
 
+        // smap - set the marker type
+        if(this.props.type === 'geocompound') {
+            if (index >= 0) {
+                if (this.markerTypes[index] && this.markerTypes[index].length > 0) {    // only reverse geocode if there is a point of interest
+                    this._updateAddress(lat, lng);
+                } else {
+                    this.$search.val('');
+                }
+            }
+        }
         this.$lat.val( lat || '' );
         this.$lng.val( lng || '' );
         this.$alt.val( alt || '' );
@@ -1212,6 +1475,19 @@ class Geopicker extends Widget {
         } );
 
         return coordinates;
+    }
+
+    /*
+     * Get goordinates from a point
+     * smap
+     */
+    _getGeopoint(point) {
+        const lat = typeof point[ 0 ] === 'number' ? point[ 0 ] : ( typeof point.lat === 'number' ? point.lat : null );
+        const lng = typeof point[ 1 ] === 'number' ? point[ 1 ] : ( typeof point.lng === 'number' ? point.lng : null );
+        const alt = typeof point[ 2 ] === 'number' ? point[ 2 ] : 0.0;
+        const acc = typeof point[ 3 ] === 'number' ? point[ 3 ] : 0.0;
+
+        return ( lat && lng ) ? `${lat} ${lng} ${alt} ${acc}` : '0.0 0.0 0.0 0.0';
     }
 
     /**
@@ -1301,16 +1577,17 @@ class Geopicker extends Widget {
      * @type {string}
      */
     get value() {
+
+        if(this.points.length === 0) {
+            return '';
+        }
         let newValue = '';
+        if(this.props.type === 'geocompound') {
+            newValue = 'line:';      // Open features
+        }
         // all points should be valid geopoints and only the last item may be empty
         this.points.forEach( ( point, index, array ) => {
-            let geopoint;
-            const lat = typeof point[ 0 ] === 'number' ? point[ 0 ] : ( typeof point.lat === 'number' ? point.lat : null );
-            const lng = typeof point[ 1 ] === 'number' ? point[ 1 ] : ( typeof point.lng === 'number' ? point.lng : null );
-            const alt = typeof point[ 2 ] === 'number' ? point[ 2 ] : 0.0;
-            const acc = typeof point[ 3 ] === 'number' ? point[ 3 ] : 0.0;
-
-            geopoint = ( lat && lng ) ? `${lat} ${lng} ${alt} ${acc}` : '';
+            let geopoint = this._getGeopoint(point);
 
             // only last item may be empty
             // TODO: it is not great to have markAsInvalid functionality in the value getter.
@@ -1329,17 +1606,70 @@ class Geopicker extends Widget {
             }
         } );
 
+        // Add markers
+        if(this.props.type === 'geocompound') {
+            this.markerTypes.forEach((feature, index, array) => {
+                if (feature !== '') {
+                    newValue += '#marker:';
+                    newValue += this._getGeopoint(this.points[index]);
+                    newValue += ":index=" + index;
+                    newValue += ";type=" + feature;
+                }
+            });
+
+            console.debug('Value ', newValue);
+        }
         return newValue;
     }
 
     set value( value ) {
-        value.trim().split( ';' ).forEach( ( el, i ) => {
-            // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
-            this.points[ i ] = el.trim().split( ' ' );
-            this.points[ i ].forEach( ( str, i, arr ) => {
-                arr[ i ] = Number( str );
+        if(this.props.type === 'geocompound') {
+            console.log("Set value: " + value);
+            value.trim().split('#').forEach((el, i) => {
+                if (el.indexOf('line:') === 0) {
+                    el = el.substring(el.indexOf(':') + 1);
+                    el.trim().split(';').forEach((el, i) => {
+                        // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
+                        this.points[i] = el.trim().split(' ');
+                        this.markerTypes[i] = "";
+                        this.points[i].forEach((str, i, arr) => {
+                            arr[i] = Number(str);
+                        });
+                    });
+                }
+                if (el.indexOf('marker:') === 0) {
+                    el.trim().split(':').forEach((el, i) => {
+                        // For legacy reason the properties could be in the 2nd index or (more recently) the 3rd
+                        if (i == 1 || i == 2) {
+                            let props = el.trim().split(';');
+                            let index = -1;
+                            let type;
+                            props.forEach((prop, i, arr) => {
+                                let propc = prop.trim().split("=");
+                                if (propc.length > 1) {
+                                    if (propc[0] === 'index') {
+                                        index = Number(propc[1]);
+                                    } else if (propc[0] === 'type') {
+                                        type = propc[1];
+                                    }
+                                }
+                            });
+                            if (index >= 0 && type) {
+                                this.markerTypes[index] = type;
+                            }
+                        }
+                    });
+                }
+            });
+        } else {
+            value.trim().split( ';' ).forEach( ( el, i ) => {
+                // console.debug( 'adding loaded point', el.trim().split( ' ' ) );
+                this.points[ i ] = el.trim().split( ' ' );
+                this.points[ i ].forEach( ( str, i, arr ) => {
+                    arr[ i ] = Number( str );
+                } );
             } );
-        } );
+        }
     }
 
     /**
