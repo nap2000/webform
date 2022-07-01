@@ -112,7 +112,9 @@ class Geopicker extends Widget {
         this._addDomElements();
         this.currentIndex = 0;
         this.points = [];
-        this.markerTypes = [];       // smap
+        this.markerTypes = [];       // Markers added to map - same length as points
+        this.addressCache = {};      // Cache of requests to geocoding service
+        this.markerAddress = {};     // Addresses for each marker
         if ( this.props.type === 'geocompound' ) {
             this.markers = this._getMarkers(this.props);
             this.markerSelectContent = this._getMarkerSelect(this.markers);
@@ -401,8 +403,9 @@ class Geopicker extends Widget {
     /*
      * Updates the marker type based on selection of a type in a popup on the marker
      */
-    _markerTypePopupChanged(val) {
+    _markerTypePopupChanged(val, latLng) {
         this.markerTypes[ this.currentIndex ] = val;
+        this._updateAddress(latLng.lat, latLng.lng, this.currentIndex)
         this._updateValue();
         this._updateMap();
     }
@@ -719,24 +722,46 @@ class Geopicker extends Widget {
     /**
      * Performs a reverese geocode
      */
-    _updateAddress(lat, lng) {
+    _updateAddress(lat, lng, index) {
         const that = this;
 
-        $.get( searchReverse.replace( '{lat}', lat ).replace('{lng}', lng), response => {
-            if ( response.results && response.results.length > 0 && response.results[ 0 ].formatted_address ) {
-                this.$search.val(response.results[0].formatted_address);
-                // update any questions that have the same name as the label
+        let url = searchReverse.replace( '{lat}', lat ).replace('{lng}', lng);
+        let address = this.addressCache[url];
+        if(address) {
+            this._setAddress(address, index);
+        } else {
+            $.get(url, response => {
+                if (response.results && response.results.length > 0 && response.results[0].formatted_address) {
+                    this.addressCache[url] = response.results[0].formatted_address;
+                    this._setAddress(response.results[0].formatted_address, index);
+                }
+            }, 'json')
+                .fail(() => {
+                    //TODO: add error message
+                    that.$search.closest('.input-group').addClass('has-error');
+                    console.error('Error. Geocoding service may not be available or app is offline');
+                })
+                .always(() => {
+
+                });
+        }
+    }
+
+    /*
+     * Update the address in the geocompound widget and any questions in the top level form
+     * that have the same name as the label
+     */
+    _setAddress(address, index) {
+        this.$search.val(address);
+        this.markerAddress[index] = address;
+
+        // update top level form questions that have the same name as the label
+        for(let i = 0; i < this.markerTypes.length; i++) {
+            let label = this._getMarkerLabel(i);
+            if(label !== '') {
+                $('input[name="/main/' + this._getMarkerLabel(i) + '"]').val(this.markerAddress[i]);
             }
-        }, 'json' )
-            .fail( () => {
-                //TODO: add error message
-                that.$search.closest( '.input-group' ).addClass( 'has-error' );
-                console.error( 'Error. Geocoding service may not be available or app is offline' );
-            } )
-            .always( () => {
-
-            } );
-
+        }
     }
 
     /**
@@ -1108,7 +1133,7 @@ class Geopicker extends Widget {
                             .openOn(this.map);
 
                         $('#markerType').change(function () {
-                            that._markerTypePopupChanged($(this).val());
+                            that._markerTypePopupChanged($(this).val(), e.target.getLatLng());
                             that.map.closePopup();
                         });
                     }
@@ -1430,7 +1455,7 @@ class Geopicker extends Widget {
         if(this.props.type === 'geocompound') {
             if (index >= 0) {
                 if (this.markerTypes[index] && this.markerTypes[index].length > 0) {    // only reverse geocode if there is a point of interest
-                    this._updateAddress(lat, lng);
+                    this._updateAddress(lat, lng, index);
                 } else {
                     this.$search.val('');
                 }
