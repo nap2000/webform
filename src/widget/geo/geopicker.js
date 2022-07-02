@@ -117,7 +117,6 @@ class Geopicker extends Widget {
         this.markerAddress = {};     // Addresses for each marker
         if ( this.props.type === 'geocompound' ) {
             this.markers = this._getMarkers(this.props);
-            this.markerSelectContent = this._getMarkerSelect(this.markers);
         }
 
         // load default value
@@ -348,8 +347,9 @@ class Geopicker extends Widget {
      * Get the HTML to select a marker
      */
     _getMarkerSelect(markers) {
-        var h = [];
-        var idx = -1;
+        let h = [];
+        let idx = -1;
+        let currentMarkerType = this.markerTypes[this.currentIndex];
 
         h[++idx] = '<select id="markerType" className="ignore" name="markerType">';
         h[++idx] = '<option value="none">None</option>';
@@ -358,7 +358,11 @@ class Geopicker extends Widget {
             let m = markers[mType];
             h[++idx] = '<option value="';
             h[++idx] = mType;
-            h[++idx] = '">';
+            h[++idx] = '"';
+            if(currentMarkerType === mType) {
+                h[++idx] = ' selected';
+            }
+            h[++idx] = '>';
             h[++idx] = this.htmlEncode(m.name);
             h[++idx] = '</option>';
         }
@@ -1182,7 +1186,7 @@ class Geopicker extends Widget {
         h[idx++] = '<h1>';
         h[++idx] = this.htmlEncode(this._getMarkerLabel(this.currentIndex));
         h[++idx] = '</h1>';
-        h[++idx] = this.markerSelectContent;
+        h[++idx] = this._getMarkerSelect(this.markers);
         return h.join('');
     }
 
