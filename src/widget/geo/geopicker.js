@@ -116,7 +116,7 @@ class Geopicker extends Widget {
         this.addressCache = {};      // Cache of requests to geocoding service
         this.markerAddress = {};     // Addresses for each marker
         if ( this.props.type === 'geocompound' ) {
-            this.markers = this._getMarkers(this.props);
+            this.markers = this._getMarkers(this.props.appearances);
         }
 
         // load default value
@@ -312,7 +312,7 @@ class Geopicker extends Widget {
 
     /*
      * Get markers passed in appearances
-     * marker:{type}:{name}:{label}:{color}
+     * marker:{type}:{name}:{label}
      * For backward compatability, if no markers are specified then the previous hardcoded values are used
      */
     _getMarkers(appearances) {
@@ -323,6 +323,16 @@ class Geopicker extends Widget {
             for(let i = 0; i < appearances.length; i++) {
                 if(appearances[i].indexOf("marker") === 0) {
                     hasMarkers = true;
+                    let m = appearances[i].split(":");
+                    if(m.length > 1) {
+                        markers[m[1]] = {};
+                    }
+                    if(m.length > 2) {
+                        markers[m[1]]["name"] = m[2];
+                    }
+                    if(m.length > 3) {
+                        markers[m[1]]["label"] = m[3];
+                    }
                 }
             }
         }
@@ -332,12 +342,10 @@ class Geopicker extends Widget {
             markers.pit = {
                 name: "Chamber",
                 label: "J",
-                color: "blue"
             }
             markers.fault = {
                 name: "Blockage",
                 label: "Blockage",
-                color: "red"
             }
         }
         return markers;
@@ -763,7 +771,7 @@ class Geopicker extends Widget {
         for(let i = 0; i < this.markerTypes.length; i++) {
             let label = this._getMarkerLabel(i);
             if(label !== '') {
-                $('input[name="/main/' + this._getMarkerLabel(i) + '"]').val(this.markerAddress[i]);
+                $('input[name="/main/' + this._getMarkerLabel(i) + '"]').val(this.markerAddress[i]).trigger("change");
             }
         }
     }
