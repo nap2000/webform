@@ -52,7 +52,7 @@ export default {
         }
         if ( o.param === 'end' ) {
             //set event handler for each save event (needs to be triggered!)
-            this.form.view.html.addEventListener( events.BeforeSave().type, () => {
+            document.body.addEventListener( events.BeforeSave().type, () => {
                 value = that.form.model.evaluate( 'now()', 'string' );
                 o.dataNode.setVal( value, 'datetime' );
             } );

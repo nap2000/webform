@@ -252,7 +252,7 @@
         console.log('saveRecord called with recordname:' + recordName, 'confirmed:' + confirmed, "error:" + error + 'draft:' + draft);
 
         //triggering before save to update possible 'end' timestamp in form
-        $form.trigger('beforesave');
+        document.body.dispatchEvent(new Event("before-save"));
 
         confirmed = ( typeof confirmed !== 'undefined' ) ? confirmed : false;
         recordName = recordName || form.recordName || form.surveyName + ' - ' + store.getCounterValue();
@@ -353,7 +353,7 @@
             gui.confirm(texts, choices, {
                 'record-name': recordName
             });
-        } 
+        }
 
         recordResult.key = recordName;
         return recordResult;
@@ -413,7 +413,7 @@
     function submitEditedRecord(autoClose) {
         var name, record;
 
-        $form.trigger('beforesave');
+        document.body.dispatchEvent(new Event("before-save"));
         if (!form.isValid()) {
             gui.alert(t("alert.validationerror.msg"));
             return;
@@ -1020,7 +1020,7 @@
     function finalise() {
         //var $form = form.getView().$;
 	    var $form = $( 'form.or' );
-        $form.trigger('beforesave');
+        document.body.dispatchEvent(new Event("before-save"));
         $(':focus').trigger('blur');
         form.validate();
     }
