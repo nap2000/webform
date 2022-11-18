@@ -764,6 +764,12 @@
                 }, 100);
 
             });
+
+        $('button#exit-form')
+            .click(function () {
+                window.open( '', '_self' ).close();
+            });
+
         $('button#submit-form-single')
             .click(function () {
                 if(surveyData.viewOnly) {
