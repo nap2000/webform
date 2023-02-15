@@ -35,7 +35,7 @@ import ac from '../widget/rating/rating';
 import ad from '../widget/text-print/text-print';
 import ae from '../widget/thousands-sep/thousands-sep';
 import za from '../widget/literacywidget/literacywidget';       // smap
-import zb from '../widget/geo/geocompound';       // smap
+//import zb from '../widget/geo/geocompound';       // smap
 //import zz from '../widget/example/my-widget';
 
-export default [ a, b, c, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, aa, ab, ac, ad, ae, za, zb ];
+export default [ a, b, c, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, aa, ab, ac, ad, ae, za];
