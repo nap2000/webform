@@ -236,7 +236,7 @@ FormModel.prototype.createSession = function( id, sessObj ) {
 
     // fixed: /sesssion/context properties
     fixedProps.forEach( prop => {
-        sessObj[ prop ] = sessObj[ prop ] || readCookie( `__enketo_meta_${prop}` ) || `${prop} not found`;
+        sessObj[ prop ] = sessObj[ prop ] || readCookie( `__enketo_meta_${prop}` ) || window.smapConfig[ prop ] || `${prop} not found`;     // smap
     } );
 
     session = parser.parseFromString( `<session><context>${fixedProps.map( prop => `<${prop}>${sessObj[ prop ]}</${prop}>` ).join( '' )}</context></session>`, 'text/xml' ).documentElement;
