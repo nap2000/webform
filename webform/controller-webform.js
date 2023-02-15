@@ -767,6 +767,7 @@
 
         $('button#exit-form')
             .click(function () {
+                window.onbeforeunload = undefined;
                 window.open( '', '_self' ).close();
             });
 
