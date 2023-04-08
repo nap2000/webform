@@ -187,10 +187,14 @@ function post(url, content) {
             contentType: false,
             processData: false,
             timeout: 0,
+            dataType: "json",
             complete: function (jqXHR) {
                 var resp = {
                     status: jqXHR.status,
                     msg: jqXHR.statusText
+                }
+                if(jqXHR.responseJSON) {
+                    resp.msg += " : " + jqXHR.responseJSON.message;
                 }
                 resolve(resp);
             }
@@ -461,12 +465,13 @@ function processResponse( response, record, foreground, saved ) {
             }
         };
 
-
-    if ( typeof statusMap[ response.status ] !== 'undefined' ) {
+    if ( typeof statusMap[ response.status ] !== 'undefined' && statusMap[ response.status ].success === true ) {
+        level = 'success';
+    } else if(typeof response.msg !== 'undefined') {
+        msg = response.msg;
+    } else if ( typeof statusMap[ response.status ] !== 'undefined' ) {
         msg = statusMap[ response.status ].msg;
-        if ( statusMap[ response.status ].success === true ) {
-            level = 'success';
-        }
+
     }
     //unforeseen statuscodes
     else if ( response.status > 500 ) {
