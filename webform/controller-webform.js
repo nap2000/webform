@@ -921,9 +921,14 @@
                     return record.key == name;
                 }).length === 0) {
                 //remove the DOM element and its same-name-siblings (split submissions)
-                $(this).siblings('[name="' + name + '"]').addBack().hide(2000, function () {
-                    $(this).remove();
-                });
+                // Enclose in try catch as the name can result in an invalid expression
+                try {
+                    $(this).siblings('[name="' + name + '"]').addBack().hide(2000, function () {
+                        $(this).remove();
+                    });
+                } catch(error) {
+                    console.error(error);
+                }
             }
         });
 
