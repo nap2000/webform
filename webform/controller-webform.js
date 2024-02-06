@@ -916,6 +916,7 @@
         //cleanup
         $list.find('.record').each(function () {
             name = $(this).attr('name');
+            console.log("Name: " + name);
             //if the record in the DOM no longer exists in storage
             if ($.grep(recordList, function (record) {
                     return record.key == name;
@@ -951,16 +952,21 @@
                 }
 
                 // add a new item when necessary
-                $li = $list.find('[name="' + name + '"]');
-                if ($li.length === 0) {
-                    $li = $('<li class="record"></li>');
-                    $li.text(name); // encodes string to html
-                    $li.attr('name', name);
-                    $list.append($li);
+                try {
+                    $li = $list.find('[name="' + name + '"]');
+                    if ($li.length === 0) {
+                        $li = $('<li class="record"></li>');
+                        $li.text(name); // encodes string to html
+                        $li.attr('name', name);
+                        $list.append($li);
+                    }
+
+                    // update record status for new or existing records
+                    $li.attr('data-draft', draft);
+                } catch(error) {
+                    console.error(error);
                 }
 
-                // update record status for new or existing records
-                $li.attr('data-draft', draft);
             });
         } else if ($list.find('.no-records').length === 0) {
             $list.append('<li class="no-records">' + t("record-list.norecords") + '</li>');
