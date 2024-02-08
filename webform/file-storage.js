@@ -13,12 +13,16 @@
     if(window.idbConfig) {
         webformDbVersion = window.idbConfig.version;        // Share value with webforms page
     } else {
-        webformDbVersion = 6;
+        webformDbVersion = 9;
     }
     let databaseName = "webform";
 
     let mediaStoreName = "media";
     let mediaStore;
+
+    // Store logs of events
+    let logStoreName = 'logs';
+    let logStore;
 
     let recordStoreName = 'records';
     let assignmentIdx = 'assignment';
@@ -40,7 +44,8 @@
             if (typeof window.indexedDB !== 'undefined') {
                 open().then(() => {
                     resolve(true);
-                }).catch( () => {
+                }).catch( (error) => {
+                    console.log(error);
                     resolve(false);
                 });
             } else {
@@ -88,22 +93,25 @@
                     let upgradeDb = e.target.result;
                     let oldVersion = upgradeDb.oldVersion || 0;
 
-                    switch (oldVersion) {
-                        case 0:
-                        case 1:
-                        case 2:
-                            if (!upgradeDb.objectStoreNames.contains(mediaStoreName)) {
-                                mediaStore = upgradeDb.createObjectStore("media");
-                            }
-
-                            if (!upgradeDb.objectStoreNames.contains(recordStoreName)) {
-                                recordStore = upgradeDb.createObjectStore(recordStoreName, {
-                                    keyPath: 'id',
-                                    autoIncrement: true
-                                });
-                                recordStore.createIndex(assignmentIdx, assignmentIdxPath, {unique: false});
-                            }
+                    if (!upgradeDb.objectStoreNames.contains(mediaStoreName)) {
+                        mediaStore = upgradeDb.createObjectStore(mediaStoreName);
                     }
+
+                    if (!upgradeDb.objectStoreNames.contains(recordStoreName)) {
+                        recordStore = upgradeDb.createObjectStore(recordStoreName, {
+                            keyPath: 'id',
+                            autoIncrement: true
+                        });
+                        recordStore.createIndex(assignmentIdx, assignmentIdxPath, {unique: false});
+                    }
+
+                    if (!upgradeDb.objectStoreNames.contains(logStoreName)) {
+                        logStore = upgradeDb.createObjectStore(logStoreName);
+                        logStore.createIndex("date", "date", { unique: true });
+                        logStore.createIndex("name", "name", { unique: false });
+                        logStore.createIndex("status", "status", { unique: false });
+                    }
+
                     resolve(upgradeDb);
                 };
 
@@ -184,6 +192,35 @@
 
             var objectStore = transaction.objectStore(mediaStoreName);
             var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + "/" + dirname + "/" + media.name);
+            db.close();
+        });
+
+    };
+
+    /*
+     * Write a log entry to the database
+     */
+    fileStore.saveFile = function(name, status) {
+
+        open().then(function (db) {
+            console.log("write log entry: " + name + " : " + status);
+
+            var transaction = db.transaction([mediaStoreName], "readwrite");
+            transaction.onerror = function (e) {
+                alert("Error: failed to open transaction to write log entry " + name);
+            };
+
+            let logItem = {
+                date: 'xx',
+                instance: name,
+                status: status
+            }
+            var objectStore = transaction.objectStore(logStoreName);
+            objectStoreRequest.onsuccess = (event) => {
+                // report the success of our request
+                console.log("Log entry written");
+            };
+            objectStore.add(logItem);
             db.close();
         });
 

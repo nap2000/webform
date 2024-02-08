@@ -22,6 +22,7 @@ import $ from "jquery";
 import store from "./store";
 import gui from "./gui";
 import {t} from "../src/js/translator";
+import fileStore from "./file-storage";
 
 let submit = {};
 let HTTP_CREATED = 201;
@@ -97,6 +98,10 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
         processResponse(response, record, inMemoryMedia, saved);
     }
 
+    // Log the response
+    fileStore.writeLog(record.name, response.status).catch((saveResult) => {
+        gui.alert('Error writing log');
+    });
 
 }
 
@@ -475,13 +480,13 @@ function processResponse( response, record, foreground, saved ) {
     }
     //unforeseen statuscodes
     else if ( response.status > 500 ) {
-        console.error( 'Error during uploading, received unexpected statuscode: ' + status );
+        console.error( 'Error during uploading, received unexpected statuscode: ' + response.status );
         msg = statusMap[ '5xx' ].msg;
     } else if ( response.status > 400 ) {
-        console.error( 'Error during uploading, received unexpected statuscode: ' + status );
+        console.error( 'Error during uploading, received unexpected statuscode: ' + response.status );
         msg = statusMap[ '4xx' ].msg;
     } else if ( response.status > 200 ) {
-        console.error( 'Error during uploading, received unexpected statuscode: ' + status );
+        console.error( 'Error during uploading, received unexpected statuscode: ' + response.status );
         msg = statusMap[ '2xx' ].msg;
     }
 
