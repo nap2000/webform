@@ -107,9 +107,6 @@
 
                     if (!upgradeDb.objectStoreNames.contains(logStoreName)) {
                         logStore = upgradeDb.createObjectStore(logStoreName);
-                        logStore.createIndex("date", "date", { unique: true });
-                        logStore.createIndex("name", "name", { unique: false });
-                        logStore.createIndex("status", "status", { unique: false });
                     }
 
                     resolve(upgradeDb);
@@ -200,27 +197,22 @@
     /*
      * Write a log entry to the database
      */
-    fileStore.saveFile = function(name, status) {
+    fileStore.writeLog = function(name, status) {
 
         open().then(function (db) {
             console.log("write log entry: " + name + " : " + status);
 
-            var transaction = db.transaction([mediaStoreName], "readwrite");
+            var transaction = db.transaction([logStoreName], "readwrite");
             transaction.onerror = function (e) {
                 alert("Error: failed to open transaction to write log entry " + name);
             };
 
             let logItem = {
-                date: 'xx',
-                instance: name,
+                name: name,
                 status: status
             }
             var objectStore = transaction.objectStore(logStoreName);
-            objectStoreRequest.onsuccess = (event) => {
-                // report the success of our request
-                console.log("Log entry written");
-            };
-            objectStore.add(logItem);
+            objectStore.add(logItem, new Date());
             db.close();
         });
 
@@ -355,7 +347,7 @@
                     console.log('Error', e.target.error.name);
                     reject();
                 };
-                db.close()
+                db.close();
             });
         });
     };

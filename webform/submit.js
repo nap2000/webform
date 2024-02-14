@@ -99,9 +99,7 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
     }
 
     // Log the response
-    fileStore.writeLog(record.name, response.status).catch((saveResult) => {
-        gui.alert('Error writing log');
-    });
+    fileStore.writeLog(record.name, response.status);
 
 }
 
