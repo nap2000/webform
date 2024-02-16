@@ -134,7 +134,7 @@
                     '<progress class="upload-progress"></progress>' +
                     '<ul class="record-list"></ul>' +
                     '<div class="button-bar">' +
-                    //'<button class="btn btn-default export-records">Export</button>' +
+                    '<button class="btn btn-default lang show-history" data-lang="record-list.history">h</button>' +
                     '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
                     'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
                     '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +

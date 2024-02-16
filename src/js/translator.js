@@ -29,7 +29,7 @@ htmlParagraphsPostProcessor = {
 
 /**
  * Initializes translator and resolves **when translations have been loaded**.
- * 
+ *
  * @param  {=*?} something can be anything
  * @return {Promise}       promise resolving the original something argument
  */
@@ -52,7 +52,7 @@ initialize = new Promise( function( resolve, reject ) {
             joinArrays: '\n',
             backend: {
                 //loadPath: settings.basePath + '/locales/__lng__/translation-combined.json',
-                loadPath: '/build/locales/__lng__/translation-combined.json',
+                loadPath: '/build/locales/__lng__/translation.json',
             },
             load: 'languageOnly',
             lowerCaseLng: true,
@@ -78,7 +78,7 @@ initialize = new Promise( function( resolve, reject ) {
 /**
  * Localizes the descendents of an element based on the data-i18n attribute.
  * Performance-optimized in Chrome (used bench6 form).
- * 
+ *
  * @param  {Element} Element [description]
  */
 localize = function( element ) {
@@ -114,7 +114,7 @@ module.exports = {
  * t('constraint.invalid');
  * t('constraint.required');
  * t('form.required');
- * 
+ *
  * // The following 3 are temporary:
  * t('drawwidget.drawing');
  * t('drawwidget.signature');
