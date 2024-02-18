@@ -13,7 +13,7 @@
     if(window.idbConfig) {
         webformDbVersion = window.idbConfig.version;        // Share value with webforms page
     } else {
-        webformDbVersion = 9;
+        webformDbVersion = 10;
     }
     let databaseName = "webform";
 
@@ -91,7 +91,6 @@
 
                 request.onupgradeneeded = function(e) {
                     let upgradeDb = e.target.result;
-                    let oldVersion = upgradeDb.oldVersion || 0;
 
                     if (!upgradeDb.objectStoreNames.contains(mediaStoreName)) {
                         mediaStore = upgradeDb.createObjectStore(mediaStoreName);
@@ -197,7 +196,7 @@
     /*
      * Write a log entry to the database
      */
-    fileStore.writeLog = function(name, status) {
+    fileStore.writeLog = function(name, status, instanceid) {
 
         open().then(function (db) {
             console.log("write log entry: " + name + " : " + status);
@@ -208,11 +207,18 @@
             };
 
             let logItem = {
+                date: new Date(),
                 name: name,
-                status: status
+                status: status,
+                instanceid: instanceid
             }
             var objectStore = transaction.objectStore(logStoreName);
             objectStore.add(logItem, new Date());
+
+            // Delete records older than 1 day
+            let today = new Date();
+            let archiveDate = new Date().setDate(today.getDate() - 1);
+            objectStore.delete(IDBKeyRange.upperBound(archiveDate));
             db.close();
         });
 
