@@ -51,7 +51,6 @@ initialize = new Promise( function( resolve, reject ) {
             fallbackLng: 'en',
             joinArrays: '\n',
             backend: {
-                //loadPath: settings.basePath + '/locales/__lng__/translation-combined.json',
                 loadPath: '/build/locales/__lng__/translation.json',
             },
             load: 'languageOnly',

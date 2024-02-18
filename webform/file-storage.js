@@ -196,7 +196,7 @@
     /*
      * Write a log entry to the database
      */
-    fileStore.writeLog = function(name, status, instanceid) {
+    fileStore.writeLog = function(action, name, status, instanceid) {
 
         open().then(function (db) {
             console.log("write log entry: " + name + " : " + status);
@@ -208,6 +208,7 @@
 
             let logItem = {
                 date: new Date(),
+                action: action,
                 name: name,
                 status: status,
                 instanceid: instanceid

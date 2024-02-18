@@ -306,6 +306,10 @@
         "finish": "Finish",
         "start": "Start"
     },
+    "log": {
+        "delete": "Delete",
+        "submit": "Submit"
+    },
     "page": {
         "modernbrowsers": {
             "heading": "Modern Browsers",

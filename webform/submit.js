@@ -99,7 +99,7 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
     }
 
     // Log the response
-    fileStore.writeLog(record.name, response.status, record.instanceID);
+    fileStore.writeLog("submit", record.name, response.status, record.instanceID);
 
 }
 

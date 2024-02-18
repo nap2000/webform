@@ -133,8 +133,8 @@
                     '<p class="lang" data-lang="record-list.msg1">Records are stored</p>' +
                     '<progress class="upload-progress"></progress>' +
                     '<ul class="record-list"></ul>' +
+                    '<a type="button" href="/app/mywork/history.html" target="_blank" class="btn btn-default lang show-history full-width" data-lang="record-list.history">h</a>' +
                     '<div class="button-bar">' +
-                    '<button class="btn btn-default lang show-history" data-lang="record-list.history">h</button>' +
                     '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
                     'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
                     '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
@@ -559,6 +559,9 @@
             if (store) {
                 store.removeRecord(recordName);
             }
+
+            // Record the deletion
+            fileStore.writeLog("delete", recordName, "", instanceID);
         }
 
         // Just to be sure delete all attachments
