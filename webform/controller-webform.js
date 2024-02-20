@@ -309,6 +309,8 @@
                             saveResult = writeRecord(recordName, record, draft, media);
                         }
 
+                        fileStore.writeLog("save", recordName, "", record.accessKey);
+
                         // Remove any settings associated with an instance
                         surveyData.instanceStrToEditId = undefined;
                         surveyData.assignmentId = undefined;
