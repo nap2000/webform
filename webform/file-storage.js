@@ -198,6 +198,8 @@
      */
     fileStore.writeLog = function(action, name, status, instanceid) {
 
+        let oneday = 1000 * 3600 * 24;
+
         open().then(function (db) {
             console.log("write log entry: " + name + " : " + status);
 
@@ -216,9 +218,9 @@
             var objectStore = transaction.objectStore(logStoreName);
             objectStore.add(logItem, new Date());
 
-            // Delete records older than 1 day
+            // Delete records older than 100 days
             let today = new Date();
-            let archiveDate = new Date().setDate(today.getDate() - 1);
+            let archiveDate = new Date(today.getTime() - (100 * oneday));
             objectStore.delete(IDBKeyRange.upperBound(archiveDate));
             db.close();
         });
