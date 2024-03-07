@@ -5,6 +5,7 @@
     "use strict";
 
     let fileStore = {};
+    fileStore.logCounter = 0;
 
     /*
      * Variables for indexedDB Storage
@@ -62,8 +63,13 @@
     let open = function() {
         return new Promise((resolve, reject) => {
 
+            if(typeof fileStore[databaseName] !== 'undefined') {
+                resolve(fileStore[databaseName]);
+                return;
+            }
+
             if(typeof window.indexedDB !== 'undefined') {
-                var request = window.indexedDB.open(databaseName, webformDbVersion);
+                let request = window.indexedDB.open(databaseName, webformDbVersion);
 
                 request.onerror = function (e) {
                     console.log('Error', e.target.error.message);
@@ -83,9 +89,10 @@
                     openDb.onerror = function (e) {
                         // Generic error handler for all errors targeted at this database's
                         // requests!
-                        console.error("Database error: " + e.target.errorCode);
+                        console.error("Database error: " + e.target.error.message);
                     };
 
+                    fileStore[databaseName] = openDb;
                     resolve(openDb);
                 };
 
@@ -154,7 +161,7 @@
                         }
                     }
                 };
-                db.close();
+                //db.close();
             });
 
             // Delete any entries in localstorage
@@ -188,7 +195,7 @@
 
             var objectStore = transaction.objectStore(mediaStoreName);
             var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + "/" + dirname + "/" + media.name);
-            db.close();
+            //db.close();
         });
 
     };
@@ -203,26 +210,35 @@
         open().then(function (db) {
             console.log("write log entry: " + name + " : " + status);
 
-            var transaction = db.transaction([logStoreName], "readwrite");
+            let transaction = db.transaction([logStoreName], "readwrite");
             transaction.onerror = function (e) {
                 alert("Error: failed to open transaction to write log entry " + name);
             };
 
+            // Ensure date is unique as it is used as a unique key
+            let date = new Date();
+            date.setMilliseconds(date.getMilliseconds() + fileStore.logCounter);
+            if(fileStore.logCounter > 100) {
+                fileStore.logCounter = 0;
+            } else {
+                fileStore.logCounter++;
+            }
+
             let logItem = {
-                date: new Date(),
+                date: date,
                 action: action,
                 name: name,
                 status: status,
                 instanceid: instanceid
             }
             var objectStore = transaction.objectStore(logStoreName);
-            objectStore.add(logItem, new Date());
+            objectStore.add(logItem, date);
 
             // Delete records older than 100 days
             let today = new Date();
             let archiveDate = new Date(today.getTime() - (100 * oneday));
             objectStore.delete(IDBKeyRange.upperBound(archiveDate));
-            db.close();
+            //db.close();
         });
 
     };
@@ -356,7 +372,7 @@
                     console.log('Error', e.target.error.name);
                     reject();
                 };
-                db.close();
+                //db.close();
             });
         });
     };

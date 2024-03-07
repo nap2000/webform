@@ -520,6 +520,9 @@
         if(submitInProgress || manualSubmitInProgress) {
             return;
         }
+        if(manual && records.length === 0) {
+            gui.alert(t("record-list.nocomprecords"));      // No completed records
+        }
         // reset recordsList with fake save
         $form.trigger('save', JSON.stringify(store.getRecordList()));
         // Clear any errors from recordList
@@ -941,7 +944,7 @@
         });
 
         // disable buttons
-        $buttons.attr('disabled', 'disabled');
+        //$buttons.attr('disabled', 'disabled'); do not disable - show a message to the user
 
         // add new records
         if (recordList.length > 0) {
@@ -954,9 +957,9 @@
                 draft = record.draft;
 
                 // if there is at least one record not marked as draft
-                if (!draft) {
-                    $buttons.removeAttr('disabled');
-                }
+                //if (!draft) {  buttons not disabled
+                //    $buttons.removeAttr('disabled');
+                //}
 
                 // add a new item when necessary
                 try {

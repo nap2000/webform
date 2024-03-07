@@ -349,6 +349,7 @@
         "msg2-nodraft": "Queued records are uploaded automatically, in the background, every 5 minutes when the web page is open and an Internet connection is available.",
         "msg3": "To force an upload in between automatic attempts, click Upload.",
         "norecords": "no records queued",
+        "nocomprecords": "There are no complete records queued",
         "title": "Queue",
         "upload": "Upload"
     },
