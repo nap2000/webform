@@ -12,7 +12,7 @@ class FormWidget extends Widget {
     }
 
     _init() {
-        const fragment = document.createRange().createContextualFragment( '<a class="widget form-widget btn btn-primary" role="button" target="_blank" rel="noopener"/>' );
+        const fragment = document.createRange().createContextualFragment( '<a class="widget form-widget btn btn-primary" role="button" rel="noopener"/>' );
 
         this.element.classList.add( 'hide' );
         this.element.after( fragment );
