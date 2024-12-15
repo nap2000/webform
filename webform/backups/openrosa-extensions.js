@@ -142,7 +142,7 @@ const openrosa_xpath_extensions = function() {
                     type: file.type
                 } );
                 var url = window.location.protocol + '//' + window.location.hostname;
-                url += '/lookup/imagelabels/' + surveyData.surveyIdent;
+                url += '/surveyKPI/lookup/imagelabels/' + surveyData.surveyIdent;
 
                 key = url + '/' + file.name;
 
@@ -177,7 +177,7 @@ const openrosa_xpath_extensions = function() {
             }
 
             url = window.location.protocol + '//' + window.location.hostname;
-            url += '/lookup/' + surveyData.surveyIdent;
+            url += '/surveyKPI/lookup/' + surveyData.surveyIdent;
             url += '/' + source.v;
             if (searchType) {
                 // 6 parameter version
@@ -310,7 +310,7 @@ const openrosa_xpath_extensions = function() {
             let selectPath = calcPath.substring(0, idx);
 
             var url = window.location.protocol + '//' + window.location.hostname;
-            url += '/lookup/mlchoices/' + surveyData.surveyIdent;
+            url += '/surveyKPI/lookup/mlchoices/' + surveyData.surveyIdent;
             url += '/' + asString(source);
             url += "/" + question;
 
