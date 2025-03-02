@@ -3707,6 +3707,12 @@ legend .required {
     padding-right: 10px;
     padding-bottom: 10px; }
 
+.question.readonly.invalid-constraint,
+.question.readonly.invalid-required,
+.question.readonly.invalid-relevant {
+    background-color: #f2dede;
+}
+
 .invalid-constraint .or-constraint-msg.active, .invalid-constraint .file-picker .file-feedback.error, .file-picker .invalid-constraint .file-feedback.error, .invalid-constraint .draw-widget__feedback, .invalid-constraint .image-map__error,
 .invalid-required .or-required-msg.active,
 .invalid-required .file-picker .file-feedback.warning,
