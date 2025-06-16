@@ -1,4 +1,8 @@
 
+    /*
+     * Manages access to window local storage
+     * Does not use indexdb
+     */
     import $ from 'jquery';
 
     "use strict";

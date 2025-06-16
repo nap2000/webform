@@ -14,6 +14,7 @@
 
     import fileManager from '../src/js/file-manager';
     import './plugin';
+    import { getLastSavedRecord, populateLastSavedInstances } from './last-saved';
 
     var form, $form, $formprogress, formSelector, originalSurveyData, store, fileStore, startEditData;
 

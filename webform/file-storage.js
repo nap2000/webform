@@ -1,5 +1,5 @@
     /*
-     *  File storage of attachments
+     * File storage of attachments
      * Use IndexedDB and fall back to local storage
      */
     "use strict";
