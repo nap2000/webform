@@ -276,7 +276,20 @@ function getSubmissionUrl(record) {
     } else {
         url = "/submission" + dynamic + "/" + record.instanceStrToEditId; // Update existing record
     }
-    url += "?deviceID=webform";
+    var device = 'webform';
+    if(navigator.userAgent) {
+        if (/iPhone/i.test(navigator.userAgent)) {
+            device = 'iPhone';
+        } else if (/iPad/i.test(navigator.userAgent)) {
+            device = 'iPad';
+        } else if (/iPod/i.test(navigator.userAgent)) {
+            device = 'iPod';
+        } else if (/Android/i.test(navigator.userAgent)) {
+            device = 'Android';
+        }
+    }
+
+    url += "?deviceID=" + device;
 
     return url;
 }
