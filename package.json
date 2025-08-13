@@ -111,7 +111,8 @@
         "mergexml": "1.2.1",
         "node-forge": "^0.10.0",
         "openrosa-xpath-evaluator": "^2.0.6",
-        "signature_pad": "2.3.x"
+        "signature_pad": "2.3.x",
+	"html5-qrcode": "2.2.7"
     },
     "volta": {
         "node": "12.22.1"
