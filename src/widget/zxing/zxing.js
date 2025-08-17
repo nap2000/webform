@@ -2,6 +2,7 @@
 import Widget from '../../js/widget';
 import { NotFoundException, BrowserMultiFormatReader } from '@zxing/library';
 import $ from 'jquery';
+import events from '../../js/event';
 
 /**
  * Barcode and QR code scanning
@@ -9,7 +10,7 @@ import $ from 'jquery';
 class Zxing extends Widget {
 
     static get selector() {
-        return '.or-appearance-barcode';
+        return '.question input[data-type-xml="barcode"]';
     }
 
     static get helpersRequired() {
@@ -21,7 +22,9 @@ class Zxing extends Widget {
         this._addDomElements();
 
         let selectedDeviceId;
+        const name = this.props.name;
         const codeReader = new BrowserMultiFormatReader();
+
         console.log( 'ZXing code reader initialized' );
         codeReader.listVideoInputDevices()
             .then( ( videoInputDevices ) => {
@@ -46,14 +49,17 @@ class Zxing extends Widget {
                     codeReader.decodeFromVideoDevice( selectedDeviceId, 'video', ( result, err ) => {
                         if ( result ) {
                             console.log( result );
-                            document.getElementById( 'result' ).textContent = result.text;
+                            this._updateValue();
+                            this.value = result.text;
+                            this.element.dispatchEvent( events.Change() );
+                            codeReader.stopContinuousDecode();
                         }
                         if ( err && !( err instanceof NotFoundException ) ) {
                             console.error( err );
-                            document.getElementById( 'result' ).textContent = err;
+                            this.question.querySelector( '.zxing-result' ).textContent = err;
                         }
                     } );
-                    console.log( `Started continous decode from camera with id ${selectedDeviceId}` );
+                    console.log( `Started continuous decode from camera with id ${selectedDeviceId}` );
                 } );
 
                 document.getElementById( 'resetButton' ).addEventListener( 'click', () => {
@@ -68,6 +74,11 @@ class Zxing extends Widget {
             } );
 
 
+        // load default value
+        if ( this.originalInputValue ) {
+            this.value = this.originalInputValue;
+        }
+        this.input = this.element.querySelector( `input[name="${name}"]` );
 
     }
 
@@ -75,8 +86,8 @@ class Zxing extends Widget {
 
         this.$widget = $(
             `<div>
-            <a class="button" id="startButton">Start</a>
-            <a class="button" id="resetButton">Reset</a>
+                <a class="button btn btn-default " id="startButton">Start</a>
+                <a class="button btn btn-default " id="resetButton">Reset</a>
             </div>
 
             <div>
@@ -87,14 +98,37 @@ class Zxing extends Widget {
                 <label for="sourceSelect">Change video source:</label>
                 <select id="sourceSelect" style="max-width:400px">
                 </select>
-            </div>
-
-            <label>Result:</label>
-            <pre><code id="result"></code></pre>`
+            </div`
         );
-        $( this.element ).after( this.$widget );
+        $( this.element ).after( this.$widget ).parent().addClass( 'clearfix' );
     }
 
+    _updateValue() {
+        const oldValue = this.originalInputValue;
+        const newValue = this.value;
+
+        // console.log( 'updating value by joining', this.points, 'old value', oldValue, 'new value', newValue );
+
+        if ( oldValue !== newValue ) {
+            this.originalInputValue = newValue;
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @type {string}
+     */
+    get value() {
+        return this.question.querySelector( '.zxing-result' ).value;
+    }
+
+    set value( value ) {
+        value = value || '';
+        this.question.querySelector( '.zxing-result' ).value = value;
+    }
 
 
 }
