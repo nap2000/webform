@@ -2,6 +2,7 @@
 import Widget from '../../js/widget';
 import { NotFoundException, BrowserMultiFormatReader } from '@zxing/library';
 import $ from 'jquery';
+import { t } from 'enketo/translator';
 import events from '../../js/event';
 
 /**
@@ -25,7 +26,7 @@ class Zxing extends Widget {
         const name = this.props.name;
         const codeReader = new BrowserMultiFormatReader();
 
-        console.log( 'ZXing code reader initialized' );
+        console.log( 'zxing code reader initialized' );
         codeReader.listVideoInputDevices()
             .then( ( videoInputDevices ) => {
                 const sourceSelect = document.getElementById( 'sourceSelect' );
@@ -45,18 +46,20 @@ class Zxing extends Widget {
                     const sourceSelectPanel = document.getElementById( 'sourceSelectPanel' );
                     sourceSelectPanel.style.display = 'block';
                 }
+
                 document.getElementById( 'startButton' ).addEventListener( 'click', () => {
                     codeReader.decodeFromVideoDevice( selectedDeviceId, 'video', ( result, err ) => {
                         if ( result ) {
                             console.log( result );
                             this._updateValue();
                             this.value = result.text;
+                            $( '.zxing-result' ).text( result.text );
                             this.element.dispatchEvent( events.Change() );
                             codeReader.stopContinuousDecode();
+                            codeReader.reset();
                         }
                         if ( err && !( err instanceof NotFoundException ) ) {
                             console.error( err );
-                            this.question.querySelector( '.zxing-result' ).textContent = err;
                         }
                     } );
                     console.log( `Started continuous decode from camera with id ${selectedDeviceId}` );
@@ -86,21 +89,23 @@ class Zxing extends Widget {
 
         this.$widget = $(
             `<div>
-                <a class="button btn btn-default " id="startButton">Start</a>
-                <a class="button btn btn-default " id="resetButton">Reset</a>
+                <a class="widget form-widget btn btn-primary" id="startButton" data-i18n="literacywidget.start">${t( 'literacywidget.start' )}</a>
+                <a class="widget form-widget btn btn-secondary" id="resetButton" data-i18n="literacywidget.finish">${t( 'literacywidget.finish' )}</a>
             </div>
 
             <div>
-                <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+                <video class="center-block" id="video" width="300" height="200" style="border: 1px solid gray"></video>
             </div>
 
-            <div id="sourceSelectPanel" style="display:none">
-                <label for="sourceSelect">Change video source:</label>
+            <pre class="zxing-result"></pre>
+
+            <div class="center-block" id="sourceSelectPanel">
+                <label for="sourceSelect">Change the video source:</label>
                 <select id="sourceSelect" style="max-width:400px">
                 </select>
             </div`
         );
-        $( this.element ).after( this.$widget ).parent().addClass( 'clearfix' );
+        $( this.element ).hide().after( this.$widget ).parent().addClass( 'clearfix' );
     }
 
     _updateValue() {
