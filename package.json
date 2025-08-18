@@ -97,7 +97,6 @@
         "@zxing/library": "^0.21.3",
         "bootstrap-datepicker": "1.9.x",
         "grunt-serve": "^0.1.6",
-        "html5-qrcode": "^2.2.7",
         "html5sortable": "0.12.1",
         "i18next": "^19.9.2",
         "i18next-browser-languagedetector": "^4.2.0",
