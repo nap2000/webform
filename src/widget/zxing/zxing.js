@@ -7,15 +7,12 @@ import events from '../../js/event';
 
 const codeReader = new BrowserMultiFormatReader();
 let selectedDeviceId;
-let videoElement;
 let $video;
-let startButtonElement;
+let videoId;
 let $start;
-let stopButtonElement;
 let $stop;
-let sourceSelectElement;
+let $sourceSelect;
 let $result;
-let inputElement;
 
 /**
  * Barcode and QR code scanning
@@ -33,22 +30,19 @@ class Zxing extends Widget {
     _init() {
 
         this._addDomElements();
-        $video = $( '#video' );
-        videoElement = document.getElementById( 'video' );
-        sourceSelectElement = document.getElementById( 'sourceSelect' );
-        startButtonElement = document.getElementById( 'startButton' );
-        $start = $( '#startButton' );
-        stopButtonElement = document.getElementById( 'stopButton' );
-        $stop = $( '#stopButton' );
+        $video = this.$widget.find( '.video' );
+        videoId = 'video' + this.element.getAttribute( 'name' );
+        $video.attr( 'id', videoId );
+        $sourceSelect = this.$widget.find( '.sourceSelect' );
+        $start = this.$widget.find( '.startButton' );
+        $stop = this.$widget.find( '.stopButton' );
         $result = $( '#result' );
 
-        inputElement = this.question.querySelector( '.zxing-result' );
-
-        startButtonElement.addEventListener( 'click', () => {
+        $start.on( 'click', () => {
             this._startDecoding();
         } );
 
-        stopButtonElement.addEventListener( 'click', () => {
+        $stop.on( 'click', () => {
             this._stopDecoding();
         } );
 
@@ -64,12 +58,12 @@ class Zxing extends Widget {
                         const sourceOption = document.createElement( 'option' );
                         sourceOption.text = element.label;
                         sourceOption.value = element.deviceId;
-                        sourceSelectElement.appendChild( sourceOption );
+                        $sourceSelect.append( sourceOption );
                     } );
 
-                    sourceSelectElement.onchange = () => {
-                        selectedDeviceId = sourceSelectElement.value;
-                        if( codeReader.isVideoPlaying( videoElement ) ) {
+                    $sourceSelect.onchange = () => {
+                        selectedDeviceId = $sourceSelect.val();
+                        if( codeReader.isVideoPlaying( $video[0] ) ) {
                             codeReader.reset();
                             this._startDecoding();
                         }
@@ -93,18 +87,18 @@ class Zxing extends Widget {
 
         this.$widget = $(
             `<div class="center-block">
-                <label for="sourceSelect" data-i18n="barcode.select_device">${t( 'barcode.select_device' )}</label>
-                <select id="sourceSelect" style="max-width:400px">
+                <label data-i18n="barcode.select_device">${t( 'barcode.select_device' )}</label>
+                <select class="sourceSelect" style="max-width:400px">
                 </select>
             </div>
 
             <div>
-                <a class="widget form-widget btn btn-primary" id="startButton" data-i18n="literacywidget.start">${t( 'literacywidget.start' )}</a>
-                <a class="widget form-widget btn btn-secondary" id="stopButton" data-i18n="barcode.stop">${t( 'barcode.stop' )}</a>
+                <a class="widget form-widget btn btn-primary startButton" data-i18n="literacywidget.start">${t( 'literacywidget.start' )}</a>
+                <a class="widget form-widget btn btn-secondary stopButton" data-i18n="barcode.stop">${t( 'barcode.stop' )}</a>
             </div>
 
             <div>
-                <video class="center-block" id="video" width="300" height="200" style="border: 1px solid gray"></video>
+                <video class="center-block video" width="300" height="200" style="border: 1px solid gray"></video>
             </div>
 
             <div id="result"></div>`
@@ -133,7 +127,7 @@ class Zxing extends Widget {
         $start.hide();
         $stop.show();
 
-        codeReader.decodeFromVideoDevice( selectedDeviceId, 'video', ( result, err ) => {
+        codeReader.decodeFromVideoDevice( selectedDeviceId, videoId, ( result, err ) => {
             if ( result ) {
 
                 this.value = result.text;
@@ -167,12 +161,12 @@ class Zxing extends Widget {
      * @type {string}
      */
     get value() {
-        return inputElement.value;
+        return this.element.value;
     }
 
     set value( value ) {
         value = value || '';
-        inputElement.value = value;
+        this.element.value = value;
         $result.text( value );
     }
 
