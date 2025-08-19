@@ -23,7 +23,7 @@ let inputElement;
 class Zxing extends Widget {
 
     static get selector() {
-        return '.question input[data-type-xml="barcode"]';
+        return '.question input.zxing-result';
     }
 
     static get helpersRequired() {
@@ -38,8 +38,8 @@ class Zxing extends Widget {
         sourceSelectElement = document.getElementById( 'sourceSelect' );
         startButtonElement = document.getElementById( 'startButton' );
         $start = $( '#startButton' );
-        stopButtonElement = document.getElementById( 'resetButton' );
-        $stop = $( '#resetButton' );
+        stopButtonElement = document.getElementById( 'stopButton' );
+        $stop = $( '#stopButton' );
         $result = $( '#result' );
 
         inputElement = this.question.querySelector( '.zxing-result' );
@@ -93,21 +93,21 @@ class Zxing extends Widget {
 
         this.$widget = $(
             `<div class="center-block">
-                <label for="sourceSelect">Change the video source:</label>
+                <label for="sourceSelect" data-i18n="barcode.select_device">${t( 'barcode.select_device' )}</label>
                 <select id="sourceSelect" style="max-width:400px">
                 </select>
             </div>
 
             <div>
                 <a class="widget form-widget btn btn-primary" id="startButton" data-i18n="literacywidget.start">${t( 'literacywidget.start' )}</a>
-                <a class="widget form-widget btn btn-secondary" id="resetButton" data-i18n="literacywidget.finish">${t( 'literacywidget.finish' )}</a>
+                <a class="widget form-widget btn btn-secondary" id="stopButton" data-i18n="barcode.stop">${t( 'barcode.stop' )}</a>
             </div>
 
             <div>
                 <video class="center-block" id="video" width="300" height="200" style="border: 1px solid gray"></video>
             </div>
 
-            <pre id="result"></pre>`
+            <div id="result"></div>`
         );
         $( this.element ).hide().after( this.$widget ).parent().addClass( 'clearfix' );
     }
