@@ -328,17 +328,6 @@ const types = {
     /**
      * @namespace
      */
-    barcode: {
-        /**
-         * @return {boolean} always `true`
-         */
-        validate() {
-            return true;
-        },
-    },
-    /**
-     * @namespace
-     */
     'geopoint': {
         /**
          * @param {string} x - value
