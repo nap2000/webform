@@ -16,6 +16,17 @@ module.exports = grunt => {
     // Project configuration.
     grunt.initConfig( {
         pkg: grunt.file.readJSON( 'package.json' ),
+        uglify: {
+          options: {
+            mangle: true,
+	    compress: true
+          },
+          my_target: {
+            files: {
+              'build/js/bundle.min.js': ['build/js/enketo-bundle.js']
+            }
+          }
+        },
         concurrent: {
             develop: {
                 tasks: [ 'shell:transformer', 'connect:server:keepalive', 'watch' ],
@@ -131,6 +142,7 @@ module.exports = grunt => {
     } );
 
     /*grunt.loadNpmTasks( 'grunt-sass' );*/
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
     grunt.registerTask( 'transforms', 'Creating forms.js', function() {
         const forms = {};
@@ -165,5 +177,6 @@ module.exports = grunt => {
     grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );
     grunt.registerTask( 'develop_orig', [ 'css', 'compile', 'concurrent:develop' ] );
     grunt.registerTask( 'develop', [ 'compile' ] );
+    grunt.registerTask( 'minify', [ 'uglify' ] );
     grunt.registerTask( 'default', [ 'css', 'compile' ] );
 };

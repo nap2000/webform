@@ -99,7 +99,7 @@ class Geopicker extends Widget {
         const that = this;
 
         // Start smap - get google api key from server
-        if(typeof smapConfig !== "undefined") {
+        if( typeof smapConfig !== 'undefined' ) {
             googleApiKey = smapConfig.googleApiKey;
         }
         // end smap
