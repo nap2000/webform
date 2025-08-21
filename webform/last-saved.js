@@ -1,5 +1,5 @@
 import settings from '../src/js/settings';
-import store from './store';
+import dbStore from './dbStore';
 
 /**
  * @typedef {import('../../../../app/models/record-model').EnketoRecord} EnketoRecord
@@ -26,34 +26,34 @@ const hasLastSavedInstance = (survey) =>
  */
 export const isLastSaveEnabled = (survey) =>
     settings.type === 'other' &&
-    store.available &&
+    dbStore.available &&
     hasLastSavedInstance(survey);
 
 /**
- * @param {string} enketoId
- * @return {Promise<EnketoRecord | void>}
+ * @param {string} id
+ * @return {Promise<LastSavedRecord | void>}    TODO
  */
-export const getLastSavedRecord = (enketoId) => {
-    if (!store.available || settings.type !== 'other') {
+export const getLastSavedRecord = (id) => {
+    if (!dbStore.available || settings.type !== 'other') {
         return Promise.resolve();
     }
 
-    return store.lastSavedRecords.get(enketoId).then((lastSavedRecord) => {
+    return dbStore.getlastSavedRecord(id).then((lastSavedRecord) => {
         if (lastSavedRecord != null) {
             delete lastSavedRecord._enketoId;
 
-            return Object.assign(lastSavedRecord, { enketoId });
+            return Object.assign(lastSavedRecord, { id });
         }
     });
 };
 
 /**
- * @param {string} enketoId
+ * @param {string} id
  * @return {Promise<void>}
  */
 export const removeLastSavedRecord = async (enketoId) => {
-    if (store.available) {
-        await store.lastSavedRecords.remove(enketoId);
+    if (dbStore.available) {
+        await dbStore.lastSavedRecords.remove(enketoId);
     }
 };
 
@@ -118,7 +118,7 @@ export const populateLastSavedInstances = (survey, lastSavedRecord) => {
  * @return {Promise<SetLastSavedRecordResult>}
  */
 export const setLastSavedRecord = (survey, record) => {
-    if (!store.available || settings.type !== 'other') {
+    if (!dbStore.available || settings.type !== 'other') {
         return Promise.resolve({
             survey: populateLastSavedInstances(survey),
         });
@@ -131,7 +131,7 @@ export const setLastSavedRecord = (survey, record) => {
     return (
         lastSavedRecord == null
             ? removeLastSavedRecord(survey.enketoId)
-            : store.lastSavedRecords.update(lastSavedRecord)
+            : dbStore.lastSavedRecords.update(lastSavedRecord)
     ).then(([lastSavedRecord] = []) => ({
         survey: populateLastSavedInstances(survey, lastSavedRecord),
         lastSavedRecord,

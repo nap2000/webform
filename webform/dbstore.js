@@ -4,26 +4,32 @@
      */
     "use strict";
 
-    let dbStore = {};
+    let dbStore = {
+        get available() {
+            return available;
+        }
+    };
+
     dbStore.logCounter = 0;
+    let available = false;
 
     /*
      * Variables for indexedDB Storage
      */
-    let webformDbVersion;
-    if(window.idbConfig) {
-        webformDbVersion = window.idbConfig.version;        // Share value with webforms page
-    } else {
-        webformDbVersion = 10;
-    }
+    let webformDbVersion = 11;
     let databaseName = "webform";
 
+    // Store attached media
     let mediaStoreName = "media";
     let mediaStore;
 
     // Store logs of events
     let logStoreName = 'logs';
     let logStore;
+
+    // Store last saved records
+    let lastSavedStoreName = 'lastSavedRecords';
+    let lastSavedStore;
 
     let recordStoreName = 'records';
     let assignmentIdx = 'assignment';
@@ -44,6 +50,7 @@
         return new Promise((resolve) => {
             if (typeof window.indexedDB !== 'undefined') {
                 open().then(() => {
+                    available = true;
                     resolve(true);
                 }).catch( (error) => {
                     console.log(error);
@@ -93,6 +100,7 @@
                     };
 
                     dbStore[databaseName] = openDb;
+                    dbStore["lastSavedRecords"] = openDb.lastSavedRecords;
                     resolve(openDb);
                 };
 
@@ -113,6 +121,13 @@
 
                     if (!upgradeDb.objectStoreNames.contains(logStoreName)) {
                         logStore = upgradeDb.createObjectStore(logStoreName);
+                    }
+
+                    if (!upgradeDb.objectStoreNames.contains(lastSavedStoreName)) {
+                        logStore = upgradeDb.createObjectStore(lastSavedStoreName, {
+                            keyPath: 'id',
+                                autoIncrement: false
+                        });
                     }
 
                     resolve(upgradeDb);
@@ -195,10 +210,34 @@
 
             var objectStore = transaction.objectStore(mediaStoreName);
             var request = objectStore.put(media.dataUrl, FM_STORAGE_PREFIX + "/" + dirname + "/" + media.name);
-            //db.close();
         });
 
     };
+
+    /*
+     * Save a last saved record
+     */
+
+    /*
+     * Get a last saved record
+     */
+    dbStore.getLastSavedRecord = function(action, id) {
+
+        open().then(function (db) {
+            console.log("Get last saved record: " + id);
+
+            let transaction = db.transaction([lastSavedStoreName], "read");
+            transaction.onerror = function (e) {
+                alert("Error: failed to open transaction to write get last saved record " + name);
+            };
+
+            let objectStore = transaction.objectStore(logStoreName);
+            return objectStore.get(id);
+
+        });
+
+    };
+
 
     /*
      * Write a log entry to the database
