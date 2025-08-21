@@ -125,7 +125,7 @@ export const setLastSavedRecord = (survey, record) => {
     }
 
     const lastSavedRecord = isLastSaveEnabled(survey)
-        ? { ...record, _enketoId: record.enketoId }
+        ? { ...record, id: record.enketoId }
         : null;
 
     return (

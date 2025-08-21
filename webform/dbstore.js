@@ -11,12 +11,17 @@
     };
 
     dbStore.logCounter = 0;
-    let available = false;
+    let available = typeof window.indexedDB !== 'undefined';
 
     /*
      * Variables for indexedDB Storage
      */
-    let webformDbVersion = 11;
+    let webformDbVersion;
+    if(window.idbConfig) {                                  // set in idbconfig.js in the smapServer module
+        webformDbVersion = window.idbConfig.version;        // Share value with webforms page
+    } else {
+        webformDbVersion = 11;
+    }
     let databaseName = "webform";
 
     // Store attached media
@@ -48,9 +53,8 @@
      */
     dbStore.isSupported = function() {
         return new Promise((resolve) => {
-            if (typeof window.indexedDB !== 'undefined') {
+            if (available) {
                 open().then(() => {
-                    available = true;
                     resolve(true);
                 }).catch( (error) => {
                     console.log(error);
@@ -60,7 +64,6 @@
                 resolve(false);
             }
         });
-
     };
 
     /**
@@ -217,6 +220,7 @@
     /*
      * Save a last saved record
      */
+    // TODO
 
     /*
      * Get a last saved record
