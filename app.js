@@ -7,7 +7,7 @@ import $ from 'jquery';
 window.jQuery = $; // required for bootstrap-timepicker
 
 // WebForm
-import fileStore from './webform/file-storage';
+import dbStore from './webform/dbstore';
 import recordStore from './webform/store';
 import controller from './webform/controller-webform';
 import { t }  from './src/js/translator';
@@ -22,7 +22,7 @@ if(typeof surveyData !== "undefined") {
         // Start form
         controller.init('form.or:eq(0)', {
             recordStore: recordStore,
-            fileStore: fileStore,
+            dbStore: dbStore,
             submitInterval: 300 * 1000
         });
 

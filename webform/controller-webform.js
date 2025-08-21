@@ -16,9 +16,9 @@
     import './plugin';
     import { getLastSavedRecord, populateLastSavedInstances } from './last-saved';
 
-    var form, $form, $formprogress, formSelector, originalSurveyData, store, fileStore, startEditData;
+    var form, $form, $formprogress, formSelector, originalSurveyData, store, dbStore, startEditData;
 
-    var fileStoreSupported = false;
+    var dbStoreSupported = false;
     var submitInProgress = false;
     var manualSubmitInProgress = false;
 
@@ -43,7 +43,7 @@
             originalSurveyData.modelStr = surveyData.modelStr;
 
             options = options || {};
-            fileStore = options.fileStore;
+            dbStore = options.dbStore;
             store = options.recordStore || null;
 
             // Rename instanceStrToEdit to instanceStr as used by Enketo Core
@@ -83,15 +83,15 @@
              * Initialise file manager if it is supported in this browser
              * The fileSystems API is used to store attachments prior to upload when operating offline
              */
-            fileStore.isSupported().then(supported => {
+            dbStore.isSupported().then(supported => {
                 if (supported) {
-                    fileStoreSupported = true;
+                    dbStoreSupported = true;
                     if (!store || store.getRecordList().length === 0) {
-                        fileStore.delete(undefined, true);
+                        dbStore.delete(undefined, true);
                     }
 
                 } else {
-                    fileStoreSupported = false;
+                    dbStoreSupported = false;
                     gui.alert('Warning: Storage is not supported by your browser. ' +
                         'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
                         'has been sent sucessfully',
@@ -287,17 +287,17 @@
                         var getFileClosure = function(i) {
                             fileManager.getDataUrl(media[i]).then(function(url) {
                                 media[i].dataUrl = url;
-                                fileStore.saveFile(media[i], dirname);
+                                dbStore.saveFile(media[i], dirname);
                             });
                         }
                         var dirname = form.instanceID;
                         if (media.length > 0) {
-                            fileStore.delete(dirname, false);        // Remove any existing media
+                            dbStore.delete(dirname, false);        // Remove any existing media
                             for (i = 0; i < media.length; i++) {
                                 if(!media[i].dataUrl) {
                                     getFileClosure(i, media[i]);
                                 } else {
-                                    fileStore.saveFile(media[i], dirname);
+                                    dbStore.saveFile(media[i], dirname);
                                 }
 
                                 count++;
@@ -311,7 +311,7 @@
                         }
 
                         if(draft) {
-                            fileStore.writeLog("save", recordName, "", record.accessKey);
+                            dbStore.writeLog("save", recordName, "", record.accessKey);
                         }
 
                         // Remove any settings associated with an instance
@@ -382,7 +382,7 @@
             task.record.data = record.data;
 
             // TODO set ID it we are editing an existing task
-            fileStore.setRecord(task, undefined).catch((saveResult) => {
+            dbStore.setRecord(task, undefined).catch((saveResult) => {
                 gui.alert('Error trying to save data in mywork database (message: ' + saveResult + ')');
             });
 
@@ -451,7 +451,7 @@
          */
 
         //only upload the last one
-        submit.send(fileStore, "submitEditedRecord", record, true, autoClose, false).then((response) => {
+        submit.send(dbStore, "submitEditedRecord", record, true, autoClose, false).then((response) => {
             if(submit.isSuccess(response.status)) {
                 resetForm(true);
             }
@@ -480,7 +480,7 @@
      */
     function canSaveRecord() {
 
-        if (store.isSupported() && fileStoreSupported) {
+        if (store.isSupported() && dbStoreSupported) {
             console.log("Can Save record:");
             return true;
         } else {
@@ -494,7 +494,7 @@
         if (!record.draft) {
 
             markSubmit('start', 'manual');
-            submit.send(fileStore, "submitOneForced", {
+            submit.send(dbStore, "submitOneForced", {
                 key: recordName,
                 data: record.data,
                 assignmentId: record.assignmentId,
@@ -534,7 +534,7 @@
                 gui.feedback(t('formfooter.submit.btn'));
             }
             for (i = 0; i < records.length; i++) {
-                await submit.send(fileStore, "submitQueue", records[i], false, false, true, manual);
+                await submit.send(dbStore, "submitQueue", records[i], false, false, true, manual);
             }
         }
         markSubmit('stop', 'auto');
@@ -562,18 +562,18 @@
                 instanceID = model.instanceID;
             }
 
-            fileStore.delete(instanceID, false);
+            dbStore.delete(instanceID, false);
 
             if (store) {
                 store.removeRecord(recordName);
             }
 
             // Record the deletion
-            fileStore.writeLog("delete", recordName, "", instanceID);
+            dbStore.writeLog("delete", recordName, "", instanceID);
         }
 
         // Just to be sure delete all attachments
-        fileStore.delete(undefined, true);
+        dbStore.delete(undefined, true);
 
     }
 
@@ -640,17 +640,17 @@
 
         function gatherFiles(directory) {
 
-	        $fileNodes = ( fileStore ) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
+	        $fileNodes = ( dbStore ) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
 
             var todo = [];
-            if (fileStore) {
+            if (dbStore) {
                 $fileNodes.each(function () {
 
                     fileO = {
                         fileName: $(this).text()
                     };
 
-                    todo.push(fileStore.retrieveFile(directory, fileO));
+                    todo.push(dbStore.retrieveFile(directory, fileO));
 
                 }).toArray();
             }
@@ -700,7 +700,7 @@
                         // Commented out 14/1/2019 during upgrade - uncommented 25/2/2020
                         } else if (media[fileIndex].dataUrl) {
                             // immediate send data is still in dataUrl -- not any more it seems
-                            blob = fileStore.dataURLtoBlob(media[fileIndex].dataUrl);
+                            blob = dbStore.dataURLtoBlob(media[fileIndex].dataUrl);
                             name = media[fileIndex].name;
                         } else {
                             // Assume the media file is the blob
@@ -887,9 +887,9 @@
 
         //remove filesystem folder after successful submission
         $(document).on('submissionsuccess', function (ev, recordName, instanceID) {
-            fileStore.isSupported().then(supported => {
+            dbStore.isSupported().then(supported => {
                 if(supported) {
-                    fileStore.delete(instanceID, false);
+                    dbStore.delete(instanceID, false);
                 }
             });
             if (store) {

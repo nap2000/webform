@@ -12,7 +12,7 @@
 import $ from 'jquery';
 
 import { getFilename, dataUriToBlobSync } from './utils';
-import fileStore from '../../webform/file-storage';
+import dbStore from '../../webform/dbstore';
 import { t } from 'enketo/translator';
 const URL_RE = /[a-zA-Z0-9+-.]+?:\/\//;
 
@@ -61,10 +61,10 @@ fileManager.getFileUrl = subject => new Promise( ( resolve, reject ) => {
         } else if ( typeof subject === 'string' ) {
 	    if(subject.startsWith('http')) {                        // some random URL
                 resolve( subject );
-	    } else fileStore.isSupported().then(supported => {
+	    } else dbStore.isSupported().then(supported => {
 	        if(supported) {
                 var dirname = window.gLoadedInstanceID;
-                fileStore.getFile(subject, dirname).then(function (url) {
+                dbStore.getFile(subject, dirname).then(function (url) {
                     if (url) {
                         resolve(url);
                     } else {

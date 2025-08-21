@@ -4,8 +4,8 @@
      */
     "use strict";
 
-    let fileStore = {};
-    fileStore.logCounter = 0;
+    let dbStore = {};
+    dbStore.logCounter = 0;
 
     /*
      * Variables for indexedDB Storage
@@ -40,7 +40,7 @@
      * No need to check for support of local storage this is checked by "store"
      * @return {Boolean}
      */
-    fileStore.isSupported = function() {
+    dbStore.isSupported = function() {
         return new Promise((resolve) => {
             if (typeof window.indexedDB !== 'undefined') {
                 open().then(() => {
@@ -63,8 +63,8 @@
     let open = function() {
         return new Promise((resolve, reject) => {
 
-            if(typeof fileStore[databaseName] !== 'undefined') {
-                resolve(fileStore[databaseName]);
+            if(typeof dbStore[databaseName] !== 'undefined') {
+                resolve(dbStore[databaseName]);
                 return;
             }
 
@@ -92,7 +92,7 @@
                         console.error("Database error: " + e.target.error.message);
                     };
 
-                    fileStore[databaseName] = openDb;
+                    dbStore[databaseName] = openDb;
                     resolve(openDb);
                 };
 
@@ -130,7 +130,7 @@
      * Delete all media with the specified prefix
      * An explicit boolean "all" is added in case the function is called accidnetially with an undefined directory
      */
-    fileStore.delete = function(dirname, all) {
+    dbStore.delete = function(dirname, all) {
 
 
         if (typeof dirname !== "undefined" || all) {
@@ -183,7 +183,7 @@
     /*
      * Save an attachment to idb
      */
-    fileStore.saveFile = function(media, dirname) {
+    dbStore.saveFile = function(media, dirname) {
 
         open().then(function (db) {
             console.log("save file: " + media.name + " : " + dirname);
@@ -203,7 +203,7 @@
     /*
      * Write a log entry to the database
      */
-    fileStore.writeLog = function(action, name, status, instanceid) {
+    dbStore.writeLog = function(action, name, status, instanceid) {
 
         let oneday = 1000 * 3600 * 24;
 
@@ -217,11 +217,11 @@
 
             // Ensure date is unique as it is used as a unique key
             let date = new Date();
-            date.setMilliseconds(date.getMilliseconds() + fileStore.logCounter);
-            if(fileStore.logCounter > 100) {
-                fileStore.logCounter = 0;
+            date.setMilliseconds(date.getMilliseconds() + dbStore.logCounter);
+            if(dbStore.logCounter > 100) {
+                dbStore.logCounter = 0;
             } else {
-                fileStore.logCounter++;
+                dbStore.logCounter++;
             }
 
             let logItem = {
@@ -246,7 +246,7 @@
     /*
      * Get a file from idb or local storage
      */
-    fileStore.getFile = function(name, dirname) {
+    dbStore.getFile = function(name, dirname) {
 
         return new Promise((resolve, reject) => {
 
@@ -281,7 +281,7 @@
     /*
      * Obtains blob for specified file
      */
-    fileStore.retrieveFile = function(dirname, file) {
+    dbStore.retrieveFile = function(dirname, file) {
 
         return new Promise((resolve, reject) => {
 
@@ -289,8 +289,8 @@
 		        fileName: file.fileName
 	        };
 
-	        fileStore.getFile(file.fileName, dirname).then(function(objectUrl){
-	            updatedFile.blob = fileStore.dataURLtoBlob(objectUrl);
+	        dbStore.getFile(file.fileName, dirname).then(function(objectUrl){
+	            updatedFile.blob = dbStore.dataURLtoBlob(objectUrl);
 	            updatedFile.size = updatedFile.blob.size;
 	            resolve(updatedFile);
 	        });
@@ -301,7 +301,7 @@
     };
 
     // From: http://stackoverflow.com/questions/6850276/how-to-convert-dataurl-to-file-object-in-javascript
-    fileStore.dataURLtoBlob = function(dataurl) {
+    dbStore.dataURLtoBlob = function(dataurl) {
         if(dataurl) {
             var arr = dataurl.split(',');
             var mime;
@@ -328,7 +328,7 @@
 
     /*
      * Local functions
-     * May be called from a location that has not intialised fileStore (ie fileManager)
+     * May be called from a location that has not intialised dbStore (ie fileManager)
      */
     function getFileFromIdb(key) {
         return new Promise((resolve, reject) => {
@@ -352,7 +352,7 @@
     /*
      * Functions to interoperate with mywork
      */
-    fileStore.setRecord = function(record, id) {
+    dbStore.setRecord = function(record, id) {
         return new Promise((resolve, reject) => {
             console.log("set record: ");
             open().then((db) => {
@@ -378,7 +378,7 @@
     };
 
 
-    export default fileStore;
+    export default dbStore;
 
 
 

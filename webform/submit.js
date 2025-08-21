@@ -22,7 +22,7 @@ import $ from "jquery";
 import store from "./store";
 import gui from "./gui";
 import {t} from "../src/js/translator";
-import fileStore from "./file-storage";
+import dbStore from "./dbstore";
 
 let submit = {};
 let HTTP_CREATED = 201;
@@ -30,7 +30,7 @@ let HTTP_ACCEPTED = 202;
 
 let contentLength = 10000000;   // 10MB try to keep uploads within this value
 
-submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, saved, manual) {
+submit.send = function(dbStore, calledFrom, record, inMemoryMedia, autoClose, saved, manual) {
 
     console.log("submit called from: " + calledFrom);
 
@@ -60,13 +60,13 @@ submit.send = function(fileStore, calledFrom, record, inMemoryMedia, autoClose, 
                 } else {
                     media = submit.getMedia();
                 }
-                sendWithMedia(fileStore, record, xmlData, media).then(response => {
+                sendWithMedia(dbStore, record, xmlData, media).then(response => {
                     sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg);
                     resolve(response);
                 })
             } else {
-                getMediaFromStore(fileStore, model.instanceID, model).then( media => {
-                    sendWithMedia(fileStore, record, xmlData, media).then(response => {
+                getMediaFromStore(dbStore, model.instanceID, model).then( media => {
+                    sendWithMedia(dbStore, record, xmlData, media).then(response => {
                         sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg);
                         resolve(response);
                     })
@@ -99,11 +99,11 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
     }
 
     // Log the response
-    fileStore.writeLog("submit", record.name, response.status, record.instanceID);
+    dbStore.writeLog("submit", record.name, response.status, record.instanceID);
 
 }
 
-async function sendWithMedia(fileStore, record, xmlData, media) {
+async function sendWithMedia(dbStore, record, xmlData, media) {
 
     var content,
         fileIndex = 0,
@@ -142,7 +142,7 @@ async function sendWithMedia(fileStore, record, xmlData, media) {
                 // Commented out 14/1/2019 during upgrade - uncommented 25/2/2020
             } else if (media[fileIndex].dataUrl) {
                 // immediate send data is still in dataUrl
-                blob = fileStore.dataURLtoBlob(media[fileIndex].dataUrl);
+                blob = dbStore.dataURLtoBlob(media[fileIndex].dataUrl);
                 name = media[fileIndex].name;
             } else {
                 // Assume the media file is the blob
@@ -214,22 +214,22 @@ submit.isSuccess = function(status) {
     return status == HTTP_CREATED || status == HTTP_ACCEPTED;
 };
 
-function getMediaFromStore(fileStore, directory, model) {
+function getMediaFromStore(dbStore, directory, model) {
 
     return new Promise((resolve, reject) => {
-        var $fileNodes = (fileStore) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
+        var $fileNodes = (dbStore) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
 
         var todo = [],
             fileO,
             media = [],
             notfound = [];
 
-        if (fileStore) {
+        if (dbStore) {
             $fileNodes.each(function () {
                 fileO = {
                     fileName: $(this).text()
                 };
-                todo.push(fileStore.retrieveFile(directory, fileO));
+                todo.push(dbStore.retrieveFile(directory, fileO));
             });
         } else {
             reject("Database store not found");
