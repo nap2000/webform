@@ -51,9 +51,9 @@ export const getLastSavedRecord = (id) => {
  * @param {string} id
  * @return {Promise<void>}
  */
-export const removeLastSavedRecord = async (enketoId) => {
+export const removeLastSavedRecord = async (id) => {
     if (dbStore.available) {
-        await dbStore.lastSavedRecords.remove(enketoId);
+        await dbStore.lastSavedRecords.remove(id);
     }
 };
 
@@ -66,7 +66,7 @@ const domParser = new DOMParser();
  */
 const getLastSavedInstanceDocument = (survey, lastSavedRecord) => {
     if (lastSavedRecord == null || !isLastSaveEnabled(survey)) {
-        const model = domParser.parseFromString(survey.model, 'text/xml');
+        const model = domParser.parseFromString(surveyData.modelStr, 'text/xml');
         const modelDefault = model
             .querySelector('model > instance > *')
             .cloneNode(true);
@@ -125,13 +125,13 @@ export const setLastSavedRecord = (survey, record) => {
     }
 
     const lastSavedRecord = isLastSaveEnabled(survey)
-        ? { ...record, id: record.enketoId }
+        ? { ...record, _surveyId: surveyData.surveyIdent }
         : null;
 
     return (
         lastSavedRecord == null
-            ? removeLastSavedRecord(survey.enketoId)
-            : dbStore.lastSavedRecords.update(lastSavedRecord)
+            ? removeLastSavedRecord(surveyData.surveyIdent)
+            : dbStore.setLastSavedRecord(lastSavedRecord)
     ).then(([lastSavedRecord] = []) => ({
         survey: populateLastSavedInstances(survey, lastSavedRecord),
         lastSavedRecord,

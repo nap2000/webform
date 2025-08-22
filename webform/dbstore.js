@@ -20,26 +20,22 @@
     if(window.idbConfig) {                                  // set in idbconfig.js in the smapServer module
         webformDbVersion = window.idbConfig.version;        // Share value with webforms page
     } else {
-        webformDbVersion = 11;
+        webformDbVersion = 15;
     }
     let databaseName = "webform";
 
     // Store attached media
     let mediaStoreName = "media";
-    let mediaStore;
 
     // Store logs of events
     let logStoreName = 'logs';
-    let logStore;
 
     // Store last saved records
     let lastSavedStoreName = 'lastSavedRecords';
-    let lastSavedStore;
 
     let recordStoreName = 'records';
     let assignmentIdx = 'assignment';
     let assignmentIdxPath = 'assignment.assignment_id';
-    let recordStore;
 
     /*
      * Variables for fall back local storage
@@ -111,11 +107,11 @@
                     let upgradeDb = e.target.result;
 
                     if (!upgradeDb.objectStoreNames.contains(mediaStoreName)) {
-                        mediaStore = upgradeDb.createObjectStore(mediaStoreName);
+                        upgradeDb.createObjectStore(mediaStoreName);
                     }
 
                     if (!upgradeDb.objectStoreNames.contains(recordStoreName)) {
-                        recordStore = upgradeDb.createObjectStore(recordStoreName, {
+                        let recordStore = upgradeDb.createObjectStore(recordStoreName, {
                             keyPath: 'id',
                             autoIncrement: true
                         });
@@ -123,13 +119,13 @@
                     }
 
                     if (!upgradeDb.objectStoreNames.contains(logStoreName)) {
-                        logStore = upgradeDb.createObjectStore(logStoreName);
+                        upgradeDb.createObjectStore(logStoreName);
                     }
 
                     if (!upgradeDb.objectStoreNames.contains(lastSavedStoreName)) {
-                        logStore = upgradeDb.createObjectStore(lastSavedStoreName, {
-                            keyPath: 'id',
-                                autoIncrement: false
+                        upgradeDb.createObjectStore(lastSavedStoreName, {
+                            keyPath: '_surveyId',
+                            autoIncrement: false,
                         });
                     }
 
@@ -220,7 +216,22 @@
     /*
      * Save a last saved record
      */
-    // TODO
+    dbStore.setLastSavedRecord = function(record) {
+
+        return open().then(function (db) {
+            console.log("Set last saved record");
+
+            let transaction = db.transaction([lastSavedStoreName], "readwrite");
+            transaction.onerror = function (e) {
+                alert("Error: failed to open transaction to write get last saved record " + name);
+            };
+
+            let objectStore = transaction.objectStore(lastSavedStoreName);
+            objectStore.put(record);
+
+        });
+    };
+
 
     /*
      * Get a last saved record
@@ -239,7 +250,6 @@
             return objectStore.get(id);
 
         });
-
     };
 
 
