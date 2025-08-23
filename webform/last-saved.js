@@ -12,22 +12,21 @@ import dbStore from './dbStore';
 export const LAST_SAVED_VIRTUAL_ENDPOINT = 'jr://instance/last-saved';
 
 /**
- * @param {Survey} survey
  * @return {boolean}
  */
-const hasLastSavedInstance = (survey) =>
-    Array.isArray(survey.externalData) &&
-    survey.externalData.some(
+const hasLastSavedInstance = () =>
+    Array.isArray(surveyData.external) &&
+    surveyData.external.some(
         (item) => item?.src === LAST_SAVED_VIRTUAL_ENDPOINT
     );
 
 /**
  * @param {Survey} survey
  */
-export const isLastSaveEnabled = (survey) =>
+export const isLastSaveEnabled = () =>
     settings.type === 'other' &&
     dbStore.available &&
-    hasLastSavedInstance(survey);
+    hasLastSavedInstance();
 
 /**
  * @param {string} id
@@ -38,12 +37,14 @@ export const getLastSavedRecord = (id) => {
         return Promise.resolve();
     }
 
-    return dbStore.getlastSavedRecord(id).then((lastSavedRecord) => {
-        if (lastSavedRecord != null) {
-            delete lastSavedRecord._enketoId;
+    return new Promise((resolve, reject) => {
+        dbStore.getLastSavedRecord( id ).then( ( lastSavedRecord ) => {
+            if (lastSavedRecord != null) {
+                delete lastSavedRecord._enketoId;
 
-            return Object.assign(lastSavedRecord, { id });
-        }
+                resolve(Object.assign( lastSavedRecord, { id } ));
+            }
+        } );
     });
 };
 
@@ -64,8 +65,8 @@ const domParser = new DOMParser();
  * @param {EnketoRecord} [lastSavedRecord]
  * @return {XMLDocument}
  */
-const getLastSavedInstanceDocument = (survey, lastSavedRecord) => {
-    if (lastSavedRecord == null || !isLastSaveEnabled(survey)) {
+const getLastSavedInstanceDocument = (lastSavedRecord) => {
+    if (lastSavedRecord == null || !isLastSaveEnabled()) {
         const model = domParser.parseFromString(surveyData.modelStr, 'text/xml');
         const modelDefault = model
             .querySelector('model > instance > *')
@@ -81,29 +82,24 @@ const getLastSavedInstanceDocument = (survey, lastSavedRecord) => {
 };
 
 /**
- * @param {Survey} survey
  * @param {EnketoRecord} [lastSavedRecord]
- * @return {Survey}
  */
-export const populateLastSavedInstances = (survey, lastSavedRecord) => {
-    if (!hasLastSavedInstance(survey)) {
-        return survey;
+export const populateLastSavedInstances = (lastSavedRecord) => {
+    if (!hasLastSavedInstance()) {
+        return;
     }
 
-    const lastSavedInstance = getLastSavedInstanceDocument(
-        survey,
-        lastSavedRecord
-    );
+    const lastSavedInstance = getLastSavedInstanceDocument(lastSavedRecord);
 
-    const externalData = survey.externalData.map((item) => {
+    const externalData = surveyData.external.map((item) => {
         if (item?.src === LAST_SAVED_VIRTUAL_ENDPOINT) {
             return { ...item, xml: lastSavedInstance };
         }
 
         return item;
     });
+    surveyData.external = externalData;
 
-    return { ...survey, externalData };
 };
 
 /**

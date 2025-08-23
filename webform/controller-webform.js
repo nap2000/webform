@@ -8,7 +8,6 @@
     import { FormModel } from '../src/js/form-model';
 
     import gui from './gui';
-    //import connection from './connection';
     import submit from './submit';
     import $ from 'jquery';
 
@@ -38,10 +37,6 @@
                 }
             };
 
-            //formSelector = selector;
-            originalSurveyData = {};
-            originalSurveyData.modelStr = surveyData.modelStr;
-
             options = options || {};
             dbStore = options.dbStore;
             store = options.recordStore || null;
@@ -49,6 +44,21 @@
             // Rename instanceStrToEdit to instanceStr as used by Enketo Core
             surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
             surveyData.instanceStr = surveyData.instanceStrToEdit || null;
+
+                /*
+                [
+                {
+                    id: '__last-saved',
+                    src: 'jr://instance/last-saved'
+                }
+            ]*/
+
+            /*
+            * Remember the original survey data as it will be used after this form, with potentially an initial instance, has been submitted
+            */
+            originalSurveyData = {};
+            originalSurveyData.modelStr = surveyData.modelStr;
+            originalSurveyData.external = surveyData.external;
 
             // Open an existing record if we need to
             if (store.isSupported()) {
@@ -169,27 +179,45 @@
             message = 'There are unsaved changes, would you like to continue <strong>without</strong> saving those?';
             choices = {
                 posAction: function () {
-                    resetForm(true);
+                    _resetForm();
                 }
             };
             gui.confirm(message, choices);
         } else {
-            setDraftStatus(false);
-            updateActiveRecord(null);
-
-            surveyData.instanceStrToEditId = null;
-
-            form.resetView();
-            form = new Form('form.or:eq(0)', originalSurveyData);
-
-            form.init();
-            //$form = form.getView().$;
-	        $form = $( 'form.or' );
-            $formprogress = $('.form-progress');
-
-            // smap save the initial starting point
-            startEditData = form.getDataStr(true, true);
+           _resetForm();
         }
+    }
+
+    /*
+     * The form can be reset so proceed
+     */
+    function _resetForm() {
+
+        getLastSavedRecord(surveyData.surveyIdent)
+            .then((lastSavedRecord) =>
+                populateLastSavedInstances(lastSavedRecord)
+            )
+            .then((survey) => {
+                setDraftStatus(false);
+                updateActiveRecord(null);
+
+                surveyData.instanceStrToEditId = null;
+
+                form.resetView();
+
+                form = new Form('form.or:eq(0)', {
+                    originalSurveyData
+                } );
+
+                form.init();
+                //$form = form.getView().$;
+                $form = $( 'form.or' );
+                $formprogress = $('.form-progress');
+
+                // smap save the initial starting point
+                startEditData = form.getDataStr(true, true);
+            });
+
     }
 
     /*
@@ -1184,6 +1212,7 @@
         }
 
     }
+
 
     export default controller;
 

@@ -232,23 +232,25 @@
         });
     };
 
-
     /*
      * Get a last saved record
      */
-    dbStore.getLastSavedRecord = function(action, id) {
+    dbStore.getLastSavedRecord = function(id) {
 
-        open().then(function (db) {
-            console.log("Get last saved record: " + id);
+        return new Promise((resolve, reject) => {
+            open().then( function( db ) {
+                console.log( "Get last saved record: " + id );
 
-            let transaction = db.transaction([lastSavedStoreName], "read");
-            transaction.onerror = function (e) {
-                alert("Error: failed to open transaction to write get last saved record " + name);
-            };
+                let transaction = db.transaction( [ lastSavedStoreName ], "readonly" );
+                transaction.onerror = function( e ) {
+                    alert( "Error: failed to open transaction to write get last saved record " + name );
+                    reject(e);
+                };
 
-            let objectStore = transaction.objectStore(logStoreName);
-            return objectStore.get(id);
+                let objectStore = transaction.objectStore( lastSavedStoreName );
+                resolve(objectStore.get( id ));
 
+            } );
         });
     };
 
