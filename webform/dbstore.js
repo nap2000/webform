@@ -218,17 +218,20 @@
      */
     dbStore.setLastSavedRecord = function(record) {
 
-        return open().then(function (db) {
-            console.log("Set last saved record");
+        return new Promise((resolve, reject) => {
+            open().then( function( db ) {
+                console.log( "Set last saved record" );
 
-            let transaction = db.transaction([lastSavedStoreName], "readwrite");
-            transaction.onerror = function (e) {
-                alert("Error: failed to open transaction to write get last saved record " + name);
-            };
+                let transaction = db.transaction( [ lastSavedStoreName ], "readwrite" );
+                transaction.objectStore( lastSavedStoreName ).put( record );
+                transaction.onerror = function( e ) {
+                    reject(e);
+                };
+                transaction.onsuccess = function (e) {
+                    resolve();
+                };
 
-            let objectStore = transaction.objectStore(lastSavedStoreName);
-            objectStore.put(record);
-
+            } );
         });
     };
 
@@ -248,7 +251,15 @@
                 };
 
                 let objectStore = transaction.objectStore( lastSavedStoreName );
-                resolve(objectStore.get( id ));
+                let request = objectStore.get( id );
+
+                request.onerror = function (e) {
+                    reject("Error getting last record");
+                };
+
+                request.onsuccess = function (e) {
+                    resolve(request.result);
+                };
 
             } );
         });

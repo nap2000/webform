@@ -8,11 +8,6 @@ import event from './event';
 import { Nodeset } from './nodeset';
 import bindJsEvaluator from './xpath-evaluator-binding';  // smap change path
 
-import {
-    getLastSavedRecord,
-    LAST_SAVED_VIRTUAL_ENDPOINT, populateLastSavedInstances,
-} from '../../webform/last-saved';
-
 const REPEAT_COMMENT_PREFIX = 'repeat:/';
 const INSTANCE = /instance\(\s*(["'])((?:(?!\1)[A-z0-9.\-_]+))\1\s*\)/g;
 // smap add functions get_media()
@@ -117,44 +112,36 @@ FormModel.prototype.init = function() {
     try {
         id = 'model';
         // The default model
-        this.xml = parser.parseFromString( this.data.modelStr, 'text/xml' );
+        this.xml = parser.parseFromString( surveyData.modelStr, 'text/xml' );
         this.throwParserErrors( this.xml, this.data.modelStr );
 
         /*
          * Last Saved
+         * Add external data to model
          */
-        getExternalData(this.xml).then((instances) => {
-            this.data.external = instances;
-            if(this.data.external.length > 0){
-                getLastSavedRecord(surveyData.surveyIdent)
-                    .then((lastSavedRecord) =>
-                        populateLastSavedInstances(lastSavedRecord)     // Add the data from the db store
-                    )
-                    .then((survey) => {
-                        // Add external data to model
-                        this.data.external.forEach( instance => {
-                            id = instance.id ? `instance "${instance.id}"` : 'instance "unknown"';
-                            instanceDoc = that.getSecondaryInstance( instance.id );
+        if (this.data.external.length > 0) {
+            this.data.external.forEach( instance => {
+                id = instance.id ? `instance "${instance.id}"` : 'instance "unknown"';
+                instanceDoc = that.getSecondaryInstance( instance.id );
 
-                            // remove any existing content  TODO remove this and remove existing content
-                            secondaryInstanceChildren = instanceDoc.children;
-                            for ( i = secondaryInstanceChildren.length - 1; i >= 0; i-- ) {
-                                instanceDoc.removeChild( secondaryInstanceChildren[ i ] );
-                            }
-                            let rootEl;
-                            if ( instance.xml instanceof XMLDocument ) {
-                                // Create a clone of the root node
-                                rootEl = that.xml.importNode( instance.xml.documentElement, true );
-                            }
-                            if ( rootEl ) {
-                                instanceDoc.appendChild( rootEl );
-                            }
-                        } );
-                    });
-            }
-        });
+                // remove any existing content  TODO remove this and remove existing content
+                secondaryInstanceChildren = instanceDoc.children;
+                for (i = secondaryInstanceChildren.length - 1; i >= 0; i--) {
+                    instanceDoc.removeChild( secondaryInstanceChildren[i] );
+                }
+                let rootEl;
+                if (instance.xml instanceof XMLDocument) {
+                    // Create a clone of the root node
+                    rootEl = that.xml.importNode( instance.xml.documentElement, true );
+                }
+                if (rootEl) {
+                    instanceDoc.appendChild( rootEl );
+                }
+            } );
+        }
 
-        // TODO: in the future, we should search for jr://instance/session and
+
+            // TODO: in the future, we should search for jr://instance/session and
         // populate that one. This is just moving in that direction to implement preloads.
         this.createSession( '__session', this.data.session );
     } catch ( e ) {
@@ -1535,34 +1522,6 @@ FormModel.prototype.evaluate = function( expr, resTypeStr, selector, index, tryN
 
         return response;
     }
-};
-
-/**
- * @param {Document} model
- * @param {GetExternalDataOptions} [options]
- * @return {Promise<SurveyExternalData[]>}
- */
-const getExternalData = async (model, options = {}) => {
-
-    /** @type {Array<Promise<SurveyExternalData>>} */
-    const tasks = [];
-    const externalInstances = [
-        ...model.querySelectorAll('instance[id][src]'),
-    ].map((instance) => ({
-        id: instance.id,
-        src: instance.getAttribute('src'),
-    }));
-
-    externalInstances.forEach((instance, index) => {
-        const { src } = instance;
-
-        if (src === LAST_SAVED_VIRTUAL_ENDPOINT) {
-            tasks.push(Promise.resolve(instance));
-        }
-
-    });
-
-    return Promise.all(tasks);
 };
 
 /**

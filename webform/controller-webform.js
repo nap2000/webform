@@ -13,9 +13,11 @@
 
     import fileManager from '../src/js/file-manager';
     import './plugin';
-    import { getLastSavedRecord, populateLastSavedInstances } from './last-saved';
+    import { getLastSavedRecord, populateLastSavedInstances, LAST_SAVED_VIRTUAL_ENDPOINT } from './last-saved';
 
-    var form, $form, $formprogress, formSelector, originalSurveyData, store, dbStore, startEditData;
+    const parser = new DOMParser();
+
+    var form, $form, $formprogress, formSelector, store, dbStore, startEditData;
 
     var dbStoreSupported = false;
     var submitInProgress = false;
@@ -45,20 +47,14 @@
             surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
             surveyData.instanceStr = surveyData.instanceStrToEdit || null;
 
-                /*
-                [
-                {
-                    id: '__last-saved',
-                    src: 'jr://instance/last-saved'
-                }
-            ]*/
+            /*
+             * Get the external data
+             */
+            getExternalData();
 
             /*
-            * Remember the original survey data as it will be used after this form, with potentially an initial instance, has been submitted
-            */
-            originalSurveyData = {};
-            originalSurveyData.modelStr = surveyData.modelStr;
-            originalSurveyData.external = surveyData.external;
+           * Remember the original survey data as it will be used after this form, with potentially an initial instance, has been submitted
+           */
 
             // Open an existing record if we need to
             if (store.isSupported()) {
@@ -104,11 +100,10 @@
                     dbStoreSupported = false;
                     gui.alert('Warning: Storage is not supported by your browser. ' +
                         'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
-                        'has been sent sucessfully',
+                        'has been sent successfully',
                         undefined, 'normal', undefined);
                 }
             });
-
 
             // Create the form
             formSelector = 'form.or:eq(0)';
@@ -193,10 +188,7 @@
      */
     function _resetForm() {
 
-        getLastSavedRecord(surveyData.surveyIdent)
-            .then((lastSavedRecord) =>
-                populateLastSavedInstances(lastSavedRecord)
-            )
+        setupLastSaved()
             .then((survey) => {
                 setDraftStatus(false);
                 updateActiveRecord(null);
@@ -206,7 +198,9 @@
                 form.resetView();
 
                 form = new Form('form.or:eq(0)', {
-                    originalSurveyData
+                    modelStr: surveyData.modelStr,
+                    external: surveyData.external,
+                    xml: surveyData.xml
                 } );
 
                 form.init();
@@ -604,160 +598,6 @@
         dbStore.delete(undefined, true);
 
     }
-
-    /**
-     * Asynchronous function that builds up a form data array including media files
-     * @param { { name: string, data: string } } record[ description ]
-     * @param {{success: Function, error: Function}} callbacks
-     *
-    function prepareFormDataArray(record, callbacks, immediate) {
-        var j, k, l, xmlData, formData, model, $fileNodes, fileIndex, fileO, recordPrepped,
-            count = 0,
-            sizes = [],
-            batches = [],
-            media = [];
-
-        if (record.data) {
-            model = new FormModel(record.data);
-            model.init();
-            xmlData = model.getStr();
-            xmlData = submit.fixIosMediaNames(xmlData); // ios names all media image.jpg, Make each name unique
-        } else {
-            callbacks.success(record);	// d1504 existing record from record store all pre-prepared
-        }
-
-        function basicRecordPrepped(batchesLength, batchIndex) {
-            if (xmlData) {
-                formData = new FormData();
-                formData.append('xml_submission_data', xmlData);
-                if (record.assignmentId) {
-                    formData.append('assignment_id', record.assignmentId);
-                }
-            } else {
-                formData = record.formData;
-            }
-            return {
-                name: record.key,
-                instanceID: model.instanceID,		// Use the instance ID that is built into the form
-                formData: formData,
-                batches: batchesLength,
-                batchIndex: batchIndex,
-                assignmentId: record.assignmentId,				 	// d1504
-                instanceStrToEditId: record.instanceStrToEditId,	// d1505
-                accessKey: record.accessKey						 	// d1504
-            };
-        }
-
-        function getFileSizes() {
-            var i;
-
-            if(record.media) {
-                media = record.media;
-            } else {
-                media = submit.getMedia();
-            }
-
-            if (media) {
-                for (i = 0; i < media.length; i++) {
-                    count++;
-                    sizes.push(media[i].size)
-                }
-            }
-
-        }
-
-        function gatherFiles(directory) {
-
-	        $fileNodes = ( dbStore ) ? $(model.data.modelStr).find('[type="file"]').removeAttr('type') : [];
-
-            var todo = [];
-            if (dbStore) {
-                $fileNodes.each(function () {
-
-                    fileO = {
-                        fileName: $(this).text()
-                    };
-
-                    todo.push(dbStore.retrieveFile(directory, fileO));
-
-                }).toArray();
-            }
-
-            return Promise.all( todo )
-                .then( function(values) {
-                    if (values.length > 0) {
-
-                        var i;
-                        var notfound = [];
-                        for(i = 0; i < values.length; i++) {
-
-                            if(values[i].blob) {
-                                media.push(values[i]);
-                                sizes.push(values[i].size);
-                            } else {
-                                notfound.push(values[i].fileName);
-                            }
-                        }
-                        if(notfound.length > 0) {
-                            alert("Cound not find the following files: " + notfound.join(""));
-                        }
-                        distributeFiles();
-                    } else {
-                        recordPrepped = basicRecordPrepped(1, 0);
-                        callbacks.success(recordPrepped);
-                    }
-                })
-        }
-
-        function distributeFiles() {
-            //var maxSize = connection.getMaxSubmissionSize();
-            var maxSize = 100 * 1024 * 1024;
-            if (media.length > 0) {
-                batches = divideIntoBatches(sizes, maxSize);
-                console.log('splitting record into ' + batches.length + ' batches to reduce submission size ');
-                for (k = 0; k < batches.length; k++) {
-                    recordPrepped = basicRecordPrepped(batches.length, k);
-                    for (l = 0; l < batches[k].length; l++) {
-                        fileIndex = batches[k][l];
-                        //recordPrepped.formData.append( media[ fileIndex ].name, media[ fileIndex ].file );
-                        var blob = undefined;
-                        var name = undefined;
-                        if(media[fileIndex].blob) {
-                            blob = media[fileIndex].blob;
-                            name = media[fileIndex].fileName;
-                        // Commented out 14/1/2019 during upgrade - uncommented 25/2/2020
-                        } else if (media[fileIndex].dataUrl) {
-                            // immediate send data is still in dataUrl -- not any more it seems
-                            blob = dbStore.dataURLtoBlob(media[fileIndex].dataUrl);
-                            name = media[fileIndex].name;
-                        } else {
-                            // Assume the media file is the blob
-                            blob = media[fileIndex];
-                            name = blob.name;
-                        }
-
-                        console.log("++++++++++ append file: " + name);
-                        if(blob) {
-                            recordPrepped.formData.append(name, blob, name);
-                        }
-                    }
-                    callbacks.success(recordPrepped);
-                }
-            } else {
-                recordPrepped = basicRecordPrepped(1, 0);
-                callbacks.success(recordPrepped);
-            }
-
-        }
-
-        if (immediate) {
-            getFileSizes();
-            distributeFiles();
-        } else if (model) {
-            gatherFiles(model.instanceID);
-        }
-    }
-     */
 
     /**
      * Function to export or backup data to a file. In Chrome it will get an appropriate file name.
@@ -1213,6 +1053,50 @@
 
     }
 
+    function setupLastSaved() {
+
+        return new Promise(resolve => {
+
+            if (surveyData.external.length > 0) {
+                getLastSavedRecord( surveyData.surveyIdent )
+                    .then( ( lastSavedRecord ) =>
+                        populateLastSavedInstances( lastSavedRecord )     // Add the data from the db store
+                    )
+                    .then( ( survey ) => {
+                        resolve();
+                    } );
+            }
+        } );
+
+    }
+
+    /**
+     * Add the external data to the survey object
+     */
+    const
+        getExternalData = () => {
+
+        surveyData.xml = parser.parseFromString( surveyData.modelStr, 'text/xml' );
+
+        /** @type {Array<Promise<SurveyExternalData>>} */
+        surveyData.external = [];
+        const externalInstances = [
+            ...surveyData.xml.querySelectorAll('instance[id][src]'),
+        ].map((instance) => ({
+            id: instance.id,
+            src: instance.getAttribute('src'),
+        }));
+
+        externalInstances.forEach((instance, index) => {
+            const { src } = instance;
+
+            if (src === LAST_SAVED_VIRTUAL_ENDPOINT) {
+                surveyData.external.push(instance);
+            }
+
+        });
+
+    };
 
     export default controller;
 

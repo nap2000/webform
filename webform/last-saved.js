@@ -78,7 +78,7 @@ const getLastSavedInstanceDocument = (lastSavedRecord) => {
 
         return doc;
     }
-    return domParser.parseFromString(lastSavedRecord.xml, 'text/xml');
+    return domParser.parseFromString(lastSavedRecord.data, 'text/xml');
 };
 
 /**
@@ -91,14 +91,13 @@ export const populateLastSavedInstances = (lastSavedRecord) => {
 
     const lastSavedInstance = getLastSavedInstanceDocument(lastSavedRecord);
 
-    const externalData = surveyData.external.map((item) => {
+    surveyData.external = surveyData.external.map((item) => {
         if (item?.src === LAST_SAVED_VIRTUAL_ENDPOINT) {
             return { ...item, xml: lastSavedInstance };
         }
 
         return item;
     });
-    surveyData.external = externalData;
 
 };
 
@@ -109,27 +108,20 @@ export const populateLastSavedInstances = (lastSavedRecord) => {
  */
 
 /**
- * @param {Survey} survey
  * @param {EnketoRecord} record
  * @return {Promise<SetLastSavedRecordResult>}
  */
-export const setLastSavedRecord = (survey, record) => {
-    if (!dbStore.available || settings.type !== 'other') {
-        return Promise.resolve({
-            survey: populateLastSavedInstances(survey),
-        });
-    }
+export const setLastSavedRecord = ( record) => {
 
-    const lastSavedRecord = isLastSaveEnabled(survey)
-        ? { ...record, _surveyId: surveyData.surveyIdent }
-        : null;
+    return new Promise((resolve, reject) => {
+        const lastSavedRecord = isLastSaveEnabled()
+            ? { ...record, _surveyId: surveyData.surveyIdent }
+            : null;
 
-    return (
         lastSavedRecord == null
-            ? removeLastSavedRecord(surveyData.surveyIdent)
-            : dbStore.setLastSavedRecord(lastSavedRecord)
-    ).then(([lastSavedRecord] = []) => ({
-        survey: populateLastSavedInstances(survey, lastSavedRecord),
-        lastSavedRecord,
-    }));
+            ? removeLastSavedRecord( surveyData.surveyIdent )
+            : dbStore.setLastSavedRecord( lastSavedRecord )
+        resolve();
+    });
+
 };
