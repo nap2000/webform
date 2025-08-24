@@ -48,16 +48,6 @@ export const getLastSavedRecord = (id) => {
     });
 };
 
-/**
- * @param {string} id
- * @return {Promise<void>}
- */
-export const removeLastSavedRecord = async (id) => {
-    if (dbStore.available) {
-        await dbStore.lastSavedRecords.remove(id);
-    }
-};
-
 const domParser = new DOMParser();
 
 /**
@@ -102,13 +92,7 @@ export const populateLastSavedInstances = (lastSavedRecord) => {
 };
 
 /**
- * @typedef SetLastSavedRecordResult
- * @property {Survey} survey
- * @property {EnketoRecord} [lastSavedRecord]
- */
-
-/**
- * @param {EnketoRecord} record
+ * @param {Record} record
  * @return {Promise<SetLastSavedRecordResult>}
  */
 export const setLastSavedRecord = ( record) => {
@@ -119,7 +103,7 @@ export const setLastSavedRecord = ( record) => {
             : null;
 
         if(lastSavedRecord == null) {
-            removeLastSavedRecord( surveyData.surveyIdent );
+            dbStore.removeLastSavedRecord( surveyData.surveyIdent );
             resolve();
         } else {
             dbStore.setLastSavedRecord( lastSavedRecord ).then( () => {

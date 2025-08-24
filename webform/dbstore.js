@@ -265,6 +265,27 @@
         });
     };
 
+    /*
+    * Remove a last saved record
+    */
+    dbStore.removeLastSavedRecord = function(id) {
+
+        return new Promise((resolve, reject) => {
+            open().then( function( db ) {
+                console.log( "Delete last saved record: " + id );
+
+                let transaction = db.transaction( [ lastSavedStoreName ], "readwrite" );
+                transaction.onerror = function( e ) {
+                    alert( "Error: failed to open transaction to delete saved record " + name );
+                    reject(e);
+                };
+
+                let objectStore = transaction.objectStore( lastSavedStoreName );
+                objectStore.delete(id);
+                resolve();
+            } );
+        });
+    };
 
     /*
      * Write a log entry to the database
@@ -304,7 +325,6 @@
             let today = new Date();
             let archiveDate = new Date(today.getTime() - (100 * oneday));
             objectStore.delete(IDBKeyRange.upperBound(archiveDate));
-            //db.close();
         });
 
     };
