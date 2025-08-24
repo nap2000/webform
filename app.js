@@ -12,7 +12,7 @@ import recordStore from './webform/store';
 import controller from './webform/controller-webform';
 import { t }  from './src/js/translator';
 
-window.enketo = controller;             // Make controller global so it can be called by cordova app
+window.enketo = controller;             // Make controller global so it can be called by cordova app  TODO - Remove
 
 if(typeof surveyData !== "undefined") {
 

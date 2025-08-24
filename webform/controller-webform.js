@@ -55,108 +55,110 @@
 
             if(!surveyData.instanceStrToEdit) {
                 getExternalData();      // Populates surveyData.external
-                setupLastSaved();       // Adds last saved data to survey data external
             }
+            setupLastSaved().then( () => {
+                // Open an existing record if we need to - TODO test this - does it work
+                if (store.isSupported()) {
+                    var recordName = store.getKey("draft");	// Draft identifies the name of a draft record that is being opened
+                    if (recordName) {
 
-            // Open an existing record if we need to - TODO test this - does it work
-            if (store.isSupported()) {
-                var recordName = store.getKey("draft");	// Draft identifies the name of a draft record that is being opened
-                if (recordName) {
+                        var record = store.getRecord(recordName);
+                        surveyData.instanceStrToEdit = record.data;
+                        surveyData.instanceStr = record.data;
+                        surveyData.instanceStrToEditId = record.instanceStrToEditId;
+                        surveyData.assignmentId = record.assignmentId;
+                        surveyData.key = record.accessKey;
+                        surveyData.submitted = false;
 
-                    var record = store.getRecord(recordName);
-                    surveyData.instanceStrToEdit = record.data;
-                    surveyData.instanceStr = record.data;
-                    surveyData.instanceStrToEditId = record.instanceStrToEditId;
-                    surveyData.assignmentId = record.assignmentId;
-                    surveyData.key = record.accessKey;
-                    surveyData.submitted = false;
+                        // Set the global instanceID of the restored form so that filePicker can find media
+                        var model = new FormModel(record.data);
+                        model.init();
+                        window.gLoadedInstanceID = model.instanceID;
 
-                    // Set the global instanceID of the restored form so that filePicker can find media
-                    var model = new FormModel(record.data);
-                    model.init();
-                    window.gLoadedInstanceID = model.instanceID;
-
-                    // Delete the draft key
-                    store.removeRecord("draft");
-                } else {
-                    window.gLoadedInstanceID = undefined;
-                }
-            }
-
-            /*
-             * Initialise file manager if it is supported in this browser
-             * The fileSystems API is used to store attachments prior to upload when operating offline
-             */
-            dbStore.isSupported().then(supported => {
-                if (supported) {
-                    dbStoreSupported = true;
-                    if (!store || store.getRecordList().length === 0) {
-                        dbStore.delete(undefined, true);
+                        // Delete the draft key
+                        store.removeRecord("draft");
+                    } else {
+                        window.gLoadedInstanceID = undefined;
                     }
-
-                } else {
-                    dbStoreSupported = false;
-                    gui.alert('Warning: Storage is not supported by your browser. ' +
-                        'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
-                        'has been sent successfully',
-                        undefined, 'normal', undefined);
                 }
-            });
 
-            // Create the form
-            formSelector = 'form.or:eq(0)';
-            form = new Form(formSelector, surveyData);
-            var loadErrors = form.init();
+                /*
+                 * Initialise file manager if it is supported in this browser
+                 * The fileSystems API is used to store attachments prior to upload when operating offline
+                 */
+                dbStore.isSupported().then(supported => {
+                    if (supported) {
+                        dbStoreSupported = true;
+                        if (!store || store.getRecordList().length === 0) {
+                            dbStore.delete(undefined, true);
+                        }
 
-            if (recordName) {
-                form.recordName = recordName;
-            }
+                    } else {
+                        dbStoreSupported = false;
+                        gui.alert('Warning: Storage is not supported by your browser. ' +
+                            'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
+                            'has been sent successfully',
+                            undefined, 'normal', undefined);
+                    }
+                });
 
-            if (loadErrors.length > 0) {
-                var msg = ( surveyData.instanceStr ) ? t('alert.loaderror.editadvice') : t('alert.loaderror.entryadvice');
-                gui.showLoadErrors(loadErrors, msg);
-            }
+                // Create the form
+                formSelector = 'form.or:eq(0)';
+                form = new Form(formSelector, surveyData);
+                var loadErrors = form.init();
 
-            $('.loader').hide();
-            $('article').show();       // end loader
+                if (recordName) {
+                    form.recordName = recordName;
+                }
 
-            //$form = form.getView().$;
-	        $form = $( 'form.or' );
-            $formprogress = $('.form-progress');
+                if (loadErrors.length > 0) {
+                    var msg = ( surveyData.instanceStr ) ? t('alert.loaderror.editadvice') : t('alert.loaderror.entryadvice');
+                    gui.showLoadErrors(loadErrors, msg);
+                }
 
-            setEventHandlers();
-            setSubmitLogic();
+                $('.loader').hide();
+                $('article').show();       // end loader
 
-            // Save current data so we can check if there have been changes
-            startEditData = form.getDataStr(true, true);
+                //$form = form.getView().$;
+                $form = $( 'form.or' );
+                $formprogress = $('.form-progress');
 
-            if (store) {
-                var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
-                $('.side-slider').append(
-                    '<h3 class="lang" data-lang="record-list.title">queue</h3>' +
-                    '<p class="lang" data-lang="record-list.msg1">Records are stored</p>' +
-                    '<progress class="upload-progress"></progress>' +
-                    '<ul class="record-list"></ul>' +
-                    '<a type="button" href="/app/myWork/history.html" target="_blank" class="btn btn-default lang show-history full-width" data-lang="record-list.history">h</a>' +
-                    '<div class="button-bar">' +
-                    '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
-                    'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
-                    '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
-                    'style="' + btnstyle + '">Delete</button>' +
-                    '</div>' +
-                    '<p class="lang" data-lang="record-list.msg2-nodraft" >Queued records</p>' +
-                    '<p class="lang" data-lang="record-list.msg3" >Foce Upload</p>');
-                //trigger fake save event to update formlist in slider
-                $form.trigger('save', JSON.stringify(store.getRecordList()));
-            }
-            if (options.submitInterval) {
-                window.setInterval(function () {
-                    submitQueue(false);
-                }, options.submitInterval);
-                window.setTimeout(function () {
-                    submitQueue(false);
-                }, 5 * 1000);
-            }
+                setEventHandlers();
+                setSubmitLogic();
+
+                // Save current data so we can check if there have been changes
+                startEditData = form.getDataStr(true, true);
+
+                if (store) {
+                    var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
+                    $('.side-slider').append(
+                        '<h3 class="lang" data-lang="record-list.title">queue</h3>' +
+                        '<p class="lang" data-lang="record-list.msg1">Records are stored</p>' +
+                        '<progress class="upload-progress"></progress>' +
+                        '<ul class="record-list"></ul>' +
+                        '<a type="button" href="/app/myWork/history.html" target="_blank" class="btn btn-default lang show-history full-width" data-lang="record-list.history">h</a>' +
+                        '<div class="button-bar">' +
+                        '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
+                        'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
+                        '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
+                        'style="' + btnstyle + '">Delete</button>' +
+                        '</div>' +
+                        '<p class="lang" data-lang="record-list.msg2-nodraft" >Queued records</p>' +
+                        '<p class="lang" data-lang="record-list.msg3" >Foce Upload</p>');
+                    //trigger fake save event to update formlist in slider
+                    $form.trigger('save', JSON.stringify(store.getRecordList()));
+                }
+                if (options.submitInterval) {
+                    window.setInterval(function () {
+                        submitQueue(false);
+                    }, options.submitInterval);
+                    window.setTimeout(function () {
+                        submitQueue(false);
+                    }, 5 * 1000);
+                }
+            });       // Adds last saved data to survey data external
+
+
         }, 0 );
 
     }
@@ -1046,7 +1048,7 @@
 
         return new Promise(resolve => {
 
-            if (surveyData.external.length > 0) {
+            if (surveyData.external && surveyData.external.length > 0) {
                 getLastSavedRecord( surveyData.surveyIdent )
                     .then( ( lastSavedRecord ) =>
                         populateLastSavedInstances( lastSavedRecord )     // Add the data from the db store
@@ -1054,6 +1056,8 @@
                     .then( ( survey ) => {
                         resolve();
                     } );
+            } else {
+                resolve();
             }
         } );
 
