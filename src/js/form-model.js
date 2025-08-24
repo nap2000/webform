@@ -123,12 +123,7 @@ FormModel.prototype.init = function() {
             this.data.external.forEach( instance => {
                 id = instance.id ? `instance "${instance.id}"` : 'instance "unknown"';
                 instanceDoc = that.getSecondaryInstance( instance.id );
-
-                // remove any existing content  TODO remove this and remove existing content
-                secondaryInstanceChildren = instanceDoc.children;
-                for (i = secondaryInstanceChildren.length - 1; i >= 0; i--) {
-                    instanceDoc.removeChild( secondaryInstanceChildren[i] );
-                }
+                
                 let rootEl;
                 if (instance.xml instanceof XMLDocument) {
                     // Create a clone of the root node
