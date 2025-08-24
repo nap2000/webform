@@ -223,11 +223,11 @@
                 console.log( "Set last saved record" );
 
                 let transaction = db.transaction( [ lastSavedStoreName ], "readwrite" );
-                transaction.objectStore( lastSavedStoreName ).put( record );
-                transaction.onerror = function( e ) {
+                let request = transaction.objectStore( lastSavedStoreName ).put( record );
+                request.onerror = function( e ) {
                     reject(e);
                 };
-                transaction.onsuccess = function (e) {
+                request.onsuccess = function (e) {
                     resolve();
                 };
 

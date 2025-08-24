@@ -13,7 +13,12 @@
 
     import fileManager from '../src/js/file-manager';
     import './plugin';
-    import { getLastSavedRecord, populateLastSavedInstances, LAST_SAVED_VIRTUAL_ENDPOINT } from './last-saved';
+    import {
+        getLastSavedRecord,
+        populateLastSavedInstances,
+        LAST_SAVED_VIRTUAL_ENDPOINT,
+        setLastSavedRecord
+    } from './last-saved';
 
     const parser = new DOMParser();
 
@@ -44,19 +49,16 @@
             store = options.recordStore || null;
 
             // Rename instanceStrToEdit to instanceStr as used by Enketo Core
-            surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;
+            surveyData.instanceStrToEdit = surveyData.instanceStrToEdit || null;   // TODO Can we eliminate this
             surveyData.instanceStr = surveyData.instanceStrToEdit || null;
+            surveyData.xml = parser.parseFromString( surveyData.modelStr, 'text/xml' );
 
-            /*
-             * Get the external data
-             */
-            getExternalData();
+            if(!surveyData.instanceStrToEdit) {
+                getExternalData();      // Populates surveyData.external
+                setupLastSaved();       // Adds last saved data to survey data external
+            }
 
-            /*
-           * Remember the original survey data as it will be used after this form, with potentially an initial instance, has been submitted
-           */
-
-            // Open an existing record if we need to
+            // Open an existing record if we need to - TODO test this - does it work
             if (store.isSupported()) {
                 var recordName = store.getKey("draft");	// Draft identifies the name of a draft record that is being opened
                 if (recordName) {
@@ -80,10 +82,6 @@
                     window.gLoadedInstanceID = undefined;
                 }
             }
-
-
-            // Initialise network connection
-            //connection.init(true, store);
 
             /*
              * Initialise file manager if it is supported in this browser
@@ -188,30 +186,29 @@
      */
     function _resetForm() {
 
-        setupLastSaved()
-            .then((survey) => {
-                setDraftStatus(false);
-                updateActiveRecord(null);
+        setupLastSaved().then(() => {
 
-                surveyData.instanceStrToEditId = null;
+            setDraftStatus( false );
+            updateActiveRecord( null );
 
-                form.resetView();
+            surveyData.instanceStrToEditId = null;
 
-                form = new Form('form.or:eq(0)', {
-                    modelStr: surveyData.modelStr,
-                    external: surveyData.external,
-                    xml: surveyData.xml
-                } );
+            form.resetView();
 
-                form.init();
-                //$form = form.getView().$;
-                $form = $( 'form.or' );
-                $formprogress = $('.form-progress');
+            form = new Form( 'form.or:eq(0)', {
+                modelStr: surveyData.modelStr,
+                external: surveyData.external,
+                xml: surveyData.xml
+            } );
 
-                // smap save the initial starting point
-                startEditData = form.getDataStr(true, true);
-            });
+            form.init();
+            //$form = form.getView().$;
+            $form = $( 'form.or' );
+            $formprogress = $( '.form-progress' );
 
+            // smap save the initial starting point
+            startEditData = form.getDataStr( true, true );
+        });
     }
 
     /*
@@ -415,16 +412,23 @@
 
             console.log('saveResult: ' + saveResult);
             if (saveResult === 'success') {
-                resetForm(true);
-                $form.trigger('save', JSON.stringify(store.getRecordList()));
 
                 if (draft) {
                     gui.feedback(t('alert.recordsavesuccess.draftmsg'), 3);
+                    resetForm(true);
+                    $form.trigger('save', JSON.stringify(store.getRecordList()));
                 } else {
-                    //try to send the record immediately
+                    //try to send the record immediately after saving last saved values
                     gui.feedback(t('alert.recordsavesuccess.finalmsg'), 3);
-                    submitOneForced(recordName, record, media);
+                    setLastSavedRecord(record).then(() => {
+                        submitOneForced(recordName, record, media);
+                        resetForm(true);
+                        $form.trigger('save', JSON.stringify(store.getRecordList()));
+                    });
                 }
+
+
+
             } else if (saveResult === 'require' || saveResult === 'existing' || saveResult === 'forbidden') {
                 saveRecord(undefined, false, 'Record name "' + recordName + '" already exists (or is not allowed). The record was not saved.');
             } else {
@@ -457,25 +461,10 @@
             'media': fileManager.getCurrentFiles()
         };
 
-        /*
-        callbacks = {
-            error: function () {
-                gui.alert('Please try submitting again.', 'Submission Failed');
-            },
-            success: function () {
-                resetForm(true);
-                gui.alert('Success', 'Submission Successful!', 'success');
-            },
-            complete: function () {
-            }
-        };
-
-         */
-
         //only upload the last one
         submit.send(dbStore, "submitEditedRecord", record, true, autoClose, false).then((response) => {
             if(submit.isSuccess(response.status)) {
-                resetForm(true);
+                resetForm( true);
             }
         });
     }
@@ -1073,10 +1062,7 @@
     /**
      * Add the external data to the survey object
      */
-    const
-        getExternalData = () => {
-
-        surveyData.xml = parser.parseFromString( surveyData.modelStr, 'text/xml' );
+    const getExternalData = () => {
 
         /** @type {Array<Promise<SurveyExternalData>>} */
         surveyData.external = [];

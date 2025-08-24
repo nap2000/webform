@@ -37,10 +37,6 @@ let HTTP_ACCEPTED = 202;
 let contentLength = 10000000;   // 10MB try to keep uploads within this value
 
 submit.send = function(dbStore, calledFrom, record, inMemoryMedia, autoClose, saved, manual) {
-    return setLastSavedRecord(record).then(() => _uploadRecord(dbStore, calledFrom, record, inMemoryMedia, autoClose, saved, manual));
-};
-
-function _uploadRecord(dbStore, calledFrom, record, inMemoryMedia, autoClose, saved, manual) {
 
     console.log("submit called from: " + calledFrom);
 

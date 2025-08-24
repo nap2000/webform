@@ -115,13 +115,21 @@ export const setLastSavedRecord = ( record) => {
 
     return new Promise((resolve, reject) => {
         const lastSavedRecord = isLastSaveEnabled()
-            ? { ...record, _surveyId: surveyData.surveyIdent }
+            ? { ...record, _surveyId: surveyData.surveyIdent }      // Add the surveyIdent as key
             : null;
 
-        lastSavedRecord == null
-            ? removeLastSavedRecord( surveyData.surveyIdent )
-            : dbStore.setLastSavedRecord( lastSavedRecord )
-        resolve();
+        if(lastSavedRecord == null) {
+            removeLastSavedRecord( surveyData.surveyIdent );
+            resolve();
+        } else {
+            dbStore.setLastSavedRecord( lastSavedRecord ).then( () => {
+                resolve();  // Wait for the record to be set in case it is needed when the form is reset
+            }, () => {
+                reject();
+            });
+        }
+
+
     });
 
 };
