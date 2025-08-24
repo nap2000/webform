@@ -112,7 +112,7 @@ FormModel.prototype.init = function() {
     try {
         id = 'model';
         // The default model
-        this.xml = parser.parseFromString( surveyData.modelStr, 'text/xml' );
+        this.xml = parser.parseFromString( this.data.modelStr, 'text/xml' );
         this.throwParserErrors( this.xml, this.data.modelStr );
 
         /*
