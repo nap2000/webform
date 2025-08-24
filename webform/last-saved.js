@@ -40,9 +40,10 @@ export const getLastSavedRecord = (id) => {
     return new Promise((resolve, reject) => {
         dbStore.getLastSavedRecord( id ).then( ( lastSavedRecord ) => {
             if (lastSavedRecord != null) {
-                delete lastSavedRecord._enketoId;
-
+                dbStore.removeLastSavedRecord( surveyData.surveyIdent );        // Only use last saved record once
                 resolve(Object.assign( lastSavedRecord, { id } ));
+            } else {
+                resolve();
             }
         } );
     });
