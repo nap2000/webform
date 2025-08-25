@@ -99,7 +99,6 @@
                     };
 
                     dbStore[databaseName] = openDb;
-                    dbStore["lastSavedRecords"] = openDb.lastSavedRecords;
                     resolve(openDb);
                 };
 

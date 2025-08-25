@@ -405,8 +405,6 @@ function getNewKey(record) {
                 dbRecord.accessKey = data.key;
                 store.setRecord( record.name, dbRecord, true, true, dbRecord.key );
             }
-            // TODO update the surveyData in the form if this is an immediate submit
-            // setSubmissionUrl(data.key);
         },
         error: function(xhr, textStatus, err) {
             removeHourglass();

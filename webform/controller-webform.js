@@ -57,7 +57,10 @@
                 getExternalData();      // Populates surveyData.external
             }
             setupLastSaved().then( () => {
-                // Open an existing record if we need to - TODO test this - does it work
+                /*
+                 * this was implemented to recover from a crash in the Zarkman APP
+                 * TODO re-implement for webForms
+                 */
                 if (store.isSupported()) {
                     var recordName = store.getKey("draft");	// Draft identifies the name of a draft record that is being opened
                     if (recordName) {
@@ -402,7 +405,6 @@
             task.assignment.assignment_status = (record.draft) ? "accepted" : "complete";
             task.record.data = record.data;
 
-            // TODO set ID it we are editing an existing task
             dbStore.setRecord(task, undefined).catch((saveResult) => {
                 gui.alert('Error trying to save data in mywork database (message: ' + saveResult + ')');
             });
