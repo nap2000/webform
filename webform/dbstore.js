@@ -20,7 +20,7 @@
     if(window.idbConfig) {                                  // set in idbconfig.js in the smapServer module
         webformDbVersion = window.idbConfig.version;        // Share value with webforms page
     } else {
-        webformDbVersion = 15;
+        webformDbVersion = 30;
     }
     let databaseName = "webform";
 

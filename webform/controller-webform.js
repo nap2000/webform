@@ -66,17 +66,19 @@
                     if (recordName) {
 
                         var record = store.getRecord(recordName);
-                        surveyData.instanceStrToEdit = record.data;
-                        surveyData.instanceStr = record.data;
-                        surveyData.instanceStrToEditId = record.instanceStrToEditId;
-                        surveyData.assignmentId = record.assignmentId;
-                        surveyData.key = record.accessKey;
-                        surveyData.submitted = false;
+                        if(record) {
+                            surveyData.instanceStrToEdit = record.data;
+                            surveyData.instanceStr = record.data;
+                            surveyData.instanceStrToEditId = record.instanceStrToEditId;
+                            surveyData.assignmentId = record.assignmentId;
+                            surveyData.key = record.accessKey;
+                            surveyData.submitted = false;
 
-                        // Set the global instanceID of the restored form so that filePicker can find media
-                        var model = new FormModel(record.data);
-                        model.init();
-                        window.gLoadedInstanceID = model.instanceID;
+                            // Set the global instanceID of the restored form so that filePicker can find media
+                            var model = new FormModel(record.data);
+                            model.init();
+                            window.gLoadedInstanceID = model.instanceID;
+                        }
 
                         // Delete the draft key
                         store.removeRecord("draft");
