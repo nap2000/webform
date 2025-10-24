@@ -111,7 +111,6 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
 async function sendWithMedia(dbStore, record, xmlData, media) {
 
     var content,
-        fileIndex = 0,
         i,
         url = getSubmissionUrl(record),
         response;
