@@ -1,24 +1,36 @@
 #!/bin/sh
 
-echo "building webforms"
-grunt develop
+# This script builds a bundled javascript file and then copies it and other webform files to smapServer
 
-cp ~/git/webform/build/js/enketo-bundle.js WebContent/build/js/webform-bundle.js
+echo "building webforms"
+smapServer=$HOME/git/prop-smapserver/smapServer
+target=$smapServer/WebContent/build/js/webform-bundle.min.js
+
+grunt develop
 
 if [ "$1" != develop ]
 then
-	rm WebContent/build/js/webform-bundle.min.js
-
         # uglify
-        pushd ~/git/webform
         grunt minify
-        popd
 
-	cp ~/git/webform/build/js/bundle.min.js WebContent/build/js/webform-bundle.min.js
+	cp build/js/bundle.min.js $target
 
 else
         # Rename the non minified version so that it can be used
-	cp ~/git/webform/build/js/enketo-bundle.js WebContent/build/js/webform-bundle.min.js
+	cp build/js/enketo-bundle.js $target
 fi
 
-./enk_up.sh
+cp build/css/* $smapServer/WebContent/build/css
+cp build/fonts/* $smapServer/WebContent/build/fonts
+
+rm -rf $smapServer/WebContent/build/locales/*
+for d in locales/* ; do
+    if [ -d "$d" ]; then 
+        n=$(basename "$d")
+        echo "Getting translation file for " $n
+
+        mkdir $smapServer/WebContent/build/locales/$n
+        cp $d/translation.json $smapServer/WebContent/build/locales/$n/translation.json
+    fi
+done
+
