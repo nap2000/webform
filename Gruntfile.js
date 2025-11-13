@@ -172,11 +172,7 @@ module.exports = grunt => {
     } );
 
     grunt.registerTask( 'compile', [ 'shell:rollup' ] );
-    grunt.registerTask( 'test', [ 'eslint:check', 'compile', 'transforms', 'karma:headless', 'css' ] );
-    grunt.registerTask( 'css', [ 'sass' ] );
-    grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );
-    grunt.registerTask( 'develop_orig', [ 'css', 'compile', 'concurrent:develop' ] );
     grunt.registerTask( 'develop', [ 'compile' ] );
     grunt.registerTask( 'minify', [ 'uglify' ] );
-    grunt.registerTask( 'default', [ 'css', 'compile' ] );
+
 };
