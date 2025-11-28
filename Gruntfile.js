@@ -14,8 +14,8 @@ module.exports = grunt => {
     require( 'load-grunt-tasks' )( grunt );
 
     // project configuration.
-    grunt.initconfig( {
-        pkg: grunt.file.readjson( 'package.json' ),
+    grunt.initConfig( {
+        pkg: grunt.file.readJSON( 'package.json' ),
         uglify: {
           options: {
             mangle: true,
@@ -60,14 +60,6 @@ module.exports = grunt => {
             }
         },
         watch: {
-            sass: {
-                files: [ 'grid/sass/**/*.scss', 'src/sass/**/*.scss', 'src/widget/**/*.scss' ],
-                tasks: [ 'css' ],
-                options: {
-                    spawn: true,
-                    livereload: true,
-                }
-            },
 	    language: {
                 files: [ 'app/views/**/*.pug', 'app/controllers/**/*.js', 'app/models/**/*.js', 'public/js/src/**/*.js' ],
                 tasks: [ 'shell:translation', 'i18next' ]
@@ -99,38 +91,6 @@ module.exports = grunt => {
                 browsers: [ 'chrome', 'firefox', 'safari' ]
             }
         },
-        sass: {
-            options: {
-                sourcemap: false,
-                importer( url, prev, done ) {
-                    // fixes enketo-core submodule references.
-                    // those references are correct in apps that use enketo-core as a submodule.
-                    url = ( /\.\.\/\.\.\/node_modules\//.test( url ) ) ? url.replace( '../../node_modules/', 'node_modules/' ) : url;
-                    done( {
-                        file: url
-                    } );
-                },
-                // temporary workaround for svg tickmarks in checkboxes in firefox.
-                // see https://github.com/enketo/enketo-core/issues/439
-                functions: {
-                    'base64-url($mimetype, $data)': function( mimetype, data ) {
-                        const base64 = new buffer( data.getvalue() ).tostring( 'base64' );
-                        const urlstring = `url("data:${mimetype.getvalue()};base64,${base64}")`;
-                        return nodesass.types.string( urlstring );
-                    }
-                }
-            },
-            compile: {
-                cwd: 'src/sass',
-                dest: 'build/css',
-                expand: true,
-                outputstyle: 'expanded',
-                src: '**/*.scss',
-                ext: '.css',
-                flatten: true,
-                extdot: 'last'
-            }
-        },
         shell: {
             /*transformer: {
                 command: 'node node_modules/enketo-transformer/app.js'
@@ -142,9 +102,10 @@ module.exports = grunt => {
     } );
 
     /*grunt.loadnpmtasks( 'grunt-sass' );*/
-    grunt.loadnpmtasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    grunt.registertask( 'transforms', 'creating forms.js', function() {
+    /*
+    grunt.registerTask( 'transforms', 'creating forms.js', function() {
         const forms = {};
         const done = this.async();
         const jsonstringify = require( 'json-pretty' );
@@ -159,20 +120,21 @@ module.exports = grunt => {
 
                 return transformer.transform( { xform: xformstr } )
                     .then( result => {
-                        forms[filepath.substring( filepath.lastindexof( '/' ) + 1 )] = {
+                        forms[filepath.substring( filepath.lastIndexOf( '/' ) + 1 )] = {
                             html_form: result.form,
                             xml_model: result.model
                         };
                     } );
-            } ), promise.resolve() )
+            } ), Promise.resolve() )
             .then( () => {
                 grunt.file.write( formsjspath, `export default ${jsonstringify( forms )};` );
                 done();
             } );
     } );
+    */
 
-    grunt.registertask( 'compile', [ 'shell:rollup' ] );
-    grunt.registertask( 'develop', [ 'compile' ] );
-    grunt.registertask( 'minify', [ 'uglify' ] );
+    grunt.registerTask( 'compile', [ 'shell:rollup' ] );
+    grunt.registerTask( 'develop', [ 'compile' ] );
+    grunt.registerTask( 'minify', [ 'uglify' ] );
 
 };
