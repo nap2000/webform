@@ -39,7 +39,11 @@
              * Add check prior to the user leaving the screen
              */
             window.onbeforeunload = function () {
-                if (hasChanged()) {
+                if ( window.smapSkipBeforeUnload ) {
+                    window.smapSkipBeforeUnload = false;
+                    return;
+                }
+                if ( hasChanged() ) {
                     return "You have unsaved changes. Are you sure you want to leave?";
                 }
             };
@@ -1093,5 +1097,4 @@
     };
 
     export default controller;
-
 

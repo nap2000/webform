@@ -17,6 +17,13 @@ class FormWidget extends Widget {
         this.element.classList.add( 'hide' );
         this.element.after( fragment );
 
+        this.question.querySelector( '.form-widget' ).addEventListener( 'click', () => {
+            window.smapSkipBeforeUnload = true;
+            window.setTimeout( () => {
+                window.smapSkipBeforeUnload = false;
+            }, 1000 );
+        } );
+
         this.value = this.originalInputValue;
     }
 
