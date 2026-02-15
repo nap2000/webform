@@ -231,6 +231,9 @@
         "submit": {
             "btn": "Wasilisha"
         },
+        "submitReturn": {
+            "btn": "Wasilisha na urudi"
+        },
         "validate": {
             "btn": "Halalisha"
         }

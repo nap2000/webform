@@ -247,6 +247,9 @@
         "submit": {
             "btn": "Odoslať"
         },
+        "submitReturn": {
+            "btn": "Odoslať a vrátiť sa"
+        },
         "validate": {
             "btn": "Overiť"
         }

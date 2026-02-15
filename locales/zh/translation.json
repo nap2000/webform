@@ -223,6 +223,9 @@
         "submit": {
             "btn": "提交"
         },
+        "submitReturn": {
+            "btn": "提交并返回"
+        },
         "validate": {
             "btn": "证实"
         }

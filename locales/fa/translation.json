@@ -231,6 +231,9 @@
         "submit": {
             "btn": "ارسال"
         },
+        "submitReturn": {
+            "btn": "ارسال و بازگشت"
+        },
         "validate": {
             "btn": "اعتبارسنجی"
         }

@@ -222,6 +222,9 @@
         "submit": {
             "btn": "Send"
         },
+        "submitReturn": {
+            "btn": "Send og gå tilbake"
+        },
         "validate": {
             "btn": "Valider"
         }

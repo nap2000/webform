@@ -222,6 +222,9 @@
         "submit": {
             "btn": "Trimite"
         },
+        "submitReturn": {
+            "btn": "Trimite și revino"
+        },
         "validate": {
             "btn": "Validați"
         }

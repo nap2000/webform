@@ -254,6 +254,9 @@
         "submit": {
             "btn": "Submit"
         },
+        "submitReturn": {
+            "btn": "Submit and Return"
+        },
         "validate": {
             "btn": "Validate"
         }

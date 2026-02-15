@@ -222,6 +222,9 @@
         "submit": {
             "btn": "Invia"
         },
+        "submitReturn": {
+            "btn": "Invia e torna"
+        },
         "validate": {
             "btn": "Convalida"
         }

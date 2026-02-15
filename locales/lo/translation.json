@@ -247,6 +247,9 @@
         "submit": {
             "btn": "ສົ່ງ"
         },
+        "submitReturn": {
+            "btn": "ສົ່ງ ແລະ ກັບຄືນ"
+        },
         "validate": {
             "btn": "ກວດສອບ"
         }

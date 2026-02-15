@@ -231,6 +231,9 @@
         "submit": {
             "btn": "Odeslat"
         },
+        "submitReturn": {
+            "btn": "Odeslat a vrátit se"
+        },
         "validate": {
             "btn": "Ověřit"
         }

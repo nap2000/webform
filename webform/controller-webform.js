@@ -610,6 +610,31 @@
         saveAs(blob, fileName);
     }
 
+    function isLaunchedForm() {
+        const query = window.location.search.substring( 1 );
+        if ( !query ) {
+            return false;
+        }
+        return query.split( '&' ).some( part => {
+            const pair = part.split( '=' );
+            const key = decodeURIComponent( pair[ 0 ] || '' );
+            const value = decodeURIComponent( pair[ 1 ] || '' );
+            return key === 'launched' && value === 'true';
+        } );
+    }
+
+    function getSubmitButtonLabel( isDraft ) {
+        if ( isDraft ) {
+            return t( 'formfooter.savedraft.btn' );
+        }
+        return isLaunchedForm() ? t( 'formfooter.submitReturn.btn' ) : t( 'formfooter.submit.btn' );
+    }
+
+    function updateSubmitButtonLabel() {
+        const isDraft = $( '.form-footer [name="draft"]' ).prop( 'checked' );
+        $( '#submit-form' ).text( getSubmitButtonLabel( isDraft ) );
+    }
+
     function setEventHandlers() {
 
         $('button#reset-form')
@@ -677,10 +702,9 @@
             });
 
 
-        $('.form-footer [name="draft"]').on('change', function () {
-            var text = ( $(this).prop('checked') ) ? t( 'formfooter.savedraft.btn' ) : t( 'formfooter.submit.btn' );  // submit
-            $('#submit-form').text(text);
-        });
+        $( '.form-footer [name="draft"]' ).on( 'change', function () {
+            updateSubmitButtonLabel();
+        } );
 
         $(document).on('click', 'button#validate-form:not(.disabled)', function () {
             //$form.trigger('beforesave');
@@ -773,9 +797,11 @@
     }
 
     function setSubmitLogic() {
-        if(surveyData.viewOnly) {
-            $('.form-footer [name="draft"]').parent().hide();
-            $('#submit-form, #submit-form-single').text("close");
+        if ( surveyData.viewOnly ) {
+            $( '.form-footer [name="draft"]' ).parent().hide();
+            $( '#submit-form, #submit-form-single' ).text( 'close' );
+        } else {
+            updateSubmitButtonLabel();
         }
     }
 
@@ -1097,4 +1123,3 @@
     };
 
     export default controller;
-

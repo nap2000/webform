@@ -247,6 +247,9 @@
         "submit": {
             "btn": "Zatwierdź"
         },
+        "submitReturn": {
+            "btn": "Zatwierdź i wróć"
+        },
         "validate": {
             "btn": "Sprawdź poprawność"
         }

@@ -247,6 +247,9 @@
         "submit": {
             "btn": "Senden"
         },
+        "submitReturn": {
+            "btn": "Senden und zurück"
+        },
         "validate": {
             "btn": "Prüfen"
         }

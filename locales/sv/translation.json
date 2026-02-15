@@ -231,6 +231,9 @@
         "submit": {
             "btn": "Skicka"
         },
+        "submitReturn": {
+            "btn": "Skicka och gå tillbaka"
+        },
         "validate": {
             "btn": "Validera"
         }

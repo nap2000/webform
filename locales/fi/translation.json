@@ -231,6 +231,9 @@
         "submit": {
             "btn": "Lähetä"
         },
+        "submitReturn": {
+            "btn": "Lähetä ja palaa"
+        },
         "validate": {
             "btn": "Varmista"
         }

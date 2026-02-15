@@ -223,6 +223,9 @@
         "submit": {
             "btn": "Soumettre"
         },
+        "submitReturn": {
+            "btn": "Soumettre et revenir"
+        },
         "validate": {
             "btn": "Valider"
         }
