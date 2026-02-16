@@ -1,5 +1,5 @@
 import settings from '../src/js/settings';
-import dbStore from './dbStore';
+import dbStore from './dbstore';
 
 /**
  * @typedef {import('../../../../app/models/record-model').EnketoRecord} EnketoRecord

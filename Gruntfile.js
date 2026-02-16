@@ -1,11 +1,11 @@
 /**
- * When using enketo-core in your own app, you'd want to replace
+ * when using enketo-core in your own app, you'd want to replace
  * this build file with one of your own in your project root.
- * Smap changes
- *  1) Remove nodeSass
- *  2) Set develop task to only compile and not to change style
+ * smap changes
+ *  1) remove nodesass
+ *  2) set develop task to only compile and not to change style
  */
-/*const nodeSass = require( 'node-sass' );*/
+/*const nodesass = require( 'node-sass' );*/
 
 module.exports = grunt => {
     // show elapsed time at the end
@@ -13,7 +13,7 @@ module.exports = grunt => {
     // load all grunt tasks
     require( 'load-grunt-tasks' )( grunt );
 
-    // Project configuration.
+    // project configuration.
     grunt.initConfig( {
         pkg: grunt.file.readJSON( 'package.json' ),
         uglify: {
@@ -31,7 +31,7 @@ module.exports = grunt => {
             develop: {
                 tasks: [ 'shell:transformer', 'connect:server:keepalive', 'watch' ],
                 options: {
-                    logConcurrentOutput: true
+                    logconcurrentoutput: true
                 }
             }
         },
@@ -60,14 +60,6 @@ module.exports = grunt => {
             }
         },
         watch: {
-            sass: {
-                files: [ 'grid/sass/**/*.scss', 'src/sass/**/*.scss', 'src/widget/**/*.scss' ],
-                tasks: [ 'css' ],
-                options: {
-                    spawn: true,
-                    livereload: true,
-                }
-            },
 	    language: {
                 files: [ 'app/views/**/*.pug', 'app/controllers/**/*.js', 'app/models/**/*.js', 'public/js/src/**/*.js' ],
                 tasks: [ 'shell:translation', 'i18next' ]
@@ -83,52 +75,20 @@ module.exports = grunt => {
         },
         karma: {
             options: {
-                singleRun: true,
-                configFile: 'test/karma.conf.js',
-                customLaunchers: {
-                    ChromeHeadlessNoSandbox: {
-                        base: 'ChromeHeadless',
+                singlerun: true,
+                configfile: 'test/karma.conf.js',
+                customlaunchers: {
+                    chromeheadlessnosandbox: {
+                        base: 'chromeheadless',
                         flags: [ '--no-sandbox' ]
                     }
                 }
             },
             headless: {
-                browsers: [ 'ChromeHeadlessNoSandbox' ]
+                browsers: [ 'chromeheadlessnosandbox' ]
             },
             browsers: {
-                browsers: [ 'Chrome', 'Firefox', 'Safari' ]
-            }
-        },
-        sass: {
-            options: {
-                sourceMap: false,
-                importer( url, prev, done ) {
-                    // Fixes enketo-core submodule references.
-                    // Those references are correct in apps that use enketo-core as a submodule.
-                    url = ( /\.\.\/\.\.\/node_modules\//.test( url ) ) ? url.replace( '../../node_modules/', 'node_modules/' ) : url;
-                    done( {
-                        file: url
-                    } );
-                },
-                // Temporary workaround for SVG tickmarks in checkboxes in Firefox.
-                // See https://github.com/enketo/enketo-core/issues/439
-                functions: {
-                    'base64-url($mimeType, $data)': function( mimeType, data ) {
-                        const base64 = new Buffer( data.getValue() ).toString( 'base64' );
-                        const urlString = `url("data:${mimeType.getValue()};base64,${base64}")`;
-                        return nodeSass.types.String( urlString );
-                    }
-                }
-            },
-            compile: {
-                cwd: 'src/sass',
-                dest: 'build/css',
-                expand: true,
-                outputStyle: 'expanded',
-                src: '**/*.scss',
-                ext: '.css',
-                flatten: true,
-                extDot: 'last'
+                browsers: [ 'chrome', 'firefox', 'safari' ]
             }
         },
         shell: {
@@ -141,42 +101,40 @@ module.exports = grunt => {
         }
     } );
 
-    /*grunt.loadNpmTasks( 'grunt-sass' );*/
+    /*grunt.loadnpmtasks( 'grunt-sass' );*/
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    grunt.registerTask( 'transforms', 'Creating forms.js', function() {
+    /*
+    grunt.registerTask( 'transforms', 'creating forms.js', function() {
         const forms = {};
         const done = this.async();
-        const jsonStringify = require( 'json-pretty' );
-        const formsJsPath = 'test/mock/forms.js';
-        const xformsPaths = grunt.file.expand( {}, 'test/forms/*.xml' );
+        const jsonstringify = require( 'json-pretty' );
+        const formsjspath = 'test/mock/forms.js';
+        const xformspaths = grunt.file.expand( {}, 'test/forms/*.xml' );
         const transformer = require( 'enketo-transformer' );
-        grunt.log.write( 'Transforming XForms ' );
-        xformsPaths
-            .reduce( ( prevPromise, filePath ) => prevPromise.then( () => {
-                const xformStr = grunt.file.read( filePath );
+        grunt.log.write( 'transforming xforms ' );
+        xformspaths
+            .reduce( ( prevpromise, filepath ) => prevpromise.then( () => {
+                const xformstr = grunt.file.read( filepath );
                 grunt.log.write( '.' );
 
-                return transformer.transform( { xform: xformStr } )
+                return transformer.transform( { xform: xformstr } )
                     .then( result => {
-                        forms[filePath.substring( filePath.lastIndexOf( '/' ) + 1 )] = {
+                        forms[filepath.substring( filepath.lastIndexOf( '/' ) + 1 )] = {
                             html_form: result.form,
                             xml_model: result.model
                         };
                     } );
             } ), Promise.resolve() )
             .then( () => {
-                grunt.file.write( formsJsPath, `export default ${jsonStringify( forms )};` );
+                grunt.file.write( formsjspath, `export default ${jsonstringify( forms )};` );
                 done();
             } );
     } );
+    */
 
     grunt.registerTask( 'compile', [ 'shell:rollup' ] );
-    grunt.registerTask( 'test', [ 'eslint:check', 'compile', 'transforms', 'karma:headless', 'css' ] );
-    grunt.registerTask( 'css', [ 'sass' ] );
-    grunt.registerTask( 'server', [ 'connect:server:keepalive' ] );
-    grunt.registerTask( 'develop_orig', [ 'css', 'compile', 'concurrent:develop' ] );
     grunt.registerTask( 'develop', [ 'compile' ] );
     grunt.registerTask( 'minify', [ 'uglify' ] );
-    grunt.registerTask( 'default', [ 'css', 'compile' ] );
+
 };

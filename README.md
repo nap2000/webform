@@ -10,7 +10,7 @@ Follow the [Smap blog](http://blog.smap.com.au) or go to the web site at [Smap](
 * Clone this repository.  The main branch is "production2"
 
 * Install Grunt
-    * Ensure python version 2.7.xx is installed
+    * Install Python
     * Install Node
     * Install Npm
     * sudo npm install -g n
@@ -27,7 +27,6 @@ Follow the [Smap blog](http://blog.smap.com.au) or go to the web site at [Smap](
     * npm install karma --save-dev
     * npm install grunt-karma --save-dev
     * npm install grunt-shell --save-dev
-    * npm install grunt-sass --save-dev
 
 
     * Install Grunt in ~/git/prop-smapserver and ~/git/webform
