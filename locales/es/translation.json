@@ -121,6 +121,9 @@
             "heading": "Error en la fórmula",
             "msg": "Error al validar una fórmula. Por favor contacte __emailLink__ indicando el error:"
         },
+        "returning": {
+            "heading": "Regresando"
+        },
         "file_storage": {
             "no_fs": "Su navegador no admite el almacenamiento de archivos adjuntos de gran tamaño. Por lo tanto, si agrega archivos multimedia de más de 2 megabytes, no los guarde como borrador. Además, si no está conectado cuando envía los datos, es posible que estos archivos adjuntos no se envíen."
         }

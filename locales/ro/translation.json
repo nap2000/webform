@@ -115,6 +115,9 @@
         "xpatherror": {
             "heading": "Eroare în formulă",
             "msg": "O eroare de evaluare de formulă a avut loc. Contactați __emailLink__ cu această eroare:"
+        },
+        "returning": {
+            "heading": "Revenire"
         }
     },
     "confirm": {

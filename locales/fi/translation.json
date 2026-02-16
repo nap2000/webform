@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Matemaattinen virhe",
             "msg": "Muotoiluvirhe esiintyi. Ole hyvä ja ota yhteyttä __emailLink__ ja liitä mukaan tämä virheilmoitus:"
+        },
+        "returning": {
+            "heading": "Palataan"
         }
     },
     "confirm": {

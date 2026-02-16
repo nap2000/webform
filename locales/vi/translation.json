@@ -115,6 +115,9 @@
         "xpatherror": {
             "heading": "Lỗi công thức",
             "msg": "Một lỗi mô phỏng công thức đã xảy ra. Xin liên hệ _emailLink_ về lỗi này:"
+        },
+        "returning": {
+            "heading": "Đang quay lại"
         }
     },
     "confirm": {

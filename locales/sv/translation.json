@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Formulärfel",
             "msg": "Ett fel inträffade vid utvärdering av formel. Vänligen kontakta __emailLink__ med det här felet:"
+        },
+        "returning": {
+            "heading": "Återvänder"
         }
     },
     "confirm": {

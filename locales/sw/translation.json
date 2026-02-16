@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Formula iko na kosa",
             "msg": "Kuna kosa kwenye fomula la uchambuzi. Tafadhali wasiliana nasi ututumie kosa hili kupitia __emailLink__ "
+        },
+        "returning": {
+            "heading": "Kurudi"
         }
     },
     "confirm": {

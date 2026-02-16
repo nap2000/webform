@@ -84,6 +84,9 @@
         "xpatherror": {
             "heading": "خطأ في الصيغة",
             "msg": " حدث خطأ اثناء التقييم. يرجى إلاتصال بـ __emailLink__ حول هذا الخطأ:"
+        },
+        "returning": {
+            "heading": "جارٍ الرجوع"
         }
     },
     "confirm": {

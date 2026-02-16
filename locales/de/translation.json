@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Formel-Fehler",
             "msg": "Ein Formelauswertungsfehler ist aufgetreten. Bitte kontaktieren Sie __emailLink__ mit diesem Fehler:"
+        },
+        "returning": {
+            "heading": "Zurück"
         }
     },
     "confirm": {

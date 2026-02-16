@@ -115,6 +115,9 @@
         "xpatherror": {
             "heading": "Feil i Formel",
             "msg": "En feil ved formel-evaluering oppstod. Vennligst kontakt __emailLink__ med denne feilmeldingen:"
+        },
+        "returning": {
+            "heading": "Returnerer"
         }
     },
     "confirm": {

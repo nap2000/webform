@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Formula fout",
             "msg": "Er is een formule evaluatie fout opgetreden. Contacteer __emailLink__ met deze fout beschrijving:"
+        },
+        "returning": {
+            "heading": "Terugkeren"
         }
     },
     "confirm": {

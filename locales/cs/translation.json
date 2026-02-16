@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Chyba při vyhodnocování Vzorce",
             "msg": "Došlo k chybě při vyhodnocování vzorce. Prosím kontaktujte __emailLink__ s touto chybou:"
+        },
+        "returning": {
+            "heading": "Návrat"
         }
     },
     "confirm": {

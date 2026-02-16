@@ -623,6 +623,17 @@
         } );
     }
 
+    function returnToPreviousWindow() {
+        window.onbeforeunload = undefined;
+        if ( window.opener && !window.opener.closed ) {
+            window.open( '', '_self' ).close();
+            return;
+        }
+        if ( window.history.length > 1 ) {
+            window.history.back();
+        }
+    }
+
     function getSubmitButtonLabel( isDraft ) {
         if ( isDraft ) {
             return t( 'formfooter.savedraft.btn' );
@@ -787,6 +798,12 @@
                 store.removeRecord(recordName);
             }
             console.log('After submission success, attempted to remove record with key:' + recordName + 'and files in folder:' + instanceID);
+            if ( isLaunchedForm() ) {
+                gui.alert( '', t( 'alert.returning.heading' ), 'info', 1 );
+                window.setTimeout( () => {
+                    returnToPreviousWindow();
+                }, 1000 );
+            }
         });
 
         $(document).on('progressupdate', 'form.or', function (event, status) {

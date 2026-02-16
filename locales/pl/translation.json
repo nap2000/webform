@@ -120,6 +120,9 @@
         "xpatherror": {
             "heading": "Błąd formuły",
             "msg": "Wystąpił błąd oceny formuły. Proszę skontaktuj się z __emailLink__ z następującym błędem:"
+        },
+        "returning": {
+            "heading": "Powrót"
         }
     },
     "confirm": {

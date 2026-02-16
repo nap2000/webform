@@ -115,6 +115,9 @@
         "xpatherror": {
             "heading": "公式错误",
             "msg": "出现公式求值错误。请联系与该错误相链接的 _邮箱_ ："
+        },
+        "returning": {
+            "heading": "正在返回"
         }
     },
     "confirm": {
