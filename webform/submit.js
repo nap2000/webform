@@ -520,7 +520,7 @@ function processResponse( response, record, foreground, saved ) {
 function reloadForm() {
     console.debug("Refresh Form");
     window.onbeforeunload = undefined;
-    window.location.reload(true);
+    window.location.href = window.location.pathname;
 }
 
 export default submit;
