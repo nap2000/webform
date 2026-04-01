@@ -133,7 +133,7 @@ summary {
     -webkit-flex: 1;
     -ms-flex: 1;
     flex: 1;
-    min-height: 210px;
+    min-height: 350px;
     position: relative;
 }
 .form-footer .content {
