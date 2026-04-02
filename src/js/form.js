@@ -314,6 +314,8 @@ Form.prototype.init = function() {
         // after repeats.init
         this.itemset.update();
 
+        this._setNolabelAriaLabels();
+
         // after repeats.init
         this.setAllVals();
 
@@ -363,6 +365,29 @@ Form.prototype.init = function() {
     document.querySelector( 'body' ).scrollIntoView();
 
     return loadErrors;
+};
+
+/**
+ * Adds aria-label to radio/checkbox inputs inside list-nolabel questions.
+ * The visible label text is hidden via CSS (display:none on .option-label.active),
+ * which removes it from the accessibility tree, so we copy it to aria-label.
+ *
+ * @param {Element} [context] - question element to scope the update; defaults to whole form
+ */
+Form.prototype._setNolabelAriaLabels = function( context ) {
+    const root = context || this.view.html;
+    const selector = context
+        ? 'input[type=radio], input[type=checkbox]'
+        : '.or-appearance-list-nolabel input[type=radio], .or-appearance-list-nolabel input[type=checkbox]';
+    root.querySelectorAll( selector ).forEach( input => {
+        const labelEl = input.closest( 'label' );
+        if ( labelEl ) {
+            const optionLabel = labelEl.querySelector( '.option-label.active' );
+            if ( optionLabel ) {
+                input.setAttribute( 'aria-label', optionLabel.textContent );
+            }
+        }
+    } );
 };
 
 /**
@@ -760,6 +785,14 @@ Form.prototype.validationUpdate = function( updated = {} ) {
  */
 Form.prototype.setEventHandlers = function() {
     const that = this;
+
+    // Re-apply aria-labels on list-nolabel questions when itemset options are updated
+    this.view.html.addEventListener( events.ChangeOption().type, event => {
+        const question = event.target.closest( '.or-appearance-list-nolabel' );
+        if ( question ) {
+            that._setNolabelAriaLabels( question );
+        }
+    } );
 
     // Prevent default submission, e.g. when text field is filled in and Enter key is pressed
     this.view.$.attr( 'onsubmit', 'return false;' );

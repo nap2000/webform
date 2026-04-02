@@ -30,6 +30,10 @@ class RankWidget extends Widget {
 
         this.itemSelector = 'label:not(.itemset-template)';
         this.list = $( this.element ).next( '.option-wrapper' ).addClass( 'widget rank-widget' ).attr( 'role', 'listbox' )[ 0 ];
+        const questionLabel = this.element.closest( '.question' ).querySelector( '.question-label.active' );
+        if ( questionLabel ) {
+            this.list.setAttribute( 'aria-label', questionLabel.textContent );
+        }
         this._originalItems = [ ...this.list.querySelectorAll( this.itemSelector ) ];
 
         $( this.list )
