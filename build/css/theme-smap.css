@@ -5834,9 +5834,9 @@ fieldset[disabled] .draw-widget__body__canvas {
     background: none; }
 .rank-widget input[type=text] {
     display: none; }
-.rank-widget .btn-reset {
-    margin-top: 5px;
-    order: 10; }
+.rank-widget + .btn-reset {
+    display: block;
+    margin: 5px auto 0; }
 
 .or-appearance-likert .option-wrapper {
     /*IE10*/

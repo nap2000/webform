@@ -29,12 +29,11 @@ class RankWidget extends Widget {
         const startTextKey = support.touch ? 'rankwidget.tapstart' : 'rankwidget.clickstart';
 
         this.itemSelector = 'label:not(.itemset-template)';
-        this.list = $( this.element ).next( '.option-wrapper' ).addClass( 'widget rank-widget' )[ 0 ];
+        this.list = $( this.element ).next( '.option-wrapper' ).addClass( 'widget rank-widget' ).attr( 'role', 'listbox' )[ 0 ];
+        this._originalItems = [ ...this.list.querySelectorAll( this.itemSelector ) ];
 
         $( this.list )
             .toggleClass( 'rank-widget--empty', !loadedValue )
-            .append( this.resetButtonHtml )
-            .append( `<div class="rank-widget__overlay"><span class="rank-widget__overlay__content" data-i18n="${startTextKey}">${support.touch ? t( 'rankwidget.tapstart' ) : t( 'rankwidget.clickstart' )}</span></div>` )
             .on( 'click', function() {
                 if ( !that.element.disabled ) {
                     this.classList.remove( 'rank-widget--empty' );
@@ -43,9 +42,23 @@ class RankWidget extends Widget {
                 }
             } );
 
-        this.list.querySelector( '.btn-reset' ).addEventListener( 'click', ( evt ) => {
+        // Insert reset button and overlay as siblings after the listbox, not inside it,
+        // to avoid breaking aria rules on the listbox role.
+        $( this.list ).after( this.resetButtonHtml );
+        this.resetBtn = this.list.nextElementSibling;
+        $( this.resetBtn ).after( `<div class="rank-widget__overlay"><span class="rank-widget__overlay__content" data-i18n="${startTextKey}">${support.touch ? t( 'rankwidget.tapstart' ) : t( 'rankwidget.clickstart' )}</span></div>` );
+
+        this.resetBtn.addEventListener( 'click', ( evt ) => {
             this._reset();
             evt.stopPropagation();
+        } );
+
+        this.resetBtn.nextElementSibling.addEventListener( 'click', () => {
+            if ( !that.element.disabled ) {
+                that.list.classList.remove( 'rank-widget--empty' );
+                that.originalInputValue = that.value;
+                that.element.dispatchEvent( events.FakeFocus() );
+            }
         } );
 
         this.element.classList.add( 'hide' );
@@ -75,7 +88,8 @@ class RankWidget extends Widget {
      * Resets widget
      */
     _reset() {
-
+        this._originalItems.forEach( item => this.list.appendChild( item ) );
+        this.originalInputValue = '';
     }
 
     /**
@@ -111,7 +125,7 @@ class RankWidget extends Widget {
             } );
 
             items.forEach( item => {
-                $( that.list ).find( '.btn-reset' ).before( $( item.parentNode ).detach() );
+                that.list.appendChild( $( item.parentNode ).detach()[ 0 ] );
             } );
         }
     }
@@ -120,11 +134,9 @@ class RankWidget extends Widget {
      * Disables widget
      */
     disable() {
-        $( this.element )
-            .prop( 'disabled', true )
-            .next( '.widget' )
-            .find( 'input, button' )
-            .prop( 'disabled', true );
+        $( this.element ).prop( 'disabled', true );
+        $( this.list ).find( 'input' ).prop( 'disabled', true );
+        $( this.resetBtn ).prop( 'disabled', true );
 
         sortable( this.list, 'disable' );
     }
@@ -133,11 +145,9 @@ class RankWidget extends Widget {
      * Enables widget
      */
     enable() {
-        $( this.element )
-            .prop( 'disabled', false )
-            .next( '.widget' )
-            .find( 'input, button' )
-            .prop( 'disabled', false );
+        $( this.element ).prop( 'disabled', false );
+        $( this.list ).find( 'input' ).prop( 'disabled', false );
+        $( this.resetBtn ).prop( 'disabled', false );
 
         sortable( this.list, 'enable' );
     }

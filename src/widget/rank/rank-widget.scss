@@ -53,8 +53,9 @@
     input[type=text] {
         display: none;
     }
-    .btn-reset {
-        margin-top: 5px;
-        order: 10;
-    }
+}
+
+.rank-widget + .btn-reset {
+    display: block;
+    margin: 5px auto 0;
 }
