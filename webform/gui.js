@@ -357,7 +357,7 @@
         cls = ( level === 'normal' ) ? '' : 'alert alert-' + level;
 
         //write content into alert dialog
-        $alert.find( '.modal-header h3' ).text( heading );
+        $alert.find( '.modal-header .modal-title' ).text( heading );
         $alert.find( '.modal-body p' ).removeClass().addClass( cls ).html( message ).capitalizeStart();
 
         $alert.find( '.close, .close-dialog' ).on( 'click', function() {
@@ -367,7 +367,7 @@
         $alert.show();
 
         $alert.on( 'hidden.bs.modal', function() {
-            $alert.find( '.modal-body h4, .modal-body p' ).html( '' );
+            $alert.find( '.modal-body .modal-title, .modal-body p' ).html( '' );
             clearInterval( timer );
         } );
 
@@ -420,7 +420,7 @@
         $dialog = $( '#dialog-confirm');
 
         //write content into confirmation dialog
-        $dialog.find( '.modal-body h4' ).text( heading );
+        $dialog.find( '.modal-body .modal-title' ).text( heading );
         $dialog.find( '.modal-body .msg' ).html( msg ).capitalizeStart();
         $dialog.find( '.modal-body .alert-danger' ).html( errorMsg ).show();
         if ( !errorMsg ) {
