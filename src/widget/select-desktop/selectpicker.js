@@ -75,12 +75,13 @@ class DesktopSelectpicker extends Widget {
      * @return {Element} HTML fragment
      */
     _getTemplate() {
+        const lisHtml = this._getLisHtml();
         const template = range.createContextualFragment( `
         <div class="btn-group bootstrap-select widget clearfix">
             <button type="button" class="btn btn-default dropdown-toggle clearfix" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="selected"></span><span class="caret"></span>
             </button>
-            <ul class="dropdown-menu" role="menu">${this._getLisHtml()}</ul>
+            <ul class="dropdown-menu"${lisHtml ? ' role="menu"' : ''}>${lisHtml}</ul>
         </div>` );
         this._showSelected( template.querySelector( '.selected' ) );
 

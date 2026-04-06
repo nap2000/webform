@@ -464,11 +464,11 @@ class Geopicker extends Widget {
         this.$widget = $(
             `<div class="geopicker widget">
                 <div class="search-bar hide-search no-map no-detect">
-                    <button type="button" class="hide-map-btn btn btn-default"><span class="icon icon-arrow-left"> </span></button>
+                    <button type="button" class="hide-map-btn btn btn-default" aria-label="Hide map"><span class="icon icon-arrow-left" aria-hidden="true"> </span></button>
                     <button name="geodetect" type="button" class="btn btn-default" title="detect current location" data-placement="top"><span class="icon icon-crosshairs"> </span></button>
                     <div class="input-group">
                         <input class="geo ignore" name="search" type="text" placeholder="${t( 'geopicker.searchPlaceholder' )}" data-i18n="geopicker.searchPlaceholder" disabled="disabled"/>
-                        <button type="button" class="btn btn-default search-btn"><i class="icon icon-search"> </i></button>
+                        <button type="button" class="btn btn-default search-btn" aria-label="Search"><i class="icon icon-search" aria-hidden="true"> </i></button>
                     </div>
                 </div>
                 <div class="geo-inputs">

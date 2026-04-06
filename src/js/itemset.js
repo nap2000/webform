@@ -358,7 +358,8 @@ export default {
         el.dataset.optionValue = value;
         if ( translation.src ) {
             el.src = translation.src;
-            el.alt = translation.alt;
+            // If there is also a text label the image is decorative — use empty alt to avoid redundancy.
+            el.alt = translation.text ? '' : ( translation.alt || '' );
         }
 
         return el;
