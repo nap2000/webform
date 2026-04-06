@@ -316,6 +316,17 @@
     };
 
     /**
+     * Shows a validation error in the feedback bar and auto-dismisses.
+     * Preferred over gui.alert for validation errors so focus can go to the invalid question.
+     *
+     * @param {string} message
+     * @param {number=} duration duration in seconds (default 5)
+     */
+    gui.validationError = function( message, duration ) {
+        feedbackBar.show( message, duration || 5 );
+    };
+
+    /**
      * Select what type of unobtrusive feedback message to show to the user.
      *
      * @param {string}  message

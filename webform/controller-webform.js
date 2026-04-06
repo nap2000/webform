@@ -299,7 +299,7 @@
             form.validate()
                 .then( function( valid ) {
                     if ( !valid && !draft) {
-                        gui.alert(t("alert.validationerror.msg"));
+                        gui.validationError(t("alert.validationerror.msg"));
                         return;
                     } else {
                         var originalUrl = window.location.href.split("?");
@@ -457,7 +457,7 @@
 
         document.body.dispatchEvent(new Event("before-save"));
         if (!form.isValid()) {
-            gui.alert(t("alert.validationerror.msg"));
+            gui.validationError(t("alert.validationerror.msg"));
             return;
         }
 
@@ -734,7 +734,7 @@
                     form.validate();
                     $button.btnBusyState(false);
                     if (!form.isValid()) {
-                        gui.alert(t("alert.validationerror.msg"));
+                        gui.validationError(t("alert.validationerror.msg"));
                         return;
                     }
                 }, 100);
