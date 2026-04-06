@@ -2732,6 +2732,9 @@ button {
     color: white; }
 .btn:focus, .vex.vex-theme-plain .vex-dialog-button:focus, .btn:link, .vex.vex-theme-plain .vex-dialog-button:link, .btn:active, .vex.vex-theme-plain .vex-dialog-button:active, .btn:visited, .vex.vex-theme-plain .vex-dialog-button:visited {
     text-decoration: none; }
+.btn:focus-visible, .vex.vex-theme-plain .vex-dialog-button:focus-visible {
+    outline: 3px solid #325e85;
+    outline-offset: 2px; }
 .btn.btn-default, .vex.vex-theme-plain .btn-default.vex-dialog-button {
     background-color: white;
     border-color: #cccccc;
