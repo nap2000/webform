@@ -3804,7 +3804,9 @@ legend .required {
         margin: 20px -20px -20px -20px; } }
 
 .bootstrap-select {
-    margin-top: 15px; }
+    margin-top: 15px;
+    width: 100%;
+    display: block; }
 .bootstrap-select .dropdown-toggle {
     width: 218.99632px;
     font-family: 'OpenSans', Arial, sans-serif;

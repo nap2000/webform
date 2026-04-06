@@ -3797,9 +3797,11 @@ legend .required {
         margin: 20px -20px -20px -20px; } }
 
 .bootstrap-select {
-    margin-top: 15px; }
+    margin-top: 15px;
+    width: 100%;
+    display: block; }
 .bootstrap-select .dropdown-toggle {
-    width: 374.3272px;
+    width: 100%;
     font-family: 'OpenSans', Arial, sans-serif;
     font-weight: normal;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
