@@ -134,6 +134,7 @@
 
                 setEventHandlers();
                 setSubmitLogic();
+                focusFirstQuestion();
 
                 // Save current data so we can check if there have been changes
                 startEditData = form.getDataStr(true, true);
@@ -646,6 +647,13 @@
         $( '#submit-form' ).text( getSubmitButtonLabel( isDraft ) );
     }
 
+    function focusFirstQuestion() {
+        var $first = $form.find( '.question:not(.disabled) :input:visible' ).first();
+        if ( $first.length ) {
+            $first.focus();
+        }
+    }
+
     function setEventHandlers() {
 
         $('button#reset-form')
@@ -1002,6 +1010,7 @@
         $formprogress = $('.form-progress');
 
         setEventHandlers();
+        focusFirstQuestion();
 
         // Save current data so we can check if there have been changes
         if (setAsChanged) {
