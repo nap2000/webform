@@ -253,7 +253,7 @@ function getMediaFromStore(dbStore, directory, model) {
                     }
                 }
                 if (notfound.length > 0) {
-                    alert("Cound not find the following files: " + notfound.join(""));
+                    gui.alert(t('alert.submissionerror.missingfiles', { files: notfound.join(', ') }), t('alert.submissionerror.heading'));
                 }
                 resolve(media);
 
@@ -410,7 +410,7 @@ function getNewKey(record) {
             if(xhr.readyState == 0 || xhr.status == 0) {
                 return;  // Not an error
             } else {
-                alert("Error: Failed to get access key: " + err);
+                gui.alert(t('alert.submissionerror.accesskey', { error: err }), t('alert.submissionerror.heading'));
             }
         }
     });

@@ -78,14 +78,12 @@
                 let request = window.indexedDB.open(databaseName, webformDbVersion);
 
                 request.onerror = function (e) {
-                    console.log('Error', e.target.error.message);
-                    //alert('Error', e.target.error.message);
+                    console.error('IndexedDB open error', e.target.error.message);
                     reject(e);
                 };
 
                 request.onblocked = function (e) {
-                    console.log('Error', e.target.error.message);
-                    alert('Error', e.target.error.message);
+                    console.error('IndexedDB open blocked', e.target.error.message);
                     reject(e);
                 };
 
@@ -191,7 +189,7 @@
 
             var transaction = db.transaction([mediaStoreName], "readwrite");
             transaction.onerror = function (e) {
-                alert("Error: failed to open transaction to save file " + media.name);
+                console.error("Failed to open transaction to save file " + media.name, e.target.error);
             };
 
             var objectStore = transaction.objectStore(mediaStoreName);
@@ -233,7 +231,7 @@
 
                 let transaction = db.transaction( [ lastSavedStoreName ], "readonly" );
                 transaction.onerror = function( e ) {
-                    alert( "Error: failed to open transaction to write get last saved record " + name );
+                    console.error( "Failed to open transaction to get last saved record " + name, e.target.error );
                     reject(e);
                 };
 
@@ -263,7 +261,7 @@
 
                 let transaction = db.transaction( [ lastSavedStoreName ], "readwrite" );
                 transaction.onerror = function( e ) {
-                    alert( "Error: failed to open transaction to delete saved record " + name );
+                    console.error( "Failed to open transaction to delete saved record " + name, e.target.error );
                     reject(e);
                 };
 
@@ -286,7 +284,7 @@
 
             let transaction = db.transaction([logStoreName], "readwrite");
             transaction.onerror = function (e) {
-                alert("Error: failed to open transaction to write log entry " + name);
+                console.error("Failed to open transaction to write log entry " + name, e.target.error);
             };
 
             // Ensure date is unique as it is used as a unique key
@@ -431,7 +429,7 @@
             open().then((db) => {
                 var transaction = db.transaction([recordStoreName], "readwrite");
                 transaction.onerror = function (event) {
-                    alert("Error: failed to add record ");
+                    console.error("Failed to add record", event.target.error);
                 };
 
                 var objectStore = transaction.objectStore(recordStoreName);

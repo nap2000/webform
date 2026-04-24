@@ -98,7 +98,9 @@
                 "The following media files could not be retrieved: __failedFiles__. The submission went ahead without these files and this succeeded.",
                 "Please contact __supportEmail__ to report a bug and if possible explain how the issue can be reproduced."
             ],
-            "heading": "Submission Failed"
+            "heading": "Submission Failed",
+            "missingfiles": "Could not find the following files: __files__",
+            "accesskey": "Failed to get access key: __error__"
         },
         "submissionsuccess": {
             "heading": "Submission Successful",
