@@ -245,8 +245,8 @@ FormModel.prototype.createSession = function( id, sessObj ) {
 };
 
 /**
- * For some unknown reason we cannot use doc.getElementById(id) or doc.querySelector('#'+id)
- * in IE11. This function is a replacement for this specifically to find a secondary instance.
+ * Finds a secondary instance by id. Uses querySelectorAll rather than getElementById
+ * because getElementById is unreliable on XML documents without a DTD declaring id attribute types.
  *
  * @param  {string} id - DOM element id.
  * @return {Element|undefined} secondary instance XML element
@@ -280,46 +280,6 @@ FormModel.prototype.node = function( selector, index, filter ) {
     return new Nodeset( selector, index, filter, this );
 };
 
-/**
- * Alternative adoptNode on IE11 (http://stackoverflow.com/questions/1811116/ie-support-for-dom-importnode)
- * TODO: remove to be replaced by separate IE11-only polyfill file/service
- *
- * @param {Element} node - Node to be imported
- * @param {Array<Node>} allChildren - All children of imported Node
- */
-FormModel.prototype.importNode = function( node, allChildren ) {
-    let i;
-    let il;
-    switch ( node.nodeType ) {
-        case document.ELEMENT_NODE: {
-            const newNode = document.createElementNS( node.namespaceURI, node.nodeName );
-            if ( node.attributes && node.attributes.length > 0 ) {
-                for ( i = 0, il = node.attributes.length; i < il; i++ ) {
-                    const attr = node.attributes[ i ];
-                    if ( attr.namespaceURI ) {
-                        newNode.setAttributeNS( attr.namespaceURI, attr.nodeName, node.getAttributeNS( attr.namespaceURI, attr.localName ) );
-                    } else {
-                        newNode.setAttribute( attr.nodeName, node.getAttribute( attr.nodeName ) );
-                    }
-                }
-            }
-            if ( allChildren && node.children.length ) {
-                for ( i = 0, il = node.children.length; i < il; i++ ) {
-                    newNode.appendChild( this.importNode( node.children[ i ], allChildren ) );
-                }
-            }
-            if ( !node.children.length && node.textContent ) {
-                newNode.textContent = node.textContent;
-            }
-
-            return newNode;
-        }
-        case document.TEXT_NODE:
-        case document.CDATA_SECTION_NODE:
-        case document.COMMENT_NODE:
-            return document.createTextNode( node.nodeValue );
-    }
-};
 /**
  * Merges an XML instance string into the XML Model
  *
@@ -428,8 +388,7 @@ FormModel.prototype.mergeXml = function( recordStr ) {
             const path = getXPath( leafNode, 'instance', true );
             const instanceNode = that.node( path, 0 ).getElement();
             if ( instanceNode ) {
-                // TODO: after dropping support for IE11, we can also use instanceNode.children.length
-                if ( that.evaluate( './*', 'nodes', path, 0, true ).length === 0 ) {
+                if ( instanceNode.children.length === 0 ) {
                     // Select all text nodes (excluding repeat COMMENT nodes!)
                     that.evaluate( './text()', 'nodes', path, 0, true ).forEach( node => {
                         node.textContent = '';
@@ -478,14 +437,8 @@ FormModel.prototype.mergeXml = function( recordStr ) {
 
     // Remove the primary instance childnode from the original model
     this.xml.querySelector( 'instance' ).removeChild( modelInstanceChildEl );
-    // checking if IE
-    if ( window.navigator.userAgent.indexOf( 'Trident/' ) >= 0 ) {
-        // IE does not support adoptNode
-        modelInstanceChildEl = this.importNode( mergeResultDoc.documentElement, true );
-    } else {
-        // adopt the merged instance childnode
-        modelInstanceChildEl = this.xml.adoptNode( mergeResultDoc.documentElement, true );
-    }
+    // adopt the merged instance childnode
+    modelInstanceChildEl = this.xml.adoptNode( mergeResultDoc.documentElement, true );
     // append the adopted node to the primary instance
     modelInstanceEl.appendChild( modelInstanceChildEl );
     // reset the rootElement
@@ -846,10 +799,7 @@ FormModel.prototype.getStr = function() {
     dataStr = dataStr.replace( /\s(data-)(xmlns=("|')[^\s>]+("|'))/g, ' $2' );
     // remove repeat comments
     dataStr = dataStr.replace( new RegExp( `<!--${REPEAT_COMMENT_PREFIX}\\/[^>]+-->`, 'g' ), '' );
-    // If not IE, strip duplicate namespace declarations. IE doesn't manage to add a namespace declaration to the root element.
-    if ( navigator.userAgent.indexOf( 'Trident/' ) === -1 ) {
-        dataStr = this.removeDuplicateEnketoNsDeclarations( dataStr );
-    }
+    dataStr = this.removeDuplicateEnketoNsDeclarations( dataStr );
 
     return dataStr;
 };

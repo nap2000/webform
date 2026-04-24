@@ -282,7 +282,7 @@ export default {
                     // Use today's date to incorporate daylight savings changes,
                     // Strip the thousands of a second, because most browsers fail to parse such a time.
                     // Add a space before the timezone offset to satisfy some browsers.
-                    // For IE11, we also need to strip the Left-to-Right marks \u200E...
+                    // Strip Left-to-Right marks (\u200E) that some browsers add in toLocaleDateString...
                     const ds = `${new Date().toLocaleDateString( 'en', {
                         month: 'short',
                         day: 'numeric',

@@ -169,7 +169,7 @@ function dataUriToBlobSync( dataURI ) {
  * @return {string|null} clipboard data text value contained in event or null
  */
 function getPasteData( event ) {
-    const clipboardData = event.clipboardData || window.clipboardData; // modern || IE11
+    const clipboardData = event.clipboardData;
 
     return ( clipboardData ) ? clipboardData.getData( 'text' ) : null;
 }

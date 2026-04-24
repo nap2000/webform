@@ -66,12 +66,7 @@ export default {
      */
         form.addEventListener( 'blur', event => {
             if ( event.target.matches( selector ) ){
-            // proper browsers:
-                if ( typeof event.target.validity !== 'undefined' && typeof event.target.validity.badInput !== 'undefined' && event.target.validity.badInput ) {
-                    event.target.value = '';
-                }
-                // IE11 (no validity.badInput support, but does give access to invalid number with event.target.value)
-                else if ( typeof event.target.validity.badInput === 'undefined' && event.target.value && !validRegex.test( event.target.value.trim() ) ) {
+                if ( event.target.validity && event.target.validity.badInput ) {
                     event.target.value = '';
                 }
             }
