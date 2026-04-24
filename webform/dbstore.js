@@ -141,7 +141,7 @@
 
     /*
      * Delete all media with the specified prefix
-     * An explicit boolean "all" is added in case the function is called accidnetially with an undefined directory
+     * An explicit boolean "all" is added in case the function is called accidentally with an undefined directory
      */
     dbStore.delete = function(dirname, all) {
 
@@ -177,18 +177,6 @@
                 //db.close();
             });
 
-            // Delete any entries in localstorage
-            for (var key in localStorage) {
-                if ((all && key.startsWith(FM_STORAGE_PREFIX)) || key.startsWith()) {
-
-                    var item = localStorage.getItem(key);
-                    if (item) {
-                        window.URL.revokeObjectURL(item);
-                    }
-                    console.log("Delete item: " + key);
-                    localStorage.removeItem(key);
-                }
-            }
         }
 
     };
