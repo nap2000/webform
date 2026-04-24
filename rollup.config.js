@@ -5,7 +5,8 @@ export default {
     input: 'app.js',
     output: {
         file: 'build/js/enketo-bundle.js',
-        format: 'iife'
+        format: 'iife',
+        inlineDynamicImports: true
     },
     plugins: [
         resolve( {

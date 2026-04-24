@@ -57,7 +57,8 @@ module.exports = config => {
         rollupPreprocessor: {
             output: {
                 format: 'iife',
-                name: 'test'
+                name: 'test',
+                inlineDynamicImports: true
             },
             plugins: [
                 resolve.default ? resolve.default( { browser: true } ) : resolve( { browser: true } ),

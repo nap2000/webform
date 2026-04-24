@@ -2,8 +2,8 @@
 'use strict';
 
 import settings from'./settings';
-import i18next from 'i18next' ;
-import XHR from 'i18next-xhr-backend' ;
+import i18next from 'i18next';
+import HttpBackend from 'i18next-http-backend';
 
 import LanguageDetector from'i18next-browser-languagedetector' ;
 var init;
@@ -43,15 +43,15 @@ t.init = init;      // smap add to t
 
 initialize = new Promise( function( resolve, reject ) {
     i18next
-        .use( XHR )
+        .use( HttpBackend )
         .use( LanguageDetector )
         .use( htmlParagraphsPostProcessor )
         .init( {
-            whitelist: settings.languagesSupported,
+            supportedLngs: settings.languagesSupported,
             fallbackLng: 'en',
             joinArrays: '\n',
             backend: {
-                loadPath: '/build/locales/__lng__/translation.json',
+                loadPath: '/build/locales/{{lng}}/translation.json',
             },
             load: 'languageOnly',
             lowerCaseLng: true,
