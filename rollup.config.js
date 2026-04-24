@@ -14,7 +14,7 @@ export default {
             browser: true, // Default: false
         } ),
         commonjs( {
-            include: 'node_modules/**', // Default: undefined
+            include: [ 'node_modules/**', 'src/js/xpath/**' ], // Default: undefined
             sourceMap: false, // Default: true
         } )
     ]
