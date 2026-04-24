@@ -1,14 +1,9 @@
 // Karma configuration
-// Generated on Mon Mar 16 2015 13:42:33 GMT-0600 (MDT)
-const resolve = require( 'rollup-plugin-node-resolve' );
-const commonjs = require( 'rollup-plugin-commonjs' );
-const json = require( 'rollup-plugin-json' );
+const resolve = require( '@rollup/plugin-node-resolve' );
+const commonjs = require( '@rollup/plugin-commonjs' );
+const json = require( '@rollup/plugin-json' );
 const path = require( 'path' );
 const rollupIstanbul = require( 'rollup-plugin-istanbul' );
-const istanbul = require( 'istanbul' );
-const shieldBadgeReporter = require( 'istanbul-reporter-shield-badge' );
-
-istanbul.Report.register( shieldBadgeReporter );
 
 module.exports = config => {
 
@@ -66,14 +61,15 @@ module.exports = config => {
                 name: 'test'
             },
             plugins: [
-                resolve( {
-                    browser: true, // Default: false
+                resolve.default ? resolve.default( { browser: true } ) : resolve( { browser: true } ),
+                commonjs.default ? commonjs.default( {
+                    include: 'node_modules/**',
+                    sourceMap: false,
+                } ) : commonjs( {
+                    include: 'node_modules/**',
+                    sourceMap: false,
                 } ),
-                commonjs( {
-                    include: 'node_modules/**', // Default: undefined
-                    sourceMap: false, // Default: true
-                } ),
-                json(), // still used for importing package.json
+                ( json.default || json )(),
                 rollupIstanbul( {
                     include: [
                         'src/js/*.js',
@@ -90,8 +86,6 @@ module.exports = config => {
         },
 
         // test results reporter to use
-        // possible values: 'dots', 'progress'
-        // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: [ 'progress', 'coverage' ],
 
 
@@ -101,15 +95,6 @@ module.exports = config => {
                 // for in-depth analysis in your browser
                 {
                     type: 'html',
-                    includeAllSources: true
-                },
-                // for generating coverage badge in README.md
-                {
-                    type: 'shield-badge',
-                    range: [ 60, 80 ],
-                    subject: 'coverage',
-                    readmeFilename: 'README.md',
-                    readmeDir: path.resolve( __dirname, '..' ),
                     includeAllSources: true
                 },
                 // for displaying percentages summary in command line
@@ -130,7 +115,6 @@ module.exports = config => {
 
 
         // level of logging
-        // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_ERROR,
 
 
@@ -139,12 +123,10 @@ module.exports = config => {
 
 
         // start these browsers
-        // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
         browsers: [],
 
 
         // Continuous Integration mode
-        // if true, Karma captures browsers, runs the tests and exits
         singleRun: false,
 
         browserify: {},

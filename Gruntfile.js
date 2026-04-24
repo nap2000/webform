@@ -54,20 +54,20 @@ module.exports = grunt => {
         },
         karma: {
             options: {
-                singlerun: true,
-                configfile: 'test/karma.conf.js',
-                customlaunchers: {
-                    chromeheadlessnosandbox: {
-                        base: 'chromeheadless',
+                singleRun: true,
+                configFile: 'test/karma.conf.js',
+                customLaunchers: {
+                    ChromeHeadlessNoSandbox: {
+                        base: 'ChromeHeadless',
                         flags: [ '--no-sandbox' ]
                     }
                 }
             },
             headless: {
-                browsers: [ 'chromeheadlessnosandbox' ]
+                browsers: [ 'ChromeHeadlessNoSandbox' ]
             },
             browsers: {
-                browsers: [ 'chrome', 'firefox', 'safari' ]
+                browsers: [ 'Chrome', 'Firefox', 'Safari' ]
             }
         },
         shell: {

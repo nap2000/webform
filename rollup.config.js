@@ -1,5 +1,5 @@
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 
 export default {
     input: 'app.js',
@@ -9,13 +9,12 @@ export default {
     },
     plugins: [
         resolve( {
-            module: true, // Default: true
-            main: true, // Default: true
-            browser: true, // Default: false
+            mainFields: [ 'browser', 'module', 'main' ],
+            browser: true,
         } ),
         commonjs( {
-            include: [ 'node_modules/**', 'src/js/xpath/**' ], // Default: undefined
-            sourceMap: false, // Default: true
+            include: [ 'node_modules/**', 'src/js/xpath/**' ],
+            sourceMap: false,
         } )
     ]
 };
