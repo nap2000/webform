@@ -121,12 +121,16 @@ module.exports = config => {
         autoWatch: false,
 
 
-        // start these browsers
-        browsers: [],
+        customLaunchers: {
+            ChromeHeadlessNoSandbox: {
+                base: 'ChromeHeadless',
+                flags: [ '--no-sandbox' ]
+            }
+        },
 
+        browsers: [ 'ChromeHeadlessNoSandbox' ],
 
-        // Continuous Integration mode
-        singleRun: false,
+        singleRun: true,
 
         browserify: {},
     } );

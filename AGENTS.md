@@ -3,53 +3,35 @@
 Purpose: quick rules for agents in this repo.
 
 Repo: webform (enketo-core fork).
-Branch: main is production2 per README.
-
-No Cursor/Copilot rules found in `.cursor/rules/`, `.cursorrules`, `.github/copilot-instructions.md`.
+Branch: main.
 
 ## Setup
-Node: 12.22.1 (volta in package.json).
-npm: 6.x required; npm 7 not ok (tutorials/20-development.md).
-Python: 2.7 required for some tooling (README).
+Node: 24 (volta in package.json).
 Install deps: `npm install`.
-Grunt CLI: `npm install -g grunt-cli`.
 
 ## Build
-Default build: `grunt` or `npx grunt`.
-Compile JS: `grunt compile` (rollup).
-CSS: edit `build/css/` directly — Sass sources removed, CSS is the source of truth.
-Minify: `grunt minify`.
+Compile JS: `npm run compile` (rollup → `build/js/enketo-bundle.js`).
+Minify: `npm run minify` (terser → `build/js/bundle.min.js`).
+Deploy: `./dep.sh` (minified) or `./dep.sh develop` (unminified).
 Docs: `npm run build-docs`.
-Docs remove: `npm run remove-docs`.
 
 ## Dev server
-Start dev: `npm start` (grunt develop).
-Server port: 8005.
-Base paths: `test/forms`, `test/temp`, `build` (Gruntfile).
-Load XForm via `?xform=` or local `/test/forms`.
+Start: `npm start` (http-server on port 8005, serves `build/`).
 
 ## Lint
-Lint check: `grunt eslint:check`.
-Lint fix: `grunt eslint:fix` or `npm run beautify`.
-Lint also runs in `grunt test`.
+Lint check: `npm run lint`.
+Lint fix: `npm run lint:fix` or `npm run beautify`.
 
 ## Tests
-All tests: `npm test` (grunt test).
-Headless only: `grunt karma:headless`.
-All browsers: `npm run test-browsers` or `grunt karma:browsers`.
+All tests: `npm test` (lint + headless karma).
+Headless only: `npm run test:headless`.
+All browsers: `npm run test:browsers`.
 Coverage output: `test-coverage/`.
-Coverage badge writes `README.md` during tests; avoid committing unless release.
 
 ## Single test workflow
-Preferred: use Jasmine focus.
-Use `fit` or `fdescribe` in a spec, run `grunt karma:headless`.
-Remember to revert focus before final commit.
+Use Jasmine focus: add `fit` or `fdescribe` in a spec, run `npm run test:headless`.
+Revert focus before final commit.
 Spec location: `test/spec/*.spec.js`.
-
-## Release notes
-Docs rebuilt per release only.
-Publish flow: `npm run publish-please` (runs tests, lint fix, docs).
-Use `npx publish-please --dry-run` to check.
 
 ## Code style (ESLint + EditorConfig)
 Indent: 4 spaces; no tabs.
@@ -69,7 +51,7 @@ Console: warn; allow `console.error`, `console.deprecate`, `console.warn`.
 
 ## JS modules/imports
 ES modules allowed; parser sourceType module.
-CommonJS also used in build/test files.
+CommonJS also used in build/test files (vendored xpath/ and karma config).
 Keep import order: standard libs, external deps, local modules.
 One import per module; no wildcard unless needed.
 
@@ -94,9 +76,9 @@ Jasmine specs in `test/spec/`.
 Use `describe`/`it`; keep deterministic, no random.
 TZ forced to America/Phoenix in karma; avoid time zone assumptions.
 
-## CSS/Sass
+## CSS
 CSS: edit `build/css/` directly. No Sass — sources were removed.
-Themes: `plain`, `grid`, `formhub` (see tutorials).
+Themes: `theme-smap.css`, `theme-grid.css`, `webform.css` (and `.print` variants).
 Consider touch vs non-touch, page modes, RTL, print, repeats, sizes.
 
 ## Assets/build outputs
@@ -108,30 +90,24 @@ Entry: `src/js/form.js`.
 Config shim: `config.js` mapped in package.json browser field.
 Karma config: `test/karma.conf.js`.
 ESLint configs: `.eslintrc.json`, `test/.eslintrc.json`.
-
-## Agent tips
-Use `npx grunt` if global grunt missing.
-Node 12 only; newer npm can break installs.
-If tests fail on coverage badge, avoid committing README changes.
+XPath (vendored): `src/js/xpath/` — do not update from npm.
 
 ## Quick command list
 `npm install`
+`npm run compile`
+`npm run minify`
 `npm start`
-`grunt`
-`grunt compile`
-`grunt css`
-`grunt test`
-`grunt karma:headless`
-`grunt karma:browsers`
-`grunt eslint:check`
-`grunt eslint:fix`
+`npm test`
+`npm run test:headless`
+`npm run test:browsers`
+`npm run lint`
+`npm run lint:fix`
 `npm run build-docs`
-`npm run publish-please`
 
 ## File locations
 JS core: `src/js/`.
 Widgets: `src/widget/`.
-Tests: `test/spec/`, `test/mock/`, `test/forms/`.
+Tests: `test/spec/`, `test/helpers/`.
 CSS: `build/css/`.
 Build: `build/`.
 
@@ -139,10 +115,11 @@ Build: `build/`.
 Do not run destructive git commands.
 Do not commit auto-gen docs unless release.
 Do not leave focused tests in specs.
+Do not run `npm update` (vendored xpath customisations in `src/js/xpath/`).
 
 ## When adding code
-Follow ESLint; run `grunt eslint:check`.
-Add/adjust tests when behavior changes.
+Follow ESLint; run `npm run lint`.
+Add/adjust tests when behaviour changes.
 Update changelog only if asked.
 
 ## Notes
