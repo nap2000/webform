@@ -108,8 +108,7 @@
         "jquery": "^3.6.0",
         "jquery-touchswipe": "^1.6.19",
         "leaflet": "^1.7.1",
-        "leaflet-draw": "github:enketo/Leaflet.draw#ff73078",
-        "leaflet.gridlayer.googlemutant": "^0.12.1",
+"leaflet.gridlayer.googlemutant": "^0.12.1",
         "mergexml": "1.2.1",
         "node-forge": "^0.10.0",
 "signature_pad": "2.3.x"

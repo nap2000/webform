@@ -53,7 +53,7 @@ const iconRedMultiActive = L.divIcon( {
 } );
 
 // Leaflet extensions.
-import 'leaflet-draw';
+import '../../js/leaflet-draw';
 import 'leaflet.gridlayer.googlemutant';
 import { getCurrentPosition } from '../../js/geolocation';
 
