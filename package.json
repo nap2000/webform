@@ -60,7 +60,6 @@
         "grunt-eslint": "^23.0.0",
         "grunt-i18next": "^0.2.0",
         "grunt-karma": "^4.0.2",
-        "grunt-sass": "^3.1.0",
         "grunt-shell": "3.0.1",
         "i18next-parser": "^3.11.0",
         "istanbul": "^0.4.5",
@@ -76,8 +75,7 @@
         "karma-rollup-preprocessor": "^7.0.7",
         "karma-safari-launcher": "^1.0.0",
         "load-grunt-tasks": "^5.1.0",
-        "node-sass": "^6.0.0",
-        "publish-please": "^5.5.2",
+"publish-please": "^5.5.2",
         "rimraf": "^3.0.2",
         "rollup": "^2.79.2",
         "rollup-plugin-commonjs": "^10.1.0",
@@ -114,6 +112,6 @@
 "signature_pad": "2.3.x"
     },
     "volta": {
-        "node": "12.22.1"
+        "node": "24.12.0"
     }
 }

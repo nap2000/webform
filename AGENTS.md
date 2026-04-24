@@ -17,7 +17,7 @@ Grunt CLI: `npm install -g grunt-cli`.
 ## Build
 Default build: `grunt` or `npx grunt`.
 Compile JS: `grunt compile` (rollup).
-CSS build: `grunt css` (sass -> build/css).
+CSS: edit `build/css/` directly — Sass sources removed, CSS is the source of truth.
 Minify: `grunt minify`.
 Docs: `npm run build-docs`.
 Docs remove: `npm run remove-docs`.
@@ -95,7 +95,7 @@ Use `describe`/`it`; keep deterministic, no random.
 TZ forced to America/Phoenix in karma; avoid time zone assumptions.
 
 ## CSS/Sass
-Sass sources in `src/sass/` and `src/widget/**`.
+CSS: edit `build/css/` directly. No Sass — sources were removed.
 Themes: `plain`, `grid`, `formhub` (see tutorials).
 Consider touch vs non-touch, page modes, RTL, print, repeats, sizes.
 
@@ -132,7 +132,7 @@ If tests fail on coverage badge, avoid committing README changes.
 JS core: `src/js/`.
 Widgets: `src/widget/`.
 Tests: `test/spec/`, `test/mock/`, `test/forms/`.
-Sass: `src/sass/`.
+CSS: `build/css/`.
 Build: `build/`.
 
 ## Do not do

@@ -77,7 +77,6 @@ module.exports = grunt => {
         }
     } );
 
-    // Sass compilation is handled separately — run: sass src/sass/theme.scss build/css/theme.css
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
     grunt.registerTask( 'compile', [ 'shell:rollup' ] );
