@@ -36,9 +36,11 @@
     "bugs": "https://github.com/enketo/enketo-core/issues",
     "main": "src/js/form.js",
     "scripts": {
-        "compile": "rollup --config",
+        "compile": "rollup --config && rollup --config rollup.zxing.config.js",
+        "compile:main": "rollup --config",
+        "compile:zxing": "rollup --config rollup.zxing.config.js",
         "start": "http-server build -p 8005",
-        "minify": "terser build/js/enketo-bundle.js --compress --mangle --keep-classnames -o build/js/bundle.min.js",
+        "minify": "terser build/js/enketo-bundle.js --compress --mangle --keep-classnames -o build/js/bundle.min.js && terser build/js/zxing-bundle.js --compress --mangle --keep-classnames -o build/js/zxing-bundle.min.js",
         "test": "cross-env NODE_OPTIONS='--max-old-space-size=8192' npm run lint && npm run test:headless",
         "test:headless": "cross-env NODE_OPTIONS='--max-old-space-size=8192' karma start test/karma.conf.js",
         "test:browsers": "cross-env NODE_OPTIONS='--max-old-space-size=8192' karma start test/karma.conf.js --browsers Chrome,Firefox,Safari",

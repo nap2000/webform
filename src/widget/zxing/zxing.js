@@ -1,10 +1,8 @@
 import Widget from '../../js/widget';
-import { NotFoundException, BrowserMultiFormatReader } from '@zxing/library';
 import $ from 'jquery';
 import { t } from 'enketo/translator';
 import events from '../../js/event';
-
-
+import config from 'enketo/config';
 
 /**
  * Barcode and QR code scanning
@@ -20,66 +18,84 @@ class Zxing extends Widget {
     }
 
     _init() {
+        return this._loadZxingLibrary()
+            .then( ( { BrowserMultiFormatReader, NotFoundException } ) => {
+                this._NotFoundException = NotFoundException;
 
-        this._addDomElements();
+                this._addDomElements();
 
-        this.codeReader = new BrowserMultiFormatReader();
+                this.codeReader = new BrowserMultiFormatReader();
 
-        this.$video = this.$widget.find( '.video' );
-        this.videoId = 'video' + this.element.getAttribute( 'name' );
-        this.$video.attr( 'id', this.videoId );
-        this.$sourceSelect = this.$widget.find( '.sourceSelect' );
-        this.$start = this.$widget.find( '.startButton' );
-        this.$stop = this.$widget.find( '.stopButton' );
-        this.$showResult = this.$widget.find( '.showResult' );
+                this.$video = this.$widget.find( '.video' );
+                this.videoId = 'video' + this.element.getAttribute( 'name' );
+                this.$video.attr( 'id', this.videoId );
+                this.$sourceSelect = this.$widget.find( '.sourceSelect' );
+                this.$start = this.$widget.find( '.startButton' );
+                this.$stop = this.$widget.find( '.stopButton' );
+                this.$showResult = this.$widget.find( '.showResult' );
 
-        this.$start.on( 'click', () => {
-            this._startDecoding();
-        } );
+                this.$start.on( 'click', () => {
+                    this._startDecoding();
+                } );
 
-        this.$stop.on( 'click', () => {
-            this._stopDecoding();
-        } );
+                this.$stop.on( 'click', () => {
+                    this._stopDecoding();
+                } );
 
-        this.$video.hide();
-        this.$stop.hide();
+                this.$video.hide();
+                this.$stop.hide();
 
-        this.codeReader.listVideoInputDevices()
-            .then( ( videoInputDevices ) => {
+                this.codeReader.listVideoInputDevices()
+                    .then( ( videoInputDevices ) => {
+                        this.selectedDeviceId = videoInputDevices[0].deviceId;
+                        if ( videoInputDevices.length >= 1 ) {
+                            videoInputDevices.forEach( ( element ) => {
+                                let sourceOption = document.createElement( 'option' );
+                                sourceOption.text = element.label;
+                                sourceOption.value = element.deviceId;
+                                this.$sourceSelect.append( sourceOption );
+                            } );
 
-                this.selectedDeviceId = videoInputDevices[0].deviceId;
-                if ( videoInputDevices.length >= 1 ) {
-                    videoInputDevices.forEach( ( element ) => {
-                        let sourceOption = document.createElement( 'option' );
-                        sourceOption.text = element.label;
-                        sourceOption.value = element.deviceId;
-                        this.$sourceSelect.append( sourceOption );
-                    } );
-
-                    this.$sourceSelect.on( 'change' , ( event ) => {
-                        this.selectedDeviceId = event.target.value;
-                        if( this.codeReader.isVideoPlaying( this.$video[0] ) ) {
-                            this.codeReader.reset();
-                            this._startDecoding();
+                            this.$sourceSelect.on( 'change', ( event ) => {
+                                this.selectedDeviceId = event.target.value;
+                                if ( this.codeReader.isVideoPlaying( this.$video[0] ) ) {
+                                    this.codeReader.reset();
+                                    this._startDecoding();
+                                }
+                            } );
                         }
+                    } )
+                    .catch( ( err ) => {
+                        console.error( err );
                     } );
 
+                // load default value
+                if ( this.originalInputValue ) {
+                    this.value = this.originalInputValue;
                 }
-
-            } )
-            .catch( ( err ) => {
-                console.error( err );
             } );
+    }
 
-
-        // load default value
-        if ( this.originalInputValue ) {
-            this.value = this.originalInputValue;
+    /**
+     * Loads the ZXing bundle on demand. Returns a promise resolving to { BrowserMultiFormatReader, NotFoundException }.
+     *
+     * @return {Promise}
+     */
+    _loadZxingLibrary() {
+        if ( window.ZXing ) {
+            return Promise.resolve( window.ZXing );
         }
+
+        return new Promise( ( resolve, reject ) => {
+            const script = document.createElement( 'script' );
+            script.src = config.zxingBundlePath || '/build/js/zxing-bundle.js';
+            script.onload = () => resolve( window.ZXing );
+            script.onerror = () => reject( new Error( 'Failed to load ZXing library from ' + script.src ) );
+            document.head.appendChild( script );
+        } );
     }
 
     _addDomElements() {
-
         this.$widget = $(
             `<div class="center-block">
                 <label data-i18n="barcode.select_device">${t( 'barcode.select_device' )}</label>
@@ -107,8 +123,6 @@ class Zxing extends Widget {
         const oldValue = this.originalInputValue;
         const newValue = this.value;
 
-        // console.log( 'updating value by joining', this.points, 'old value', oldValue, 'new value', newValue );
-
         if ( oldValue !== newValue ) {
             this.originalInputValue = newValue;
 
@@ -126,7 +140,6 @@ class Zxing extends Widget {
 
         this.codeReader.decodeFromVideoDevice( this.selectedDeviceId, this.videoId, ( result, err ) => {
             if ( result ) {
-
                 this.value = result.text;
                 this._updateValue();
                 this.element.dispatchEvent( events.Change() );
@@ -138,7 +151,7 @@ class Zxing extends Widget {
 
                 this.codeReader.reset();
             }
-            if ( err && !( err instanceof NotFoundException ) ) {
+            if ( err && !( err instanceof this._NotFoundException ) ) {
                 console.error( err );
             }
         } );
@@ -148,11 +161,12 @@ class Zxing extends Widget {
         this.$video.hide();
         this.$showResult.show();
         this.$start.show();
-        this. $stop.hide();
+        this.$stop.hide();
 
         this.codeReader.reset();
         this.value = '';
     }
+
     /**
      * @type {string}
      */
@@ -165,8 +179,6 @@ class Zxing extends Widget {
         this.element.value = value;
         this.$showResult.text( value );
     }
-
-
 }
 
 export default Zxing;

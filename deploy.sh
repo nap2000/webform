@@ -8,11 +8,11 @@ target=$smapServer/WebContent/build/js/webform-bundle.min.js
 
 if [ "$1" != develop ]
 then
-
-	cp build/js/bundle.min.js $target
-
+    cp build/js/bundle.min.js $target
+    cp build/js/zxing-bundle.min.js $smapServer/WebContent/build/js/zxing-bundle.js
 else
-	cp build/js/enketo-bundle.js $target
+    cp build/js/enketo-bundle.js $target
+    cp build/js/zxing-bundle.js $smapServer/WebContent/build/js/zxing-bundle.js
 fi
 
 cp build/css/* $smapServer/WebContent/build/css

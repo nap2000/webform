@@ -12,5 +12,6 @@ export default {
     'validateContinuously': false,
     'validatePage': true,
     'swipePage': true,
-    'textMaxChars': 65535
+    'textMaxChars': 65535,
+    'zxingBundlePath': '/build/js/zxing-bundle.js'
 };
