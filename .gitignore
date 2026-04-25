@@ -36,5 +36,6 @@ Thumbs.db
 lib/jquery-xpath
 lib/xpath
 
+.claude
 CLAUDE.md
 improvement-plan.md

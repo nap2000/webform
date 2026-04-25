@@ -13,6 +13,7 @@
 
     import fileManager from '../src/js/file-manager';
     import './plugin';
+    import formIndex from './form-index';
     import {
         getLastSavedRecord,
         populateLastSavedInstances,
@@ -138,6 +139,10 @@
 
                 // Save current data so we can check if there have been changes
                 startEditData = form.getDataStr(true, true);
+
+                if ( surveyData.showFormIndex ) {
+                    formIndex.init( document.querySelector( 'form.or' ) );
+                }
 
                 if (store) {
                     var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
