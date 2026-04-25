@@ -143,18 +143,15 @@
                     var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
                     $('.side-slider').append(
                         '<h3 class="lang" data-lang="record-list.title">queue</h3>' +
-                        '<p class="lang" data-lang="record-list.msg1">Records are stored</p>' +
                         '<progress class="upload-progress"></progress>' +
                         '<ul class="record-list"></ul>' +
-                        '<a type="button" href="/app/myWork/history.html" target="_blank" class="btn btn-default lang show-history full-width" data-lang="record-list.history">h</a>' +
                         '<div class="button-bar">' +
                         '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
-                        'style="' + btnstyle + '">upload</button>' +		// remove pull-right while export is disabled
+                        'style="' + btnstyle + '">upload</button>' +
                         '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
                         'style="' + btnstyle + '">Delete</button>' +
                         '</div>' +
-                        '<p class="lang" data-lang="record-list.msg2-nodraft" >Queued records</p>' +
-                        '<p class="lang" data-lang="record-list.msg3" >Foce Upload</p>');
+                        '<a type="button" href="/app/myWork/history.html" target="_blank" class="btn btn-default lang show-history full-width" data-lang="record-list.history">h</a>');
                     //trigger fake save event to update formlist in slider
                     $form.trigger('save', JSON.stringify(store.getRecordList()));
                 }
