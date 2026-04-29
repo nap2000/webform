@@ -31,6 +31,65 @@
         supportLink = '<a href="mailto:' + settings[ 'supportEmail' ] + '">' + settings[ 'supportEmail' ] + '</a>';
 
     let gui = {};
+
+    const panelManager = {
+        _indexVisible: false,
+        _notificationVisible: false,
+
+        _apply() {
+            const $side = $( '#smap-side-panel' );
+            const $notif = $( '#smap-notification-panel' );
+            const $index = $( '#smap-index-area' );
+
+            if ( this._indexVisible || this._notificationVisible ) {
+                $side.addClass( 'is-open' );
+            } else {
+                $side.removeClass( 'is-open' );
+            }
+            $notif.toggleClass( 'is-open', this._notificationVisible );
+            $index.toggle( this._indexVisible );
+        },
+
+        showIndex() {
+            this._indexVisible = true;
+            this._apply();
+        },
+
+        hideIndex() {
+            this._indexVisible = false;
+            this._apply();
+        },
+
+        toggleIndex() {
+            this._indexVisible = !this._indexVisible;
+            this._apply();
+        },
+
+        openNotification() {
+            this._notificationVisible = true;
+            this._apply();
+        },
+
+        closeNotification() {
+            this._notificationVisible = false;
+            this._apply();
+        },
+
+        toggleNotification() {
+            this._notificationVisible = !this._notificationVisible;
+            this._apply();
+        },
+
+        openQueue() {
+            $( '#smap-queue-panel' ).removeAttr( 'hidden' );
+        },
+
+        closeQueue() {
+            $( '#smap-queue-panel' ).attr( 'hidden', '' );
+        }
+    };
+
+    gui.panelManager = panelManager;
     /**
      *
      * Initializes a GUI object.
@@ -71,29 +130,54 @@
             return false;
         } );
 
-        $( document ).on( 'click', '.side-slider .close', function( event ) {
-            $( 'body' ).removeClass( 'show-side-slider' );
-        } );
-
         $( 'button.print' ).on( 'click', function() {
             print();
         } );
 
-        $( '.side-slider-toggle' ).on( 'click', function() {
+        // Menu toggle
+        $( document ).on( 'click', '.smap-menu-btn', function( event ) {
+            event.stopPropagation();
+            var $menu = $( this ).siblings( '.smap-dropdown-menu' );
+            if ( $menu.attr( 'hidden' ) !== undefined ) {
+                $menu.removeAttr( 'hidden' );
+            } else {
+                $menu.attr( 'hidden', '' );
+            }
+        } );
 
-            // Smap Apply translations
-            $(".lang", "aside").each(function() {
-                var $this = $(this);
-                var code = $this.data("lang");
-                console.log("code: " + code);
-                if(code) {
-                    $this.html(t(code));
-                }
-            });
+        // Close menu when clicking outside
+        $( document ).on( 'click', function( event ) {
+            if ( !$( event.target ).closest( '.smap-menu-wrapper' ).length ) {
+                $( '.smap-dropdown-menu' ).attr( 'hidden', '' );
+            }
+        } );
 
-            var $body = $( 'body' );
-            window.scrollTo( 0, 0 );
-            $body.toggleClass( 'show-side-slider' );
+        // Menu item actions
+        $( document ).on( 'click', '[data-action]', function() {
+            var action = $( this ).data( 'action' );
+            $( '.smap-dropdown-menu' ).attr( 'hidden', '' );
+            if ( action === 'open-queue' ) {
+                panelManager.openQueue();
+            } else if ( action === 'toggle-index' ) {
+                panelManager.toggleIndex();
+            } else if ( action === 'toggle-notification' ) {
+                panelManager.toggleNotification();
+            }
+        } );
+
+        // Queue panel close button
+        $( document ).on( 'click', '.smap-full-panel__close', function() {
+            panelManager.closeQueue();
+        } );
+
+        // Notification panel close button
+        $( document ).on( 'click', '.smap-panel-close', function() {
+            panelManager.closeNotification();
+        } );
+
+        // Records queued counter opens queue panel
+        $( document ).on( 'click', '.queue-length', function() {
+            panelManager.openQueue();
         } );
 
         $( '.offline-enabled-icon' ).on( 'click', function() {

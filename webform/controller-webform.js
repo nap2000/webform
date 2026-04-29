@@ -14,6 +14,7 @@
     import fileManager from '../src/js/file-manager';
     import './plugin';
     import formIndex from './form-index';
+    import notification from './notification';
     import {
         getLastSavedRecord,
         populateLastSavedInstances,
@@ -144,10 +145,12 @@
                     formIndex.init( document.querySelector( 'form.or' ) );
                 }
 
+                notification.init( surveyData.surveyIdent );
+                window.smapCurrentInstanceId = form.instanceID;
+
                 if (store) {
                     var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
-                    $('.side-slider').append(
-                        '<h3 class="lang" data-lang="record-list.title">queue</h3>' +
+                    $('#smap-queue-panel .smap-full-panel__body').append(
                         '<progress class="upload-progress"></progress>' +
                         '<ul class="record-list"></ul>' +
                         '<div class="button-bar">' +
@@ -155,9 +158,8 @@
                         'style="' + btnstyle + '">upload</button>' +
                         '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
                         'style="' + btnstyle + '">Delete</button>' +
-                        '</div>' +
-                        '<a type="button" href="/app/myWork/history.html" target="_blank" class="btn btn-default lang show-history full-width" data-lang="record-list.history">h</a>');
-                    //trigger fake save event to update formlist in slider
+                        '</div>');
+                    //trigger fake save event to update record list
                     $form.trigger('save', JSON.stringify(store.getRecordList()));
                 }
                 if (options.submitInterval) {
@@ -220,6 +222,7 @@
             $form = $( 'form.or' );
             $formprogress = $( '.form-progress' );
 
+            window.smapCurrentInstanceId = form.instanceID;
             // smap save the initial starting point
             startEditData = form.getDataStr( true, true );
         });
@@ -552,7 +555,7 @@
         $form.trigger('save', JSON.stringify(store.getRecordList()));
         // Clear any errors from recordList
         markSubmit('start', 'auto')
-        $('.record-list').find('li').removeClass('error');
+        $('#smap-queue-panel .record-list').find('li').removeClass('error');
         if(records.length > 0) {
             if(manual) {
                 gui.feedback(t('formfooter.submit.btn'));
@@ -835,8 +838,8 @@
     //update the survey forms names list
     function updateRecordList(recordList) {
         var name, draft, i, $li,
-            $buttons = $('.side-slider .upload-records, .side-slider .export-records'),
-            $list = $('.side-slider .record-list');
+            $buttons = $('#smap-queue-panel .upload-records, #smap-queue-panel .export-records'),
+            $list = $('#smap-queue-panel .record-list');
 
         console.log('updating record list');
 
@@ -871,7 +874,7 @@
         if (recordList.length > 0) {
             $list.find('.no-records').remove();
 
-            $('.side-slider .export-records').removeAttr('disabled');
+            $('#smap-queue-panel .export-records').removeAttr('disabled');
 
             recordList.forEach(function (record) {
                 name = record.key;
@@ -905,7 +908,7 @@
     }
 
     function updateActiveRecord(recordName) {
-        var $list = $('.side-slider .record-list');
+        var $list = $('#smap-queue-panel .record-list');
 
         $list.find('li').removeClass('active');
         if (recordName) {

@@ -1,10 +1,12 @@
 /**
  * Form Index side panel.
  * Enabled when surveyData.showFormIndex is true.
- * Builds a persistent right-side panel of or-group / or-repeat labels.
+ * Builds a left-side panel of or-group / or-repeat labels.
  * Clicking a label filters the form to show only that section.
  * Repeat instances expand in the index as records are added.
  */
+
+import gui from './gui';
 
 const formIndex = {
     /** @type {Array<{id,element,type,label,parentId}>} */
@@ -33,6 +35,7 @@ const formIndex = {
         if ( formEl.classList.contains( 'pages' ) ) {
             document.body.classList.add( 'form-index-replaces-pages' );
         }
+        gui.panelManager.showIndex();
     },
 
     _buildNodes() {
@@ -113,11 +116,12 @@ const formIndex = {
     },
 
     _createPanel() {
-        this._panelEl = document.createElement( 'aside' );
+        this._panelEl = document.createElement( 'div' );
         this._panelEl.className = 'form-index-panel';
         this._panelEl.innerHTML =
             '<div class="fi-header">' +
                 '<span class="fi-title">Index</span>' +
+                '<button class="fi-close" aria-label="Close index">&times;</button>' +
                 '<label class="fi-expand-label">' +
                     '<input type="checkbox" class="fi-expand-cb"> Expand all' +
                 '</label>' +
@@ -127,7 +131,8 @@ const formIndex = {
                 '<button class="fi-back" hidden>&#8592; Back</button>' +
             '</nav>' +
             '<ul class="fi-list"></ul>';
-        document.body.appendChild( this._panelEl );
+        const area = document.getElementById( 'smap-index-area' ) || document.body;
+        area.appendChild( this._panelEl );
         this._listEl = this._panelEl.querySelector( '.fi-list' );
         this._backBtn = this._panelEl.querySelector( '.fi-back' );
         this._showAllBtn = this._panelEl.querySelector( '.fi-show-all' );
@@ -187,6 +192,9 @@ const formIndex = {
         this._panelEl.addEventListener( 'click', e => {
             const li = e.target.closest( '.fi-item' );
             if ( li ) this._onItemClick( li );
+        } );
+        this._panelEl.querySelector( '.fi-close' ).addEventListener( 'click', () => {
+            gui.panelManager.hideIndex();
         } );
         this._backBtn.addEventListener( 'click', () => this._goBack() );
         this._showAllBtn.addEventListener( 'click', () => {
