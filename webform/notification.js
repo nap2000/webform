@@ -151,7 +151,8 @@ const notification = {
             target: 'email',
             emails: emails.split( ',' ).map( e => e.trim() ).filter( e => e ),
             subject: $( '#email_subject' ).val(),
-            content: $( '#email_content' ).val()
+            content: $( '#email_content' ).val(),
+            attach: $( '#email_attach' ).val()
         };
     },
 

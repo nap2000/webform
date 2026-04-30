@@ -24,7 +24,7 @@
 
     const parser = new DOMParser();
 
-    var form, $form, $formprogress, formSelector, store, dbStore, startEditData;
+    var form, $form, $formprogress, store, dbStore, startEditData;
 
     var dbStoreSupported = false;
     var submitInProgress = false;
@@ -114,8 +114,7 @@
                 });
 
                 // Create the form
-                formSelector = 'form.or:eq(0)';
-                form = new Form(formSelector, surveyData);
+                form = new Form(document.querySelector('form.or'), surveyData);
                 var loadErrors = form.init();
 
                 if (recordName) {
@@ -211,7 +210,7 @@
 
             form.resetView();
 
-            form = new Form( 'form.or:eq(0)', {
+            form = new Form( document.querySelector('form.or'), {
                 modelStr: surveyData.modelStr,
                 external: surveyData.external,
                 xml: surveyData.xml
@@ -996,7 +995,7 @@
         window.gLoadedInstanceID = undefined;
 
         // Create the form
-        form = new Form('form.or:eq(0)', surveyData);			// form is global
+        form = new Form(document.querySelector('form.or'), surveyData);			// form is global
         loadErrors = form.init();
 
         if (recordName) {
