@@ -805,6 +805,7 @@
             dbStore.isSupported().then(supported => {
                 if(supported) {
                     dbStore.delete(instanceID, false);
+                    dbStore.clearNotifications(instanceID).catch(() => {});
                 }
             });
             if (store) {

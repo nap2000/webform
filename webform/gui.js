@@ -35,6 +35,12 @@
     const panelManager = {
         _indexVisible: false,
         _notificationVisible: false,
+        _notificationEnabled: false,
+
+        enableNotification() {
+            this._notificationEnabled = true;
+            $( '#smap-notif-menu-item' ).removeAttr( 'hidden' );
+        },
 
         _apply() {
             const $side = $( '#smap-side-panel' );
@@ -76,6 +82,7 @@
         },
 
         toggleNotification() {
+            if ( !this._notificationEnabled ) return;
             this._notificationVisible = !this._notificationVisible;
             this._apply();
         },

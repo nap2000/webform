@@ -36,6 +36,7 @@
     let recordStoreName = 'records';
     let assignmentIdx = 'assignment';
     let assignmentIdxPath = 'assignment.assignment_id';
+    let pendingNotifStoreName = 'pendingNotifications';
 
     /*
      * Variables for fall back local storage
@@ -124,6 +125,10 @@
                             keyPath: '_surveyId',
                             autoIncrement: false,
                         });
+                    }
+
+                    if (!upgradeDb.objectStoreNames.contains(pendingNotifStoreName)) {
+                        upgradeDb.createObjectStore(pendingNotifStoreName);
                     }
 
                     resolve(upgradeDb);
@@ -448,6 +453,63 @@
         });
     };
 
+
+    dbStore.saveNotification = function(instanceId, notification) {
+        return open().then((db) => {
+            return new Promise((resolve, reject) => {
+                const key = instanceId + '::' + Date.now();
+                const tx = db.transaction([ pendingNotifStoreName ], 'readwrite');
+                tx.objectStore(pendingNotifStoreName).put(notification, key);
+                tx.oncomplete = () => resolve(key);
+                tx.onerror = (e) => reject(e.target.error);
+            });
+        });
+    };
+
+    dbStore.getNotifications = function(instanceId) {
+        return open().then((db) => {
+            return new Promise((resolve, reject) => {
+                const results = [];
+                const keys = [];
+                const tx = db.transaction([ pendingNotifStoreName ], 'readonly');
+                const req = tx.objectStore(pendingNotifStoreName).openCursor();
+                req.onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        if (String(cursor.key).startsWith(instanceId + '::')) {
+                            results.push(cursor.value);
+                            keys.push(cursor.key);
+                        }
+                        cursor.continue();
+                    } else {
+                        resolve({ notifications: results, keys });
+                    }
+                };
+                req.onerror = (e) => reject(e.target.error);
+            });
+        });
+    };
+
+    dbStore.clearNotifications = function(instanceId) {
+        return open().then((db) => {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction([ pendingNotifStoreName ], 'readwrite');
+                const store = tx.objectStore(pendingNotifStoreName);
+                const req = store.openCursor();
+                req.onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        if (String(cursor.key).startsWith(instanceId + '::')) {
+                            cursor.delete();
+                        }
+                        cursor.continue();
+                    }
+                };
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+            });
+        });
+    };
 
     export default dbStore;
 

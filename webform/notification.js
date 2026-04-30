@@ -1,56 +1,44 @@
 "use strict";
 
 import $ from 'jquery';
+import dbStore from './dbstore';
+import gui from './gui';
 
 const notification = {
-    _surveyIdent: null,
-    _ourNumbers: [],
+    _instanceId: null,
 
     init( surveyIdent ) {
-        this._surveyIdent = surveyIdent;
-        this._loadTypes();
-        this._loadOurNumbers();
+        const editId = window.surveyData && window.surveyData.instanceStrToEditId;
+        if ( editId ) {
+            this._instanceId = editId;
+            gui.panelManager.enableNotification();
+            this._refreshPendingList();
+        }
+        this._loadTypesFromSurveyData();
         this._setupHandlers();
     },
 
-    _loadTypes() {
-        $.ajax( {
-            url: '/surveyKPI/notifications/types?page=console',
-            dataType: 'json',
-            cache: false,
-            success: ( data ) => {
-                if ( !Array.isArray( data ) ) return;
-                const $sel = $( '#target' );
-                $sel.empty();
-                data.forEach( type => {
-                    $sel.append( `<option value="${type}">${type}</option>` );
-                } );
-                this._setTargetDeps( $sel.val() );
-            },
-            error: () => console.error( 'Failed to load notification types' )
-        } );
-    },
+    _loadTypesFromSurveyData() {
+        const types = ( window.surveyData && window.surveyData.notificationTypes ) || [];
+        const ourNumbers = ( window.surveyData && window.surveyData.ourNumbers ) || [];
 
-    _loadOurNumbers() {
-        $.ajax( {
-            url: '/surveyKPI/smsnumbers?org=true',
-            dataType: 'json',
-            cache: false,
-            success: ( data ) => {
-                this._ourNumbers = Array.isArray( data ) ? data : [];
-                this._populateOurNumbers( $( '#msg_channel' ).val() );
-            },
-            error: () => console.error( 'Failed to load SMS numbers' )
+        const $sel = $( '#target' );
+        $sel.empty();
+        types.forEach( type => {
+            $sel.append( `<option value="${type}">${type}</option>` );
         } );
+        this._ourNumbers = ourNumbers;
+        this._setTargetDeps( $sel.val() );
+        this._populateOurNumbers( $( '#msg_channel' ).val() );
     },
 
     _populateOurNumbers( channel ) {
         const $sel = $( '#msg_our_nbr' );
         $sel.empty();
-        this._ourNumbers
-            .filter( n => n.channel === channel )
+        ( this._ourNumbers || [] )
+            .filter( n => !channel || n.channel === channel )
             .forEach( n => {
-                $sel.append( `<option value="${n.ourNumber}">${n.ourNumber} - ${n.channel}</option>` );
+                $sel.append( `<option value="${n.ourNumber}">${n.ourNumber}</option>` );
             } );
     },
 
@@ -88,13 +76,13 @@ const notification = {
         } );
 
         $( '#wf-send-notification' ).on( 'click', () => {
-            this._send();
+            this._queue();
         } );
     },
 
-    _send() {
+    _queue() {
         const target = $( '#target' ).val();
-        let notif = {};
+        let notif = null;
 
         if ( target === 'email' ) {
             notif = this._buildEmail();
@@ -102,41 +90,47 @@ const notification = {
             notif = this._buildSMS();
         } else if ( target === 'conversation' ) {
             notif = this._buildConversation();
-        } else if ( target === 'document' ) {
-            notif = { target: 'document', notifyDetails: {} };
         }
 
+        if ( !notif ) {
+            this._showStatus( 'Unknown notification type', 'danger' );
+            return;
+        }
         if ( notif.error ) {
             this._showStatus( notif.errorMsg || 'Invalid notification', 'danger' );
             return;
         }
 
-        notif.trigger = 'submission';
-        notif.sIdent = this._surveyIdent;
-        notif.enabled = true;
-        notif.instanceId = window.smapCurrentInstanceId;
+        const instanceId = this._instanceId || window.smapCurrentInstanceId || 'default';
 
-        const $btn = $( '#wf-send-notification' );
-        $btn.prop( 'disabled', true );
-        $( '#wf-notification-status' ).hide();
-
-        $.ajax( {
-            type: 'POST',
-            dataType: 'text',
-            cache: false,
-            url: '/surveyKPI/notifications/immediate',
-            data: { notification: JSON.stringify( notif ) },
-            success: () => {
-                $btn.prop( 'disabled', false );
-                this._showStatus( 'Notification sent', 'success' );
-                document.getElementById( 'wf-notification-form' ).reset();
-                this._setTargetDeps( $( '#target' ).val() );
-            },
-            error: ( xhr ) => {
-                $btn.prop( 'disabled', false );
-                this._showStatus( 'Error: ' + ( xhr.responseText || xhr.statusText ), 'danger' );
-            }
+        dbStore.saveNotification( instanceId, notif ).then( () => {
+            this._showStatus( 'Notification queued — will be sent on form submission', 'success' );
+            document.getElementById( 'wf-notification-form' ).reset();
+            this._setTargetDeps( $( '#target' ).val() );
+            this._refreshPendingList();
+        } ).catch( () => {
+            this._showStatus( 'Failed to queue notification', 'danger' );
         } );
+    },
+
+    _refreshPendingList() {
+        const instanceId = this._instanceId || window.smapCurrentInstanceId || 'default';
+        dbStore.getNotifications( instanceId ).then( ( { notifications } ) => {
+            let $list = $( '#wf-pending-notifications' );
+            if ( !$list.length ) return;
+            $list.empty();
+            if ( notifications.length === 0 ) {
+                $list.hide();
+                return;
+            }
+            $list.show();
+            notifications.forEach( n => {
+                const desc = n.target === 'email'
+                    ? `Email → ${( n.emails || [] ).join( ', ' )}`
+                    : `${n.target} → ${n.toNumber || ''}`;
+                $list.append( `<li>${desc}</li>` );
+            } );
+        } ).catch( () => {} );
     },
 
     _showStatus( msg, type ) {
@@ -154,23 +148,21 @@ const notification = {
         }
         return {
             target: 'email',
-            notifyDetails: {
-                emails: emails.split( ',' ).map( e => e.trim() ).filter( e => e ),
-                subject: $( '#email_subject' ).val(),
-                content: $( '#email_content' ).val(),
-                attach: $( '#email_attach' ).val()
-            }
+            emails: emails.split( ',' ).map( e => e.trim() ).filter( e => e ),
+            subject: $( '#email_subject' ).val(),
+            content: $( '#email_content' ).val()
         };
     },
 
     _buildSMS() {
+        const toNumber = ( $( '#notify_sms' ).val() || '' ).trim();
+        if ( !toNumber ) {
+            return { error: true, errorMsg: 'Please enter a phone number.' };
+        }
         return {
             target: 'sms',
-            notifyDetails: {
-                emails: [ $( '#notify_sms' ).val() ],
-                subject: $( '#sms_sender_id' ).val(),
-                content: $( '#sms_content' ).val()
-            }
+            toNumber,
+            content: $( '#sms_content' ).val()
         };
     },
 
@@ -184,12 +176,10 @@ const notification = {
         }
         return {
             target: 'conversation',
-            notifyDetails: {
-                emails: [ theirNumber ],
-                ourNumber: $( '#msg_our_nbr' ).val(),
-                msgChannel: $( '#msg_channel' ).val(),
-                content: $( '#conversation_text' ).val()
-            }
+            toNumber: theirNumber,
+            ourNumber: $( '#msg_our_nbr' ).val(),
+            msgChannel: $( '#msg_channel' ).val(),
+            content: $( '#conversation_text' ).val()
         };
     }
 };

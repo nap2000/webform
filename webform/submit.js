@@ -115,6 +115,16 @@ async function sendWithMedia(dbStore, record, xmlData, media) {
         url = getSubmissionUrl(record),
         response;
 
+    // Fetch pending notifications for this instance (first batch only)
+    let pendingNotifications = [];
+    try {
+        const instanceId = record.instanceID || window.smapCurrentInstanceId;
+        if (instanceId) {
+            const result = await dbStore.getNotifications(instanceId);
+            pendingNotifications = result.notifications || [];
+        }
+    } catch(e) {}
+
     /*
 	 * Use same approach as fieldTask to send bached results
 	 * the XML content is sent with each batch
@@ -132,6 +142,10 @@ async function sendWithMedia(dbStore, record, xmlData, media) {
         content.append('xml_submission_data', xmlData);
         if (record.assignmentId) {
             content.append('assignment_id', record.assignmentId);
+        }
+        // Include queued notifications in the first batch only
+        if (lastFileIndex === 0 && pendingNotifications.length > 0) {
+            content.append('notifications', JSON.stringify(pendingNotifications));
         }
         byteCount += xmlData.length;
 
