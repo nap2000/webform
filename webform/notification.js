@@ -5,12 +5,9 @@ import dbStore from './dbstore';
 import gui from './gui';
 
 const notification = {
-    _instanceId: null,
 
     init( surveyIdent ) {
-        const editId = window.surveyData && window.surveyData.instanceStrToEditId;
-        if ( editId ) {
-            this._instanceId = editId;
+        if ( window.surveyData && window.surveyData.instanceStrToEditId ) {
             gui.panelManager.enableNotification();
             this._refreshPendingList();
         }
@@ -101,11 +98,15 @@ const notification = {
             return;
         }
 
-        const instanceId = this._instanceId || window.smapCurrentInstanceId || 'default';
+        const instanceId = window.smapCurrentInstanceId;
+        if ( !instanceId ) {
+            this._showStatus( 'No active instance — save a draft first', 'danger' );
+            return;
+        }
 
         dbStore.saveNotification( instanceId, notif ).then( () => {
             this._showStatus( 'Notification queued — will be sent on form submission', 'success' );
-            document.getElementById( 'wf-notification-form' ).reset();
+            $( '#wf-notification-form input, #wf-notification-form textarea, #wf-notification-form select' ).val( '' );
             this._setTargetDeps( $( '#target' ).val() );
             this._refreshPendingList();
         } ).catch( () => {
@@ -114,7 +115,7 @@ const notification = {
     },
 
     _refreshPendingList() {
-        const instanceId = this._instanceId || window.smapCurrentInstanceId || 'default';
+        const instanceId = window.smapCurrentInstanceId;
         dbStore.getNotifications( instanceId ).then( ( { notifications } ) => {
             let $list = $( '#wf-pending-notifications' );
             if ( !$list.length ) return;

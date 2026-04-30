@@ -83,9 +83,9 @@
                     reject(e);
                 };
 
-                request.onblocked = function (e) {
-                    console.error('IndexedDB open blocked', e.target.error.message);
-                    reject(e);
+                request.onblocked = function () {
+                    console.error('IndexedDB open blocked — close other tabs and reload');
+                    reject(new Error('IndexedDB upgrade blocked'));
                 };
 
                 request.onsuccess = function (e) {
