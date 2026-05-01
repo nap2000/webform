@@ -85,6 +85,7 @@
         "enketo/xpath-evaluator-binding": "./src/js/xpath-evaluator-binding"
     },
     "dependencies": {
+        "@noble/hashes": "^2.2.0",
         "@zxing/library": "^0.21.3",
         "bootstrap-datepicker": "1.9.x",
         "html5sortable": "0.12.1",
@@ -96,7 +97,6 @@
         "leaflet": "^1.7.1",
         "leaflet.gridlayer.googlemutant": "^0.12.1",
         "mergexml": "1.2.1",
-        "node-forge": "^0.10.0",
         "signature_pad": "2.3.x"
     },
     "volta": {
