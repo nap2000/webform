@@ -105,7 +105,7 @@
                     } else {
                         dbStoreSupported = false;
                         gui.alert('Warning: Storage is not supported by your browser. ' +
-                            'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey' +
+                            'Hence it is not possible to save the survey as draft and do not close the browser window until the completed survey ' +
                             'has been sent successfully',
                             undefined, 'normal', undefined);
                     }

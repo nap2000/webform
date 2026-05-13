@@ -84,9 +84,9 @@
                 };
 
                 request.onblocked = function (e) {
-                    console.log('Error', e.target.error.message);
-                    alert('Error', e.target.error.message);
-                    reject(e);
+                    const msg = e.target.error ? e.target.error.message : 'Database blocked by another connection';
+                    console.log('Error', msg);
+                    reject(new Error(msg));
                 };
 
                 request.onsuccess = function (e) {
