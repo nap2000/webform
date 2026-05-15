@@ -83,9 +83,10 @@
                     reject(e);
                 };
 
-                request.onblocked = function () {
-                    console.error('IndexedDB open blocked — close other tabs and reload');
-                    reject(new Error('IndexedDB upgrade blocked'));
+                request.onblocked = function (e) {
+                    const msg = e.target.error ? e.target.error.message : 'Database blocked by another connection';
+                    console.log('Error', msg);
+                    reject(new Error(msg));
                 };
 
                 request.onsuccess = function (e) {
