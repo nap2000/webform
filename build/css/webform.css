@@ -1328,16 +1328,18 @@ label.itemset-template {
     }
 }
 
-/* ── Full-width overlay panels (Queue) ───────────────────────────── */
+/* ── Queue drawer (right side) ───────────────────────────────────── */
 
 .smap-full-panel {
     position: fixed;
     top: 0;
-    left: 0;
     right: 0;
     bottom: 0;
+    width: 320px;
     z-index: 2000;
     background: white;
+    border-left: 1px solid #ccc;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.15);
     display: flex;
     flex-direction: column;
 }
