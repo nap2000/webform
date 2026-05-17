@@ -239,6 +239,7 @@
     },
     "form": {
         "chooseLanguage": "Choose Language",
+        "index": "Index",
         "logout": "log out",
         "pages": {
             "back": "Back",
@@ -394,5 +395,21 @@
         "comment": {
             "update": "Update"
         }
-    }
+    },
+    "msg_send_notification": "Send Notification",
+    "c_queue": "Queue",
+    "c_target": "Type",
+    "c_email": "Emails",
+    "c_subject": "Subject",
+    "c_content": "Content",
+    "c_attach": "Attachment",
+    "c_none": "None",
+    "c_sms": "Phone",
+    "c_channel": "Channel",
+    "n_wf": "Web Form",
+    "n_pdfp": "PDF portrait",
+    "n_pdfl": "PDF landscape",
+    "n_si": "Sender ID",
+    "n_their_nbr": "Their number",
+    "n_spec_nbr": "Specify number"
 }
