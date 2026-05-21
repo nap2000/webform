@@ -397,7 +397,7 @@
         }
     },
     "msg_send_notification": "Send Notification",
-    "c_queue": "Queue",
+    "c_queue": "Add to queue",
     "c_target": "Type",
     "c_email": "Emails",
     "c_subject": "Subject",

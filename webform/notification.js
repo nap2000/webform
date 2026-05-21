@@ -7,10 +7,8 @@ import gui from './gui';
 const notification = {
 
     init( surveyIdent ) {
-        if ( window.surveyData && window.surveyData.instanceStrToEditId ) {
-            gui.panelManager.enableNotification();
-            this._refreshPendingList();
-        }
+        gui.panelManager.enableNotification();
+        this._refreshPendingList();
         this._loadTypesFromSurveyData();
         this._setupHandlers();
     },
