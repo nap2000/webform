@@ -90,6 +90,12 @@ function sendComplete(response, record, autoClose, inMemoryMedia, saved, showMsg
 
     if (submit.isSuccess(response.status) ) {
         $(document).trigger('submissionsuccess', [record.name, record.instanceID]);
+        window.parent.postMessage({
+            type: 'smapAction',
+            action: record.instanceStrToEditId ? 'recordEdited' : 'formSubmitted',
+            status: 'success',
+            instanceID: record.instanceID
+        }, '*');
         if (autoClose) {
             reloadForm();
         } else if (surveyData.showDonePage) {
