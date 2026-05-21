@@ -121,10 +121,10 @@ const formIndex = {
         this._panelEl.innerHTML =
             '<div class="fi-header">' +
                 '<span class="fi-title">Index</span>' +
-                '<button class="fi-close" aria-label="Close index">&times;</button>' +
                 '<label class="fi-expand-label">' +
                     '<input type="checkbox" class="fi-expand-cb"> Expand all' +
                 '</label>' +
+                '<button class="fi-close" aria-label="Close index">&times;</button>' +
             '</div>' +
             '<nav class="fi-nav">' +
                 '<button class="fi-show-all">&#8635; Show all</button>' +

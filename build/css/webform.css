@@ -1628,8 +1628,8 @@ label.itemset-template {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
-    border-bottom: 1px solid #d0d0d0;
+    padding: 12px 16px;
+    border-bottom: 1px solid #ccc;
     background: #efefef;
     position: sticky;
     top: 0;
@@ -1640,20 +1640,18 @@ label.itemset-template {
 .fi-close {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 24px;
     line-height: 1;
     cursor: pointer;
     color: #555;
     padding: 0 4px;
-    margin-left: auto;
-    margin-right: 4px;
 }
 
 .fi-close:hover { color: #000; }
 
 .fi-title {
     font-weight: bold;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .fi-expand-label {
