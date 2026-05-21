@@ -26,6 +26,18 @@ export default {
             }else{
                 node.removeAttribute( 'aria-hidden' );
             }
+
+            // input[type=text] is single-line and can't expand; replace with a wrapping div
+            if ( node.matches( 'input[type="text"]' ) ) {
+                let display = node.parentElement.querySelector( '.readonly-display-text' );
+                if ( !display ) {
+                    display = document.createElement( 'div' );
+                    display.classList.add( 'readonly-display-text' );
+                    node.after( display );
+                }
+                display.textContent = node.value;
+                display.hidden = empty;
+            }
         } );
     }
 };

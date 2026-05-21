@@ -3494,6 +3494,23 @@ body {
 .question.readonly strong {
     font-size: inherit; }
 
+.question.readonly input[readonly][type="text"]:not(.empty) {
+    display: none; }
+
+.readonly-display-text {
+    flex: 1;
+    display: block;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 5px 0;
+    margin: 0;
+    width: 100%;
+    min-height: 34px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5; }
+
 label,
 legend {
     font-size: 16px; }
