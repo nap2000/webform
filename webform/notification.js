@@ -73,6 +73,19 @@ const notification = {
         $( '#wf-send-notification' ).on( 'click', () => {
             this._queue();
         } );
+
+        $( '#email_extra_files' ).on( 'change', () => {
+            this._updateExtraFilesList();
+        } );
+    },
+
+    _updateExtraFilesList() {
+        const files = Array.from( $( '#email_extra_files' )[0].files || [] );
+        const $list = $( '#email_extra_files_list' );
+        $list.empty();
+        files.forEach( f => {
+            $list.append( `<li>${ f.name }</li>` );
+        } );
     },
 
     _queue() {
@@ -105,6 +118,8 @@ const notification = {
         dbStore.saveNotification( instanceId, notif ).then( () => {
             this._showStatus( 'Notification queued — will be sent on form submission', 'success' );
             $( '#wf-notification-form input, #wf-notification-form textarea, #wf-notification-form select' ).val( '' );
+            $( '#email_extra_files' ).val( '' );
+            $( '#email_extra_files_list' ).empty();
             this._setTargetDeps( $( '#target' ).val() );
             this._refreshPendingList();
         } ).catch( () => {
@@ -124,9 +139,12 @@ const notification = {
             }
             $list.show();
             notifications.forEach( n => {
-                const desc = n.target === 'email'
+                let desc = n.target === 'email'
                     ? `Email → ${( n.emails || [] ).join( ', ' )}`
                     : `${n.target} → ${n.toNumber || ''}`;
+                if ( n.extraFiles && n.extraFiles.length > 0 ) {
+                    desc += ` (+${n.extraFiles.length} file${n.extraFiles.length > 1 ? 's' : ''})`;
+                }
                 $list.append( `<li>${desc}</li>` );
             } );
         } ).catch( () => {} );
@@ -145,12 +163,14 @@ const notification = {
         if ( !emails ) {
             return { error: true, errorMsg: 'Please enter at least one email address.' };
         }
+        const extraFiles = Array.from( $( '#email_extra_files' )[0].files || [] );
         return {
             target: 'email',
             emails: emails.split( ',' ).map( e => e.trim() ).filter( e => e ),
             subject: $( '#email_subject' ).val(),
             content: $( '#email_content' ).val(),
-            attach: $( '#email_attach' ).val()
+            attach: $( '#email_attach' ).val(),
+            extraFiles
         };
     },
 

@@ -145,7 +145,22 @@ async function sendWithMedia(dbStore, record, xmlData, media) {
         }
         // Include queued notifications in the first batch only
         if (lastFileIndex === 0 && pendingNotifications.length > 0) {
-            content.append('notifications', JSON.stringify(pendingNotifications));
+            // Separate file blobs from the JSON-serialisable notification data
+            const notifForJson = pendingNotifications.map( n => {
+                const { extraFiles, ...rest } = n;
+                if ( extraFiles && extraFiles.length > 0 ) {
+                    rest.extraFileNames = extraFiles.map( f => 'notif_' + f.name );
+                }
+                return rest;
+            } );
+            content.append('notifications', JSON.stringify(notifForJson));
+            // Append extra attachment files with notif_ prefix to avoid collisions with form media
+            pendingNotifications.forEach( n => {
+                ( n.extraFiles || [] ).forEach( file => {
+                    const renamed = new File( [ file ], 'notif_' + file.name, { type: file.type } );
+                    content.append( 'notif_' + file.name, renamed, 'notif_' + file.name );
+                } );
+            } );
         }
         byteCount += xmlData.length;
 
