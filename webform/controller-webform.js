@@ -144,8 +144,10 @@
                     formIndex.init( document.querySelector( 'form.or' ) );
                 }
 
-                notification.init( surveyData.surveyIdent );
                 window.smapCurrentInstanceId = form.instanceID;
+                if ( surveyData.notificationWebform ) {
+                    notification.init( surveyData.surveyIdent );
+                }
 
                 if (store) {
                     var btnstyle = 'width:48%; white-space: normal;padding-left:5px; padding-right:5px;'
@@ -203,6 +205,8 @@
 
         setupLastSaved().then(() => {
 
+            const prevInstanceId = window.smapCurrentInstanceId;
+
             setDraftStatus( false );
             updateActiveRecord( null );
 
@@ -224,6 +228,11 @@
             window.smapCurrentInstanceId = form.instanceID;
             // smap save the initial starting point
             startEditData = form.getDataStr( true, true );
+
+            if ( prevInstanceId && dbStore ) {
+                dbStore.clearNotifications( prevInstanceId ).catch( () => {} );
+            }
+            notification._refreshPendingList();
         });
     }
 
@@ -673,7 +682,9 @@
 	                if(surveyData.viewOnly) {
 		                window.open( '', '_self' ).close();
 	                } else {
-		                if (canSaveRecord()) {
+		                if ( notification.hasIncompleteNotification() ) {
+			                gui.alert( 'A notification has been partially filled in. Please add it to the queue or delete it before submitting.', 'Incomplete notification' );
+		                } else if (canSaveRecord()) {
 			                saveRecord();
 		                } else if (getDraftStatus()) {
 			                setDraftStatus(false);
@@ -705,7 +716,9 @@
                     var $button = $(this);
                     $button.btnBusyState(true);
                     setTimeout(function () {
-                        if (canSaveRecord()) {
+                        if ( notification.hasIncompleteNotification() ) {
+                            gui.alert( 'A notification has been partially filled in. Please add it to the queue or delete it before submitting.', 'Incomplete notification' );
+                        } else if (canSaveRecord()) {
                             saveRecord();
                         } else if (getDraftStatus()) {
                             setDraftStatus(false);

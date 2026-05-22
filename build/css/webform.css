@@ -1555,6 +1555,84 @@ label.itemset-template {
     box-sizing: border-box;
 }
 
+/* ── Notification queued list ────────────────────────────────────── */
+
+#wf-pending-section {
+    margin-bottom: 8px;
+}
+
+#wf-pending-section[hidden] {
+    display: none;
+}
+
+.notif-queue-label {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #777;
+    margin: 0 0 4px 0;
+    letter-spacing: 0.05em;
+}
+
+.notif-divider {
+    margin: 8px 0 12px;
+    border: none;
+    border-top: 1px solid #d8d8d8;
+}
+
+.wf-pending-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 4px 0;
+}
+
+.wf-pending-list li,
+.notif-file-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+}
+
+.notif-item-desc {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.notif-item-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.notif-file-list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+}
+
+.btn-link-danger,
+.btn-link-action {
+    background: none;
+    border: none;
+    padding: 2px 5px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    border-radius: 3px;
+}
+
+.btn-link-danger { color: #c00; }
+.btn-link-danger:hover { background: #fee; color: #900; }
+
+.btn-link-action { color: #555; }
+.btn-link-action:hover { background: #eef; color: #226; }
+
 /* ── Top menu ────────────────────────────────────────────────────── */
 
 .smap-menu-wrapper {

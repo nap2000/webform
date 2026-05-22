@@ -491,6 +491,17 @@
         });
     };
 
+    dbStore.deleteNotification = function(key) {
+        return open().then((db) => {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction([ pendingNotifStoreName ], 'readwrite');
+                tx.objectStore(pendingNotifStoreName).delete(key);
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+            });
+        });
+    };
+
     dbStore.clearNotifications = function(instanceId) {
         return open().then((db) => {
             return new Promise((resolve, reject) => {
