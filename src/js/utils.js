@@ -4,8 +4,6 @@
  * @module utils
  */
 
-let cookies;
-
 /**
  * Parses an Expression to extract all function calls and their argument arrays.
  *
@@ -100,42 +98,6 @@ function isNumber( n ) {
     return !isNaN( parseFloat( n ) ) && isFinite( n );
 }
 
-/**
- * @static
- * @param {string} name - a cookie to look for
- * @return {string|undefined} the value of the cookie
- */
-function readCookie( name ) {
-    if ( cookies ) {
-        return cookies[ name ];
-    }
-
-    // In enketo-validate and perhaps other contexts, enketo-core is used in an empty page in a headless browser
-    // In such a context document.cookie throws an 'Access is denied for this document' error.
-    try {
-        const parts = document.cookie.split( '; ' );
-        cookies = {};
-
-        for ( let i = parts.length - 1; i >= 0; i-- ) {
-            const ck = parts[ i ].split( '=' );
-            // decode URI
-            ck[ 1 ] = decodeURIComponent( ck[ 1 ] );
-            // if cookie is signed (using expressjs/cookie-parser/), extract value
-            if ( ck[ 1 ].substr( 0, 2 ) === 's:' ) {
-                ck[ 1 ] = ck[ 1 ].slice( 2 );
-                ck[ 1 ] = ck[ 1 ].slice( 0, ck[ 1 ].lastIndexOf( '.' ) );
-            }
-            cookies[ ck[ 0 ] ] = decodeURIComponent( ck[ 1 ] );
-        }
-
-        return cookies[ name ];
-
-    } catch( e ){
-        console.error( 'Cookie error', e );
-
-        return null;
-    }
-}
 
 /**
  * @static
@@ -269,7 +231,6 @@ export {
     stripQuotes,
     getFilename,
     isNumber,
-    readCookie,
     dataUriToBlobSync,
     getPasteData,
     resizeImage,

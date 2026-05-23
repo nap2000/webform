@@ -1,5 +1,5 @@
 import MergeXML from 'mergexml/mergexml';
-import { readCookie, parseFunctionFromExpression, stripQuotes } from './utils';
+import { parseFunctionFromExpression, stripQuotes } from './utils';
 import { getSiblingElementsAndSelf, getXPath, getRepeatIndex, hasPreviousCommentSiblingWithContent, hasPreviousSiblingElementSameName } from './dom-utils';
 import FormLogicError from './form-logic-error';
 import config from 'enketo/config';
@@ -233,7 +233,7 @@ FormModel.prototype.createSession = function( id, sessObj ) {
 
     // fixed: /sesssion/context properties
     fixedProps.forEach( prop => {
-        sessObj[ prop ] = sessObj[ prop ] || readCookie( `__enketo_meta_${prop}` ) || window.smapConfig[ prop ] || `${prop} not found`;     // smap
+        sessObj[ prop ] = sessObj[ prop ] || window.smapConfig[ prop ] || `${prop} not found`;
     } );
 
     session = parser.parseFromString( `<session><context>${fixedProps.map( prop => `<${prop}>${sessObj[ prop ]}</${prop}>` ).join( '' )}</context></session>`, 'text/xml' ).documentElement;
