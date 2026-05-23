@@ -317,6 +317,9 @@
                     } else {
                         var originalUrl = window.location.href.split("?");
 
+                        if (!draft) {
+                            form.model.anonymisePiiFields();
+                        }
                         record = {
                             'draft': draft,
                             'form': originalUrl[0],
@@ -476,6 +479,7 @@
 
         //gui.alert('<progress style="text-align: center;"/>', 'Submitting...', 'info');
 
+        form.model.anonymisePiiFields();
         record = {
             'key': 'iframe_record',
             'data': form.getDataStr(true, true),

@@ -1,5 +1,6 @@
 import MergeXML from 'mergexml/mergexml';
 import { parseFunctionFromExpression, stripQuotes } from './utils';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { getSiblingElementsAndSelf, getXPath, getRepeatIndex, hasPreviousCommentSiblingWithContent, hasPreviousSiblingElementSameName } from './dom-utils';
 import FormLogicError from './form-logic-error';
 import config from 'enketo/config';
@@ -786,6 +787,24 @@ FormModel.prototype.getTemplateNodes = function() {
     const jrPrefix = this.getNamespacePrefix( JAVAROSA_XFORMS_NS );
 
     return this.evaluate( `/model/instance[1]/*//*[@${jrPrefix}:template]`, 'nodes', null, null, true );
+};
+
+FormModel.prototype.anonymisePiiFields = function() {
+    // Query HTML form elements with data-pii="anonymise" — binds are not in the model XML
+    const inputs = Array.from( document.querySelectorAll( '[data-pii="anonymise"]' ) );
+    inputs.forEach( input => {
+        const nodeset = input.getAttribute( 'name' );
+        if ( !nodeset ) return;
+        try {
+            const node = this.evaluate( nodeset, 'node', null, null, true );
+            if ( node && node.textContent ) {
+                const bytes = sha256( new TextEncoder().encode( node.textContent ) );
+                node.textContent = Array.from( bytes ).map( b => b.toString( 16 ).padStart( 2, '0' ) ).join( '' );
+            }
+        } catch ( e ) {
+            console.error( 'PII anonymisation error for nodeset', nodeset, e );
+        }
+    } );
 };
 
 /**
