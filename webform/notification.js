@@ -3,6 +3,7 @@
 import $ from 'jquery';
 import dbStore from './dbstore';
 import gui from './gui';
+import { t } from '../src/js/translator';
 
 const notification = {
 
@@ -14,6 +15,7 @@ const notification = {
         this._refreshPendingList();
         this._loadTypesFromSurveyData();
         this._setupHandlers();
+        $( '#wf-send-notification' ).text( t( 'c_queue' ) );
     },
 
     _loadTypesFromSurveyData() {

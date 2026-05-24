@@ -36,6 +36,7 @@
         _indexVisible: false,
         _notificationVisible: false,
         _notificationEnabled: false,
+        _notificationExpanded: false,
 
         enableNotification() {
             this._notificationEnabled = true;
@@ -53,6 +54,7 @@
                 $side.removeClass( 'is-open' );
             }
             $notif.toggleClass( 'is-open', this._notificationVisible );
+            $notif.toggleClass( 'is-expanded', this._notificationVisible && this._notificationExpanded );
             $index.toggle( this._indexVisible );
         },
 
@@ -78,12 +80,24 @@
 
         closeNotification() {
             this._notificationVisible = false;
+            this._notificationExpanded = false;
             this._apply();
         },
 
         toggleNotification() {
             if ( !this._notificationEnabled ) return;
             this._notificationVisible = !this._notificationVisible;
+            if ( !this._notificationVisible ) { this._notificationExpanded = false; }
+            this._apply();
+        },
+
+        expandNotification() {
+            this._notificationExpanded = true;
+            this._apply();
+        },
+
+        minimizeNotification() {
+            this._notificationExpanded = false;
             this._apply();
         },
 
@@ -180,6 +194,15 @@
         // Notification panel close button
         $( document ).on( 'click', '.smap-panel-close', function() {
             panelManager.closeNotification();
+        } );
+
+        // Notification panel expand/minimize
+        $( document ).on( 'click', '.smap-panel-expand', function() {
+            panelManager.expandNotification();
+        } );
+
+        $( document ).on( 'click', '.smap-panel-minimize', function() {
+            panelManager.minimizeNotification();
         } );
 
         // Records queued counter opens queue panel

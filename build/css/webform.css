@@ -1493,6 +1493,21 @@ label.itemset-template {
     display: flex;
 }
 
+#smap-notification-panel.is-expanded {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(700px, 90vw);
+    height: min(80vh, 750px);
+    bottom: auto;
+    right: auto;
+    z-index: 9000;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
 .smap-panel-header {
     display: flex;
     align-items: center;
@@ -1509,17 +1524,32 @@ label.itemset-template {
     font-weight: bold;
 }
 
-.smap-panel-close {
+.smap-panel-header-btns {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.smap-panel-close,
+.smap-panel-expand,
+.smap-panel-minimize {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
     cursor: pointer;
     color: #555;
     padding: 0 4px;
 }
 
-.smap-panel-close:hover { color: #000; }
+.smap-panel-close:hover,
+.smap-panel-expand:hover,
+.smap-panel-minimize:hover { color: #000; }
+
+.smap-panel-minimize { display: none; }
+
+#smap-notification-panel.is-expanded .smap-panel-expand { display: none; }
+#smap-notification-panel.is-expanded .smap-panel-minimize { display: inline-block; }
 
 .smap-panel-body {
     flex: 1;
@@ -1553,6 +1583,11 @@ label.itemset-template {
     border: 1px solid #ccc;
     border-radius: 3px;
     box-sizing: border-box;
+}
+
+#email_content {
+    height: auto !important;
+    min-height: calc(10 * 1.6em);
 }
 
 /* ── Notification queued list ────────────────────────────────────── */
