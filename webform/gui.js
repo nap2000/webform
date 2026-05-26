@@ -60,6 +60,8 @@
 
         showIndex() {
             this._indexVisible = true;
+            this._notificationVisible = false;
+            this._notificationExpanded = false;
             this._apply();
         },
 
@@ -70,11 +72,16 @@
 
         toggleIndex() {
             this._indexVisible = !this._indexVisible;
+            if ( this._indexVisible ) {
+                this._notificationVisible = false;
+                this._notificationExpanded = false;
+            }
             this._apply();
         },
 
         openNotification() {
             this._notificationVisible = true;
+            this._indexVisible = false;
             this._apply();
         },
 
@@ -87,7 +94,11 @@
         toggleNotification() {
             if ( !this._notificationEnabled ) return;
             this._notificationVisible = !this._notificationVisible;
-            if ( !this._notificationVisible ) { this._notificationExpanded = false; }
+            if ( this._notificationVisible ) {
+                this._indexVisible = false;
+            } else {
+                this._notificationExpanded = false;
+            }
             this._apply();
         },
 
