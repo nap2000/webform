@@ -1477,15 +1477,11 @@ label.itemset-template {
 /* ── Notification panel (inside side panel) ──────────────────────── */
 
 #smap-notification-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     background: #f8f8f8;
-    z-index: 1;
     display: none;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
 }
 
@@ -1862,6 +1858,14 @@ label.itemset-template {
     padding-left: 10px;
     border-left: 2px solid #e0e0e0;
     margin-left: 12px;
+}
+
+#smap-index-area {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* has-form-index: side panel open — handled by smap-side-panel.is-open */
