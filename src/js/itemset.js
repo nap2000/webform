@@ -112,7 +112,21 @@ export default {
             }
             // end smap
 
-            const labelsContainer = getSiblingElement( template.closest( 'label, select, datalist' ), '.itemset-labels' );
+            const labelsAncestor = template.closest( 'label, select, datalist' );
+            // Look forward from the ancestor to find the associated .itemset-labels.
+            // getSiblingElement returns the first match in the parent, which is wrong when
+            // multiple autocomplete datalists share the same .or-repeat-info parent — the
+            // second (and later) questions would get the first question's labels.
+            let labelsContainer = null;
+            for ( let s = labelsAncestor.nextElementSibling; s; s = s.nextElementSibling ) {
+                if ( s.matches( '.itemset-labels' ) ) {
+                    labelsContainer = s;
+                    break;
+                }
+            }
+            if ( !labelsContainer ) {
+                labelsContainer = getSiblingElement( labelsAncestor, '.itemset-labels' );
+            }
             const itemsXpath = template.dataset.itemsPath;
             let labelType = labelsContainer.dataset.labelType;
             let labelRef = labelsContainer.dataset.labelRef;
