@@ -84,8 +84,8 @@
                 };
 
                 request.onblocked = function (e) {
-                    const msg = e.target.error ? e.target.error.message : 'Database blocked by another connection';
-                    console.log('Error', msg);
+                    const msg = 'Database upgrade blocked — please close other tabs with this form open and refresh';
+                    console.warn('[dbStore] ' + msg);
                     reject(new Error(msg));
                 };
 

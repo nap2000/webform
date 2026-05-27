@@ -11,6 +11,8 @@ const notification = {
     _pendingData: [],
 
     init( surveyIdent ) {
+        if ( this._initialized ) return;
+        this._initialized = true;
         gui.panelManager.enableNotification();
         this._refreshPendingList();
         this._loadTypesFromSurveyData();
@@ -145,11 +147,14 @@ const notification = {
         }
 
         dbStore.saveNotification( instanceId, notif ).then( () => {
+            console.log( '[notification] saveNotification success' );
             this._showStatus( 'Notification queued — will be sent on form submission', 'success' );
             this._clearForm();
             this._refreshPendingList( instanceId );
-        } ).catch( () => {
-            this._showStatus( 'Failed to queue notification', 'danger' );
+        } ).catch( ( err ) => {
+            console.error( '[notification] saveNotification failed', err );
+            const msg = err && err.message ? err.message : 'Failed to queue notification';
+            this._showStatus( msg, 'danger' );
         } );
     },
 
