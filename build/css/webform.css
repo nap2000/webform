@@ -1546,6 +1546,8 @@ label.itemset-template {
 
 #smap-notification-panel.is-expanded .smap-panel-expand { display: none; }
 #smap-notification-panel.is-expanded .smap-panel-minimize { display: inline-block; }
+#smap-notification-panel.is-expanded .smap-panel-header { cursor: move; }
+#smap-notification-panel.is-dragging { user-select: none; }
 
 .smap-panel-body {
     flex: 1;

@@ -110,6 +110,7 @@
         minimizeNotification() {
             this._notificationExpanded = false;
             this._apply();
+            _resetNotifPanelPosition();
         },
 
         openQueue() {
@@ -122,6 +123,69 @@
     };
 
     gui.panelManager = panelManager;
+
+    function _resetNotifPanelPosition() {
+        const panel = document.getElementById( 'smap-notification-panel' );
+        if ( panel ) {
+            panel.style.left = '';
+            panel.style.top = '';
+            panel.style.transform = '';
+        }
+    }
+
+    /**
+     * Makes the expanded notification dialog draggable via its header.
+     */
+    function initNotificationPanelDrag() {
+        const panel = document.getElementById( 'smap-notification-panel' );
+        if ( !panel ) return;
+
+        let startX, startY, startLeft, startTop;
+
+        panel.addEventListener( 'pointerdown', function( e ) {
+            if ( !panel.classList.contains( 'is-expanded' ) ) return;
+            const header = e.target.closest( '.smap-panel-header' );
+            if ( !header ) return;
+            if ( e.target.closest( 'button' ) ) return;
+
+            // Resolve the CSS centering transform to explicit px position
+            if ( !panel.style.left ) {
+                const rect = panel.getBoundingClientRect();
+                panel.style.left = rect.left + 'px';
+                panel.style.top = rect.top + 'px';
+                panel.style.transform = 'none';
+            }
+
+            e.preventDefault();
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt( panel.style.left, 10 );
+            startTop = parseInt( panel.style.top, 10 );
+            panel.classList.add( 'is-dragging' );
+            panel.setPointerCapture( e.pointerId );
+        } );
+
+        panel.addEventListener( 'pointermove', function( e ) {
+            if ( !panel.classList.contains( 'is-dragging' ) ) return;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            let left = startLeft + ( e.clientX - startX );
+            let top  = startTop  + ( e.clientY - startY );
+            left = Math.max( 0, Math.min( left, vw - panel.offsetWidth ) );
+            top  = Math.max( 0, Math.min( top,  vh - panel.offsetHeight ) );
+            panel.style.left = left + 'px';
+            panel.style.top  = top  + 'px';
+        } );
+
+        panel.addEventListener( 'pointerup', function() {
+            panel.classList.remove( 'is-dragging' );
+        } );
+
+        panel.addEventListener( 'pointercancel', function() {
+            panel.classList.remove( 'is-dragging' );
+        } );
+    }
+
     /**
      *
      * Initializes a GUI object.
@@ -130,6 +194,7 @@
         nav.setup();
         pages.init();
         setEventHandlers();
+        initNotificationPanelDrag();
         $( 'footer' ).detach().appendTo( '#container' ); //WTF?
         positionPageAndBar();
 
