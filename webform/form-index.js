@@ -153,6 +153,7 @@ const formIndex = {
         const label = document.createElement( 'span' );
         label.className = 'fi-label';
         label.textContent = node.label;
+        label.tabIndex = 0;
         li.appendChild( label );
 
         const hasGroupChildren = this._nodes.some( n => n.parentId === node.id );
@@ -183,6 +184,7 @@ const formIndex = {
             const span = document.createElement( 'span' );
             span.className = 'fi-label';
             span.textContent = `${ node.label } (${ idx + 1 })`;
+            span.tabIndex = 0;
             li.appendChild( span );
             ul.appendChild( li );
         } );
@@ -207,6 +209,67 @@ const formIndex = {
         } );
         this._formEl.addEventListener( 'addrepeat', e => this._refreshRepeat( e.target ) );
         this._formEl.addEventListener( 'removerepeat', e => this._refreshRepeat( e.target ) );
+        this._panelEl.addEventListener( 'keydown', e => this._onKeyDown( e ) );
+    },
+
+    _visibleLabels() {
+        return [ ...this._panelEl.querySelectorAll( '.fi-item' ) ]
+            .filter( li => !li.closest( '.fi-children[hidden]' ) )
+            .map( li => li.querySelector( ':scope > .fi-label' ) )
+            .filter( Boolean );
+    },
+
+    _onKeyDown( e ) {
+        const label = e.target.closest( '.fi-label' );
+        if ( !label ) return;
+        const li = label.closest( '.fi-item' );
+        if ( !li ) return;
+
+        switch ( e.key ) {
+            case 'ArrowDown': {
+                e.preventDefault();
+                const labels = this._visibleLabels();
+                const idx = labels.indexOf( label );
+                if ( idx < labels.length - 1 ) labels[ idx + 1 ].focus();
+                break;
+            }
+            case 'ArrowUp': {
+                e.preventDefault();
+                const labels = this._visibleLabels();
+                const idx = labels.indexOf( label );
+                if ( idx > 0 ) labels[ idx - 1 ].focus();
+                break;
+            }
+            case 'ArrowRight': {
+                e.preventDefault();
+                const childList = li.querySelector( ':scope > .fi-children' );
+                if ( childList ) {
+                    childList.hidden = false;
+                    const first = childList.querySelector( '.fi-label' );
+                    if ( first ) first.focus();
+                }
+                break;
+            }
+            case 'ArrowLeft': {
+                e.preventDefault();
+                const childList = li.querySelector( ':scope > .fi-children' );
+                if ( childList && !childList.hidden ) {
+                    childList.hidden = true;
+                } else {
+                    const parentLi = li.parentElement && li.parentElement.closest( '.fi-item' );
+                    if ( parentLi ) {
+                        const parentLabel = parentLi.querySelector( ':scope > .fi-label' );
+                        if ( parentLabel ) parentLabel.focus();
+                    }
+                }
+                break;
+            }
+            case 'Enter':
+            case ' ':
+                e.preventDefault();
+                this._onItemClick( li );
+                break;
+        }
     },
 
     _onItemClick( liEl ) {
