@@ -64,7 +64,7 @@ class LiteracyWidget extends Widget {
 
         optionWrapper.prepend(
             fragment.createContextualFragment(
-                `<button class="btn btn-default literacy-widget__start" type="button" data-i18n="literacywidget.start">Start</button>
+                `<button class="btn btn-secondary literacy-widget__start" type="button" data-i18n="literacywidget.start">Start</button>
                 <div class="literacy-widget__timer"/>`
             )
         );

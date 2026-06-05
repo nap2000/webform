@@ -358,8 +358,8 @@ class DrawWidget extends Widget {
     _getMarkup() {
         // HTML syntax copied from filepicker widget
         const load = this.props.load ? `<input type="file" class="ignore draw-widget__load"${this.props.capture !== null ? ` capture="${this.props.capture}"` : ''} accept="${this.props.accept}"/><div class="widget file-picker"><input class="ignore fake-file-input"/><div class="file-feedback"></div></div>` : '';
-        const fullscreenBtns = this.props.touch ? '<button type="button" class="show-canvas-btn btn btn-default">Draw/Sign</button>' +
-            '<button type="button" class="hide-canvas-btn btn btn-default"><span class="icon icon-arrow-left"> </span></button>' : '';
+        const fullscreenBtns = this.props.touch ? '<button type="button" class="show-canvas-btn btn btn-secondary">Draw/Sign</button>' +
+            '<button type="button" class="hide-canvas-btn btn btn-secondary"><span class="icon icon-arrow-left"> </span></button>' : '';
         const fragment = document.createRange().createContextualFragment(
             `<div class="widget draw-widget">
                 <div class="draw-widget__body">

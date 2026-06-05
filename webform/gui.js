@@ -213,7 +213,7 @@
      */
     function setEventHandlers() {
 
-        $( document ).on( 'click', '#feedback-bar .close', function( event ) {
+        $( document ).on( 'click', '#feedback-bar .btn-close', function( event ) {
             feedbackBar.hide();
             return false;
         } );
@@ -231,28 +231,9 @@
             print();
         } );
 
-        // Menu toggle
-        $( document ).on( 'click', '.smap-menu-btn', function( event ) {
-            event.stopPropagation();
-            var $menu = $( this ).siblings( '.smap-dropdown-menu' );
-            if ( $menu.attr( 'hidden' ) !== undefined ) {
-                $menu.removeAttr( 'hidden' );
-            } else {
-                $menu.attr( 'hidden', '' );
-            }
-        } );
-
-        // Close menu when clicking outside
-        $( document ).on( 'click', function( event ) {
-            if ( !$( event.target ).closest( '.smap-menu-wrapper' ).length ) {
-                $( '.smap-dropdown-menu' ).attr( 'hidden', '' );
-            }
-        } );
-
-        // Menu item actions
+        // Menu item actions (Bootstrap dropdown handles open/close)
         $( document ).on( 'click', '[data-action]', function() {
             var action = $( this ).data( 'action' );
-            $( '.smap-dropdown-menu' ).attr( 'hidden', '' );
             if ( action === 'open-queue' ) {
                 panelManager.openQueue();
             } else if ( action === 'toggle-index' ) {
@@ -557,20 +538,17 @@
         level = level || 'danger';
         cls = ( level === 'normal' ) ? '' : 'alert alert-' + level;
 
-        //write content into alert dialog
-        $alert.find( '.modal-header .modal-title' ).text( heading );
+        $alert.find( '.modal-title' ).text( heading );
         $alert.find( '.modal-body p' ).removeClass().addClass( cls ).html( message ).capitalizeStart();
 
-        $alert.find( '.close, .close-dialog' ).on( 'click', function() {
-		    $alert.hide();
-	    } );
+        const alertModal = bootstrap.Modal.getOrCreateInstance( $alert[ 0 ] );
 
-        $alert.show();
-
-        $alert.on( 'hidden.bs.modal', function() {
-            $alert.find( '.modal-body .modal-title, .modal-body p' ).html( '' );
+        $alert.one( 'hidden.bs.modal', function() {
+            $alert.find( '.modal-title, .modal-body p' ).html( '' );
             clearInterval( timer );
         } );
+
+        alertModal.show();
 
         if ( typeof duration === 'number' ) {
             var left = duration;
@@ -581,7 +559,7 @@
             }, 1000 );
             setTimeout( function() {
                 clearInterval( timer );
-                $alert.find( '.close' ).click();
+                alertModal.hide();
             }, duration * 1000 );
         }
 
@@ -620,24 +598,21 @@
 
         $dialog = $( '#dialog-confirm');
 
-        //write content into confirmation dialog
         $dialog.find( '.modal-body .modal-title' ).text( heading );
         $dialog.find( '.modal-body .msg' ).html( msg ).capitalizeStart();
         $dialog.find( '.modal-body .alert-danger' ).html( errorMsg ).show();
         if ( !errorMsg ) {
             $dialog.find( '.modal-body .alert-danger' ).hide();
         }
-        $('#recname').text(t('confirm.save.name'));
+        $( '#recname' ).text( t( 'confirm.save.name' ) );
         $dialog.find( 'input, select, textarea' ).each( function() {
             var name = $( this ).attr( 'name' );
             $( this ).val( values[ name ] || '' );
         } );
 
-        //instantiate dialog
-        $dialog.show();
+        const confirmModal = bootstrap.Modal.getOrCreateInstance( $dialog[ 0 ] );
 
-        //set eventhanders
-        $dialog.on( 'shown.bs.modal', function() {
+        $dialog.one( 'shown.bs.modal', function() {
             choices.beforeAction.call();
         } );
 
@@ -648,24 +623,21 @@
                     values[ $( this ).attr( 'name' ) ] = $( this ).val().trim();
                 }
             } );
-            $dialog.hide();
+            confirmModal.hide();
             reset();
             choices.posAction.call( undefined, values );
         } ).text( choices.posButton );
 
         $dialog.find( 'button.negative' ).on( 'click', function() {
-            $dialog.hide();
+            confirmModal.hide();
             reset();
             choices.negAction.call();
         } ).text( choices.negButton );
 
-        function reset() {
-            console.log( 'confirm dialog reset called' );
-            //remove eventhandlers
-            $dialog.off( 'shown hidden hide' );
-            // temp workaround or fix for multiple modals when repeatedly attempting to save a record under and existing name)
-            $( 'body>.modal-backdrop' ).remove();
+        confirmModal.show();
 
+        function reset() {
+            $dialog.off( 'shown.bs.modal hidden.bs.modal' );
             $dialog.find( 'button.positive, button.negative' ).off( 'click' );
             $dialog.find( '.modal-body .msg, .modal-body .alert-danger, button' ).text( '' );
         }
@@ -679,7 +651,7 @@
             }, 1000 );
             setTimeout( function() {
                 clearInterval( timer );
-                $dialog.find( '.close' ).click();
+                confirmModal.hide();
             }, duration * 1000 );
         }
 

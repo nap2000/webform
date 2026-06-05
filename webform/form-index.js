@@ -119,18 +119,18 @@ const formIndex = {
         this._panelEl = document.createElement( 'div' );
         this._panelEl.className = 'form-index-panel';
         this._panelEl.innerHTML =
-            '<div class="fi-header">' +
-                '<span class="fi-title">Index</span>' +
-                '<label class="fi-expand-label">' +
-                    '<input type="checkbox" class="fi-expand-cb"> Expand all' +
+            '<div class="fi-header d-flex align-items-center gap-2 px-2 py-1">' +
+                '<span class="fi-title fw-semibold flex-grow-1">Index</span>' +
+                '<label class="fi-expand-label d-flex align-items-center gap-1 small mb-0">' +
+                    '<input type="checkbox" class="fi-expand-cb form-check-input"> Expand all' +
                 '</label>' +
-                '<button class="fi-close" aria-label="Close index">&times;</button>' +
+                '<button class="fi-close btn-close btn-close-sm ms-1" aria-label="Close index"></button>' +
             '</div>' +
-            '<nav class="fi-nav">' +
-                '<button class="fi-show-all">&#8635; Show all</button>' +
-                '<button class="fi-back" hidden>&#8592; Back</button>' +
+            '<nav class="fi-nav d-flex gap-1 px-2 py-1">' +
+                '<button class="fi-show-all btn btn-sm btn-outline-secondary">&#8635; Show all</button>' +
+                '<button class="fi-back btn btn-sm btn-outline-secondary" hidden>&#8592; Back</button>' +
             '</nav>' +
-            '<ul class="fi-list"></ul>';
+            '<ul class="fi-list list-group list-group-flush"></ul>';
         const area = document.getElementById( 'smap-index-area' ) || document.body;
         area.appendChild( this._panelEl );
         this._listEl = this._panelEl.querySelector( '.fi-list' );
@@ -147,7 +147,7 @@ const formIndex = {
 
     _makeItem( node ) {
         const li = document.createElement( 'li' );
-        li.className = `fi-item fi-item--${ node.type }`;
+        li.className = `fi-item fi-item--${ node.type } list-group-item list-group-item-action px-2 py-1`;
         li.dataset.nodeId = node.id;
 
         const label = document.createElement( 'span' );
@@ -178,7 +178,7 @@ const formIndex = {
         const instances = [ ...this._formEl.querySelectorAll( `.or-repeat[name="${ name }"]` ) ];
         instances.forEach( ( inst, idx ) => {
             const li = document.createElement( 'li' );
-            li.className = 'fi-item fi-item--instance';
+            li.className = 'fi-item fi-item--instance list-group-item list-group-item-action px-2 py-1';
             li.dataset.nodeId = node.id;
             li.dataset.instanceIndex = idx;
             const span = document.createElement( 'span' );

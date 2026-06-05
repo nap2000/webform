@@ -458,17 +458,17 @@ class Geopicker extends Widget {
                 <span class="disabled-msg">remove all points to enable</span>
             </label>`;
 
-        const close = `<button type="button" class="close-chain-btn btn btn-default btn-xs" data-i18n="geopicker.closepolygon">${t( 'geopicker.closepolygon' )}</button>`;
-        const mapBtn = '<button type="button" class="show-map-btn btn btn-default">Map</button>';
+        const close = `<button type="button" class="close-chain-btn btn btn-secondary btn-sm" data-i18n="geopicker.closepolygon">${t( 'geopicker.closepolygon' )}</button>`;
+        const mapBtn = '<button type="button" class="show-map-btn btn btn-secondary">Map</button>';
 
         this.$widget = $(
             `<div class="geopicker widget">
                 <div class="search-bar hide-search no-map no-detect">
-                    <button type="button" class="hide-map-btn btn btn-default" aria-label="Hide map"><span class="icon icon-arrow-left" aria-hidden="true"> </span></button>
-                    <button name="geodetect" type="button" class="btn btn-default" title="detect current location" data-placement="top"><span class="icon icon-crosshairs"> </span></button>
+                    <button type="button" class="hide-map-btn btn btn-secondary" aria-label="Hide map"><span class="icon icon-arrow-left" aria-hidden="true"> </span></button>
+                    <button name="geodetect" type="button" class="btn btn-secondary" title="detect current location" data-placement="top"><span class="icon icon-crosshairs"> </span></button>
                     <div class="input-group">
                         <input class="geo ignore" name="search" type="text" placeholder="${t( 'geopicker.searchPlaceholder' )}" data-i18n="geopicker.searchPlaceholder" disabled="disabled"/>
-                        <button type="button" class="btn btn-default search-btn" aria-label="Search"><i class="icon icon-search" aria-hidden="true"> </i></button>
+                        <button type="button" class="btn btn-secondary search-btn" aria-label="Search"><i class="icon icon-search" aria-hidden="true"> </i></button>
                     </div>
                 </div>
                 <div class="geo-inputs">

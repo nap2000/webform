@@ -54,9 +54,9 @@ export default {
         // Add repeat buttons
         //$repeatInfos.filter( '*:not([data-repeat-fixed]):not([data-repeat-count])' )  // smap
         $repeatInfos.filter( '*:not([data-repeat-fixed])' )
-            .append( '<button type="button" class="btn btn-default add-repeat-btn"><i class="icon icon-plus"> </i></button>' )
+            .append( '<button type="button" class="btn btn-secondary add-repeat-btn"><i class="icon icon-plus"> </i></button>' )
             .siblings( '.or-repeat' )
-            .append( `<div class="repeat-buttons"><button type="button" ${disableFirstRepeatRemoval ? ' disabled ' : ' '}class="btn btn-default remove"><i class="icon icon-minus"> </i></button></div>` );
+            .append( `<div class="repeat-buttons"><button type="button" ${disableFirstRepeatRemoval ? ' disabled ' : ' '}class="btn btn-secondary remove"><i class="icon icon-minus"> </i></button></div>` );
         /**
          * The model also requires storing repeat templates for repeats that do not have a jr:template.
          * Since the model has no knowledge of which node is a repeat, we direct this here.

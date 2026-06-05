@@ -157,7 +157,7 @@
                         '<div class="button-bar">' +
                         '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
                         'style="' + btnstyle + '">upload</button>' +
-                        '<button class="btn btn-default delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
+                        '<button class="btn btn-secondary delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
                         'style="' + btnstyle + '">Delete</button>' +
                         '</div>');
                     //trigger fake save event to update record list
