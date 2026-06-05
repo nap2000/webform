@@ -18,6 +18,7 @@ else
     cp build/js/zxing-bundle.js $smapServer/WebContent/build/js/zxing-bundle.js
 fi
 
+cp build/js/bootstrap.bundle.min.js $smapServer/WebContent/build/js/bootstrap.bundle.min.js
 cp build/css/* $smapServer/WebContent/build/css
 cp build/fonts/* $smapServer/WebContent/build/fonts
 
