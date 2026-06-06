@@ -325,7 +325,10 @@ const formIndex = {
         } );
 
         targetEl.classList.add( 'form-index-focus' );
-        targetEl.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+        const navbarEl = document.querySelector( 'header.navbar' );
+        const offset = navbarEl ? navbarEl.offsetHeight + 8 : 0;
+        const y = targetEl.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo( { top: y, behavior: 'smooth' } );
     },
 
     _clearFocus() {

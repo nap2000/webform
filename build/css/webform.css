@@ -9,6 +9,7 @@
     --bs-link-hover-color: #325e85;
     --bs-link-hover-color-rgb: 50, 94, 133;
     --smap-accent: #d15200;
+    --navbar-height: 60px;
 }
 
 .banner_logo {
@@ -327,9 +328,18 @@ summary {
     margin: 0;
     height: 3px;
     background-color: var(--smap-accent, #d15200);
-    z-index: 1000;
+    z-index: 1031; /* above Bootstrap navbar (1030) */
     -webkit-transition: all 1s ease-out;
     transition: all 1s ease-out;
+}
+
+/* Navbar overrides */
+.navbar .form-language-selector {
+    padding: 0;
+}
+.navbar .form-language-selector #form-languages {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
 }
 
 .offline-enabled {
@@ -1044,8 +1054,8 @@ label.itemset-template {
     width: 280px;
     min-width: 280px;
     position: sticky;
-    top: 0;
-    height: 100vh;
+    top: var(--navbar-height);
+    height: calc(100vh - var(--navbar-height));
     overflow: hidden;
     background: #f8f8f8;
     border-right: 1px solid #d0d0d0;
@@ -1080,7 +1090,7 @@ label.itemset-template {
 
 .smap-full-panel {
     position: fixed;
-    top: 0;
+    top: var(--navbar-height);
     right: 0;
     bottom: 0;
     width: 320px;
