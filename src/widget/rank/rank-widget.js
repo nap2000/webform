@@ -65,8 +65,6 @@ class RankWidget extends Widget {
             }
         } );
 
-        this.element.classList.add( 'hide' );
-
         this.value = loadedValue;
 
         // Create the sortable drag-and-drop functionality

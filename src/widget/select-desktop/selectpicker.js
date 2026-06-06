@@ -79,7 +79,7 @@ class DesktopSelectpicker extends Widget {
         const template = range.createContextualFragment( `
         <div class="btn-group bootstrap-select widget clearfix">
             <button type="button" class="btn btn-secondary dropdown-toggle clearfix" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="selected"></span><span class="caret"></span>
+                <span class="selected"></span>
             </button>
             <ul class="dropdown-menu"${lisHtml ? ' role="menu"' : ''}>${lisHtml}</ul>
         </div>` );

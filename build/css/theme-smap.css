@@ -3490,10 +3490,6 @@ legend .required {
     font-weight: normal;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     text-align: left; }
-.bootstrap-select .dropdown-toggle .caret {
-    position: absolute;
-    top: 14px;
-    right: 12px; }
 .bootstrap-select .dropdown-toggle .selected {
     width: calc(100% - 12px);
     display: inline-block;
@@ -5460,12 +5456,19 @@ fieldset[disabled] .draw-widget__body__canvas {
 .or-annotate-initialized .draw-widget__body {
     margin-top: 50px; }
 
+input.rank {
+    display: none; }
+
 .rank-widget {
     position: relative;
-    display: flex; }
+    display: flex;
+    flex-direction: column; }
 .rank-widget--empty > * {
     opacity: 0.5; }
-.rank-widget--empty .rank-widget__overlay {
+/* overlay is a sibling of .rank-widget (moved out for aria), so use ~ and position relative to inner fieldset */
+.question fieldset {
+    position: relative; }
+.rank-widget--empty ~ .rank-widget__overlay {
     display: block;
     position: absolute;
     width: 100%;
@@ -5474,7 +5477,7 @@ fieldset[disabled] .draw-widget__body__canvas {
     left: 0;
     opacity: 1;
     text-align: center; }
-.rank-widget--empty .rank-widget__overlay__content {
+.rank-widget--empty ~ .rank-widget__overlay .rank-widget__overlay__content {
     position: absolute;
     top: 0;
     bottom: 20px;

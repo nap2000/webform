@@ -988,6 +988,28 @@ label.itemset-template {
     display: none !important;
 }
 
+/* bootstrap-select: style toggle as a form input using Bootstrap 5 CSS custom properties */
+.bootstrap-select .dropdown-toggle.btn-secondary {
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: #ced4da;
+    --bs-btn-color: #333;
+    --bs-btn-hover-bg: #e9ecef;
+    --bs-btn-hover-border-color: #adb5bd;
+    --bs-btn-hover-color: #333;
+    --bs-btn-active-bg: #dee2e6;
+    --bs-btn-active-border-color: #adb5bd;
+    --bs-btn-active-color: #333;
+    --bs-btn-focus-shadow-rgb: 206, 212, 218;
+    font-weight: normal;
+    box-shadow: none;
+}
+.bootstrap-select .dropdown-toggle::after {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 .btn.add-repeat-btn {
     background-color: transparent;
     border-color: #aaa;
