@@ -16,6 +16,11 @@
 	height: 50px;
 }
 
+/* theme-smap.css sets html{font-size:62.5%} for Bootstrap 3 compatibility, which breaks Bootstrap 5 rem values. Restore correct root size. */
+html {
+    font-size: 16px;
+}
+
 body {
     overflow: auto;
 }
@@ -984,15 +989,26 @@ label.itemset-template {
 }
 
 .btn.add-repeat-btn {
-    background-color: #fff;
+    background-color: transparent;
+    border-color: #aaa;
+    color: #666;
 }
 
 .btn.remove {
-    background-color: #fff;
+    background-color: transparent;
+    border-color: #aaa;
+    color: #666;
+}
+.btn.remove:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
 }
 
 .search-bar button.btn.btn-secondary, .geo-inputs button.close-chain-btn {
-    background-color: #fff;
+    background-color: transparent;
+    border-color: #aaa;
+    color: #666;
 }
 
 .full-width {

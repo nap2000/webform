@@ -661,7 +661,7 @@
 
     function updateSubmitButtonLabel() {
         const isDraft = $( '.form-footer [name="draft"]' ).prop( 'checked' );
-        $( '#submit-form' ).text( getSubmitButtonLabel( isDraft ) );
+        $( '#submit-form, #submit-form-single' ).text( getSubmitButtonLabel( isDraft ) );
     }
 
     function focusFirstQuestion() {
@@ -742,7 +742,7 @@
             });
 
 
-        $( '.form-footer [name="draft"]' ).on( 'change', function () {
+        $( document ).on( 'change', '[name="draft"]', function () {
             updateSubmitButtonLabel();
         } );
 
