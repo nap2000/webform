@@ -52,6 +52,26 @@ const iconRedMultiActive = L.divIcon( {
     className: 'smap-geopoint-red-circle-marker-active'
 } );
 
+// Start smap - "history-map": styling for locations collected in earlier repeat instances
+const historyColor = '#808080';
+const historyMarkerOptions = {
+    radius: 5,
+    color: historyColor,
+    weight: 2,
+    opacity: 0.7,
+    fillColor: historyColor,
+    fillOpacity: 0.3,
+    interactive: false
+};
+const historyPathOptions = {
+    color: historyColor,
+    weight: 3,
+    opacity: 0.7,
+    fillOpacity: 0.1,
+    interactive: false
+};
+// End smap
+
 // Leaflet extensions.
 import '../../js/leaflet-draw';
 import 'leaflet.gridlayer.googlemutant';
@@ -913,8 +933,68 @@ class Geopicker extends Widget {
                 that.map.on( 'baselayerchange', () => {
                     that.$widget.find( '.leaflet-control-container input' ).addClass( 'ignore no-unselect' ).next( 'span' ).addClass( 'option-label' );
                 } );
+
+                // smap - "history-map": overlay locations collected in earlier repeat instances
+                that._addHistoryLayers();
             } );
     }
+
+    /**
+     * Start smap
+     * Returns the values of the same geo question in all other instances of the
+     * enclosing repeat (i.e. previously collected locations). Used by the
+     * "history-map" appearance.
+     *
+     * @return {Array<string>} Geo value strings from sibling repeat instances.
+     */
+    _getHistoryValues() {
+        const name = this.element.getAttribute( 'name' );
+        const form = this.element.closest( 'form.or' );
+        if ( !name || !form ) {
+            return [];
+        }
+        const values = [];
+        form.querySelectorAll( `input[name="${name}"]` ).forEach( input => {
+            if ( input !== this.element && input.value && input.value.trim() !== '' ) {
+                values.push( input.value );
+            }
+        } );
+
+        return values;
+    }
+
+    /**
+     * Draws previously collected locations (from other repeat instances) on the
+     * map as non-interactive grey overlays when the question has the "history-map"
+     * appearance.
+     */
+    _addHistoryLayers() {
+        if ( !this.map || !this.props.appearances.includes( 'history-map' ) ) {
+            return;
+        }
+
+        const that = this;
+
+        this._getHistoryValues().forEach( value => {
+            const latLngs = value.trim().split( ';' )
+                .map( point => point.trim().split( ' ' ).map( Number ) )
+                .filter( point => that._isValidLatLng( point ) )
+                .map( point => that._cleanLatLng( point ) );
+
+            if ( latLngs.length === 0 ) {
+                return;
+            }
+
+            if ( that.props.type === 'geopoint' ) {
+                latLngs.forEach( latLng => L.circleMarker( latLng, historyMarkerOptions ).addTo( that.map ) );
+            } else if ( that.props.type === 'geoshape' ) {
+                L.polygon( latLngs, historyPathOptions ).addTo( that.map );
+            } else {
+                L.polyline( latLngs, historyPathOptions ).addTo( that.map );
+            }
+        } );
+    }
+    // End smap
 
     /*
      * Convert a point to a LatLng
