@@ -53,21 +53,22 @@ const iconRedMultiActive = L.divIcon( {
 } );
 
 // Start smap - "history-map": styling for locations collected in earlier repeat instances
-const historyColor = '#808080';
+// Vivid blue keeps high contrast over both satellite imagery and street maps.
+const historyColor = '#2962FF';
 const historyMarkerOptions = {
     radius: 5,
     color: historyColor,
     weight: 2,
-    opacity: 0.7,
+    opacity: 0.9,
     fillColor: historyColor,
-    fillOpacity: 0.3,
+    fillOpacity: 0.5,
     interactive: false
 };
 const historyPathOptions = {
     color: historyColor,
-    weight: 3,
-    opacity: 0.7,
-    fillOpacity: 0.1,
+    weight: 4,
+    opacity: 0.9,
+    fillOpacity: 0.15,
     interactive: false
 };
 // End smap
