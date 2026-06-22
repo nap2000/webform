@@ -1317,8 +1317,15 @@ FormModel.prototype.getPulldataIndex = function( expr, selector, index ) {
     } else if ( params.length === 6 ) {
         indexFn = stripQuotes( params[ 4 ] );
     }
-    if(indexFn && indexFn.startsWith("position")) {
-        indexFn = that.evaluate( indexFn, 'string', selector, index, true );
+
+    // The index can be a literal integer, an aggregation keyword, or an expression
+    // (e.g. position(..) or a ${question} reference). Anything that is not a plain
+    // integer or a known aggregation must be evaluated to obtain the actual index value.
+    if(indexFn) {
+        const aggregations = [ 'count', 'list', 'sum', 'mean', 'min', 'max', '-1', '0' ];
+        if( aggregations.indexOf( indexFn ) < 0 && !/^[0-9]+$/.test( indexFn ) ) {
+            indexFn = that.evaluate( indexFn, 'string', selector, index, true );
+        }
     }
 
     return indexFn;
