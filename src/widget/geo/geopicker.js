@@ -76,7 +76,7 @@ const historyPathOptions = {
 // Leaflet extensions.
 import '../../js/leaflet-draw';
 import 'leaflet.gridlayer.googlemutant';
-import { getCurrentPosition } from '../../js/geolocation';
+import { detectCurrentPosition } from '../../js/geolocation';
 
 /**
  * @typedef LatLngArray
@@ -424,11 +424,14 @@ class Geopicker extends Widget {
 
         } else {
             this._updateMap( [ 0, 0 ], 1 );
-            if ( this.props.detect ) {
+            // smap: only ask for a location if the map is visible, a hidden map cannot be centred
+            if ( this.props.detect && ( !this.props.touch || this._inFullScreenMode() ) ) {
                 // Center map on current location
-                navigator.geolocation.getCurrentPosition(position => {
-                    this._updateMap([position.coords.latitude, position.coords.longitude], defaultZoom);
-                });
+                navigator.geolocation.getCurrentPosition( position => {
+                    this._updateMap( [ position.coords.latitude, position.coords.longitude ], defaultZoom );
+                }, error => {
+                    console.error( `could not centre the map on the current location: ${error.message}` );
+                } );
             }
         }
     }
@@ -678,15 +681,28 @@ class Geopicker extends Widget {
      */
     _enableDetection() {
         const that = this;
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
-        };
+
         this.$detect.click( event => {
             event.preventDefault();
 
-            getCurrentPosition( options ).then( ( result ) => {
+            // smap: ignore taps while a lookup is running, it can take a while on a phone
+            if ( that.detecting ) {
+                return false;
+            }
+
+            /*
+             * smap: geolocation is only available over https. Without this check the browser
+             * reports a refused permission, which sends the user looking in the wrong place.
+             */
+            if ( !window.isSecureContext ) {
+                dialog.alert( t( 'geopicker.detectInsecure' ) );
+
+                return false;
+            }
+
+            that._setDetecting( true );
+
+            detectCurrentPosition().then( ( result ) => {
                 if ( that.polyline && that.props.type === 'geoshape' && that.updatedPolylineWouldIntersect( result, that.currentIndex ) ) {
                     that._showIntersectError();
                 } else {
@@ -696,12 +712,42 @@ class Geopicker extends Widget {
                     }
                     that._updateInputs( [ lat, lng, position.coords.altitude, position.coords.accuracy ], 'change.bymap', -1 );
                 }
-            } ).catch( (err) => {
-                console.error( 'error occurred trying to obtain position: ' + err.message );
+            } ).catch( ( error ) => {
+                that._showDetectError( error );     // smap: this used to fail silently
+            } ).finally( () => {
+                that._setDetecting( false );
             } );
 
             return false;
         } );
+    }
+
+    /**
+     * smap: Shows whether a location lookup is in progress. The button is not disabled
+     * because a disabled detect button is hidden.
+     *
+     * @param {boolean} detecting - Whether a lookup is in progress
+     */
+    _setDetecting( detecting ) {
+        this.detecting = detecting;
+        this.$detect.toggleClass( 'detecting', detecting )
+            .find( '.icon' ).toggleClass( 'fa-spin', detecting );
+    }
+
+    /**
+     * smap: Tells the user why a location could not be obtained.
+     *
+     * @param {window.GeolocationPositionError} error - the failed lookup
+     */
+    _showDetectError( error ) {
+        const messages = {
+            1: 'geopicker.detectDenied',
+            2: 'geopicker.detectUnavailable',
+            3: 'geopicker.detectTimeout'
+        };
+
+        console.error( `error occurred trying to obtain position: ${error ? error.message : ''}` );
+        dialog.alert( t( messages[ error && error.code ] || 'geopicker.detectUnavailable' ) );
     }
 
     /**

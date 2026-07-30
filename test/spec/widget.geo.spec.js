@@ -1,5 +1,6 @@
 import Geopicker from '../../src/widget/geo/geopicker';
-import { createTestCoordinates, mockGetCurrentPosition } from '../helpers/geolocation';
+import support from '../../src/js/support';
+import { createTestCoordinates, createGeolocationLookupError, mockGetCurrentPosition } from '../helpers/geolocation';
 import { runAllCommonWidgetTests } from '../helpers/test-widget';
 
 const FORM =
@@ -73,4 +74,147 @@ describe( 'geoshape widget', () => {
         } );
 
     } );
+} );
+
+const GEOPOINT_FORM =
+    `<form class="or">
+        <label class="question">
+            <input name="/data/geo" type="text" data-type-xml="geopoint"/>
+        </label>
+    </form>`;
+
+describe( 'geopoint widget location detection', () => {
+    const coordinates = createTestCoordinates( {
+        latitude: 48.66,
+        longitude: -120.5,
+        accuracy: 12.5,
+        altitude: 123,
+    } );
+
+    let touch;
+    let control;
+    let widget;
+    let lookups;
+
+    /**
+     * @param {Array<window.GeolocationPositionError|window.GeolocationCoordinates>} results - result of each consecutive lookup
+     */
+    const mockLookups = ( results ) => {
+        lookups = [];
+        spyOn( navigator.geolocation, 'getCurrentPosition' ).and.callFake( ( success, error, options ) => {
+            const result = results[ Math.min( lookups.length, results.length - 1 ) ];
+
+            lookups.push( options );
+
+            if ( result instanceof window.GeolocationPositionError ) {
+                error( result );
+            } else {
+                success( { coords: result, timestamp: Date.now() } );
+            }
+        } );
+    };
+
+    const clickDetect = () => {
+        widget.$detect[ 0 ].click();
+
+        // the lookup and its handlers run in promise callbacks
+        return new Promise( resolve => setTimeout( resolve, 0 ) );
+    };
+
+    beforeEach( () => {
+        touch = support.touch;
+        support.touch = true;   // a mobile device, where the map is not shown
+        spyOn( window, 'alert' );
+    } );
+
+    afterEach( () => {
+        support.touch = touch;
+    } );
+
+    /**
+     * Creates a geopoint question and instantiates the widget for it.
+     */
+    const initWidget = () => {
+        const fragment = document.createRange().createContextualFragment( GEOPOINT_FORM );
+        control = fragment.querySelector( 'input' );
+        widget = new Geopicker( control );
+    };
+
+    it( 'records the position when the detect button is clicked', async() => {
+        mockLookups( [ coordinates ] );
+        initWidget();
+
+        await clickDetect();
+
+        expect( lookups.length ).toEqual( 1 );
+        expect( control.value ).toEqual( '48.66 -120.5 123 12.5' );
+        expect( window.alert ).not.toHaveBeenCalled();
+    } );
+
+    it( 'does not ask for a location before the button is clicked, the map is not shown', () => {
+        mockLookups( [ coordinates ] );
+        initWidget();
+
+        expect( lookups.length ).toEqual( 0 );
+    } );
+
+    it( 'accepts a network position when a high accuracy fix is not available', async() => {
+        mockLookups( [ createGeolocationLookupError( 'TIMEOUT' ), coordinates ] );
+        initWidget();
+
+        await clickDetect();
+
+        expect( lookups.length ).toEqual( 2 );
+        expect( lookups[ 0 ].enableHighAccuracy ).toBe( true );
+        expect( lookups[ 1 ].enableHighAccuracy ).toBe( false );
+        expect( control.value ).toEqual( '48.66 -120.5 123 12.5' );
+    } );
+
+    it( 'reports a timeout instead of failing silently', async() => {
+        mockLookups( [ createGeolocationLookupError( 'TIMEOUT' ) ] );
+        initWidget();
+
+        await clickDetect();
+
+        expect( control.value ).toEqual( '' );
+        expect( window.alert ).toHaveBeenCalled();
+    } );
+
+    it( 'reports a refused permission without retrying', async() => {
+        mockLookups( [ createGeolocationLookupError( 'PERMISSION_DENIED' ) ] );
+        initWidget();
+
+        await clickDetect();
+
+        expect( lookups.length ).toEqual( 1 );
+        expect( window.alert ).toHaveBeenCalled();
+    } );
+
+    it( 'shows a busy state while detecting and clears it afterwards', async() => {
+        mockLookups( [ coordinates ] );
+        initWidget();
+
+        expect( widget.$detect.hasClass( 'detecting' ) ).toBe( false );
+
+        const detected = clickDetect();
+
+        expect( widget.detecting ).toBe( true );
+        expect( widget.$detect.find( '.icon' ).hasClass( 'fa-spin' ) ).toBe( true );
+
+        await detected;
+
+        expect( widget.detecting ).toBe( false );
+        expect( widget.$detect.find( '.icon' ).hasClass( 'fa-spin' ) ).toBe( false );
+    } );
+
+    it( 'ignores further clicks while a lookup is running', async() => {
+        mockLookups( [ coordinates ] );
+        initWidget();
+
+        widget._setDetecting( true );
+        await clickDetect();
+
+        expect( lookups.length ).toEqual( 0 );
+    } );
+
 } );
