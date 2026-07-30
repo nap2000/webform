@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import Widget from '../../js/widget';
 import fileManager from 'enketo/file-manager';
+import support from '../../js/support';
 import { getFilename, resizeImage, isNumber } from '../../js/utils';
 import downloadUtils from '../../js/download-utils';
 import events from '../../js/event';
@@ -11,6 +12,13 @@ import { empty } from '../../js/dom-utils';
 
 // TODO: remove remaining jquery (events, namespaces)
 // TODO: run (some) standard widget tests
+
+// smap: media types the device can capture itself, with the icon and label of each control
+const MEDIA_TYPES = {
+    'image/*': { captureIcon: 'fa-camera', captureLabel: 'takePhoto', browseIcon: 'fa-picture-o' },
+    'video/*': { captureIcon: 'fa-video-camera', captureLabel: 'recordVideo', browseIcon: 'fa-film' },
+    'audio/*': { captureIcon: 'fa-microphone', captureLabel: 'recordAudio', browseIcon: 'fa-music' }
+};
 
 /**
  * FilePicker that works both offline and online. It abstracts the file storage/cache away
@@ -33,6 +41,24 @@ class Filepicker extends Widget {
         this.element.classList.add( 'hide' );
         this.question.classList.add( 'with-media', 'clearfix' );
 
+        /*
+         * smap: the camera facing mode forced by the question appearance (new, new-front,
+         * new-rear), if any. Setting a valid capture value makes mobile browsers open the
+         * camera instead of the photo gallery.
+         */
+        this.captureMode = this._getCaptureMode();
+        if ( this.captureMode ) {
+            this.element.setAttribute( 'capture', this.captureMode );
+        }
+
+        /*
+         * smap: on mobile devices media questions are operated with buttons only. The file
+         * name field is not shown: capturing is the primary action, selecting an existing
+         * file (unless the appearance forbids it) and resetting are secondary.
+         */
+        this.mediaControls = MEDIA_TYPES[ this.element.getAttribute( 'accept' ) ];
+        this.useCaptureUi = !!this.mediaControls && support.touch && !this.props.readonly;
+
         const fragment = document.createRange().createContextualFragment(
             `<div class="widget file-picker">
                     <input class="ignore fake-file-input"/>
@@ -40,22 +66,43 @@ class Filepicker extends Widget {
                     <div class="file-preview"></div>
                 </div>` );
 
-        fragment.querySelector( 'input' ).after( this.downloadButtonHtml );
-        fragment.querySelector( 'input' ).after( this.resetButtonHtml );
+        const fakeInputEl = fragment.querySelector( 'input' );
+
+        fakeInputEl.after( this.downloadButtonHtml );
+        fakeInputEl.after( this.resetButtonHtml );
+
+        if ( this.useCaptureUi ) {      // smap
+            if ( !this.captureMode ) {
+                // no existing files when the appearance (new, new-front, new-rear) forces a new one
+                fakeInputEl.after( this.browseButtonHtml );
+            }
+            fragment.querySelector( '.file-picker' ).prepend( this.captureButtonHtml );
+            fragment.querySelector( '.file-picker' ).classList.add( 'with-capture' );
+        }
 
         this.element.after( fragment );
 
         this.disable();
 
         const widget = this.question.querySelector( '.widget' );
+        this.filePicker = widget;   // smap
         this.feedback = widget.querySelector( '.file-feedback' );
         this.preview = widget.querySelector( '.file-preview' );
         this.fakeInput = widget.querySelector( '.fake-file-input' );
         this.downloadLink = widget.querySelector( '.btn-download' );
+        this.captureButton = widget.querySelector( '.btn-capture' );    // smap
+        this.browseButton = widget.querySelector( '.btn-browse' );      // smap
 
 	if ( !this.props.readonly ) {   // smap only add reset if not readonly
        	    that._setResetButtonListener( widget.querySelector( '.btn-reset' ) );
 	}
+
+        if ( this.captureButton ) {     // smap
+            this._setCaptureButtonListener( this.captureButton );
+        }
+        if ( this.browseButton ) {      // smap
+            this._setBrowseButtonListener( this.browseButton );
+        }
 
         // Focus listener needs to be added synchronously
         that._setFocusListener();
@@ -95,6 +142,99 @@ class Filepicker extends Widget {
             .catch( error => {
                 that._showFeedback( error, 'error' );
             } );
+    }
+
+    /**
+     * smap: Determines which camera to request, based on the question appearance or a
+     * capture attribute set by the server. Legacy values such as capture="camera" are
+     * mapped to the values current browsers understand.
+     *
+     * @return {string|null} 'user', 'environment', or null if the camera is not forced
+     */
+    _getCaptureMode() {
+        const appearances = this.props.appearances;
+
+        if ( appearances.includes( 'new-front' ) ) {
+            return 'user';
+        }
+        if ( appearances.includes( 'new' ) || appearances.includes( 'new-rear' ) ) {
+            return 'environment';
+        }
+
+        if ( !this.element.hasAttribute( 'capture' ) ) {
+            return null;
+        }
+
+        return this.element.getAttribute( 'capture' ).trim().toLowerCase() === 'user' ? 'user' : 'environment';
+    }
+
+    /**
+     * smap: Returns a HTML document fragment for the primary camera capture button.
+     *
+     * @readonly
+     * @type {DocumentFragment}
+     */
+    get captureButtonHtml() {
+        const fragment = document.createRange().createContextualFragment(
+            `<button type="button" class="btn btn-primary btn-capture" disabled>
+                <i class="icon ${this.mediaControls.captureIcon}"> </i><span class="btn-capture__label"></span>
+            </button>` );
+
+        fragment.querySelector( '.btn-capture__label' ).textContent = t( `filepicker.${this.mediaControls.captureLabel}` );
+
+        return fragment;
+    }
+
+    /**
+     * smap: Returns a HTML document fragment for the secondary button that selects an
+     * existing file.
+     *
+     * @readonly
+     * @type {DocumentFragment}
+     */
+    get browseButtonHtml() {
+        const fragment = document.createRange().createContextualFragment(
+            `<button type="button" class="btn-icon-only btn-browse" disabled>
+                <i class="icon ${this.mediaControls.browseIcon}"> </i>
+            </button>` );
+        const label = t( 'filepicker.chooseExisting' );
+
+        fragment.querySelector( 'button' ).setAttribute( 'aria-label', label );
+        fragment.querySelector( 'button' ).setAttribute( 'title', label );
+
+        return fragment;
+    }
+
+    /**
+     * smap: Click action of the camera capture button. Requests the camera for this click
+     * only, so that the browse button keeps opening the gallery/file picker.
+     *
+     * @param {Element} captureButton - capture button HTML element
+     */
+    _setCaptureButtonListener( captureButton ) {
+        captureButton.addEventListener( 'click', event => {
+            event.preventDefault();
+            if ( this.props.readonly || this.originalInputValue || this.value ) {
+                this.fakeInput.focus();
+
+                return;
+            }
+            this.element.setAttribute( 'capture', this.captureMode || 'environment' );
+            $( this.element ).trigger( 'click.propagate' );
+        } );
+    }
+
+    /**
+     * smap: Click action of the button that selects an existing file. Uses the same path as
+     * a click on the file name field.
+     *
+     * @param {Element} browseButton - browse button HTML element
+     */
+    _setBrowseButtonListener( browseButton ) {
+        browseButton.addEventListener( 'click', event => {
+            event.preventDefault();
+            this.fakeInput.click();
+        } );
     }
 
     /**
@@ -216,6 +356,10 @@ class Filepicker extends Widget {
 
                 return;
             }
+            if ( this.browseButton ) {
+                // smap: the camera is reached with the capture button, this opens the gallery
+                this.element.removeAttribute( 'capture' );
+            }
             $( that.element ).trigger( 'click.propagate' );
         } );
 
@@ -232,7 +376,12 @@ class Filepicker extends Widget {
     _setFocusListener() {
         // Handle focus on original input (goTo functionality)
         this.element.addEventListener( events.ApplyFocus().type, () => {
-            this.fakeInput.focus();
+            // smap: the file name field is not shown in the capture layout, focus a visible button instead
+            const visible = this.useCaptureUi ?
+                [ this.captureButton, this.question.querySelector( '.btn-reset' ) ]
+                    .find( button => button && button.offsetParent !== null ) : null;
+
+            ( visible || this.fakeInput ).focus();
         } );
     }
 
@@ -244,6 +393,10 @@ class Filepicker extends Widget {
     _showFileName( fileName ) {
         this.value = fileName;
         this.fakeInput.readOnly = !!fileName;
+        if ( this.useCaptureUi ) {
+            // smap: while there is a file only the reset button is offered, the file has to be cleared first
+            this.filePicker.classList.toggle( 'has-file', !!fileName );
+        }
     }
 
     /**
@@ -335,6 +488,11 @@ class Filepicker extends Widget {
     disable() {
         this.element.disabled = true;
         this.question.querySelector( '.btn-reset' ).disabled = true;
+        [ this.captureButton, this.browseButton ].forEach( button => {   // smap
+            if ( button ) {
+                button.disabled = true;
+            }
+        } );
     }
 
     /**
@@ -343,6 +501,11 @@ class Filepicker extends Widget {
     enable() {
         this.element.disabled = false;
         this.question.querySelector( '.btn-reset' ).disabled = false;
+        [ this.captureButton, this.browseButton ].forEach( button => {   // smap
+            if ( button ) {
+                button.disabled = false;
+            }
+        } );
     }
 
     /**

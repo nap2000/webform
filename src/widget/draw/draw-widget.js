@@ -597,7 +597,17 @@ class DrawWidget extends Widget {
         props.colors = props.type === 'signature' ? [] : [ 'black', 'lightblue', 'blue', 'red', 'orange', 'cyan', 'yellow', 'lightgreen', 'green', 'pink', 'purple', 'lightgray', 'darkgray' ];
         props.touch = support.touch;
         props.accept = this.element.getAttribute( 'accept' );
-        props.capture = this.element.getAttribute( 'capture' );
+
+        // smap: map appearance/legacy capture values to the values current browsers understand
+        if ( props.appearances.includes( 'new-front' ) ) {
+            props.capture = 'user';
+        } else if ( props.appearances.includes( 'new' ) || props.appearances.includes( 'new-rear' ) ) {
+            props.capture = 'environment';
+        } else if ( this.element.hasAttribute( 'capture' ) ) {
+            props.capture = this.element.getAttribute( 'capture' ).trim().toLowerCase() === 'user' ? 'user' : 'environment';
+        } else {
+            props.capture = null;
+        }
 
         return props;
     }

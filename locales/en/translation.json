@@ -230,10 +230,14 @@
         "header": "Information"
     },
     "filepicker": {
+        "chooseExisting": "Choose an existing file",
         "file": "file",
         "notFound": "File __existing__ could not be found (leave unchanged if already submitted and you want to preserve it).",
         "placeholder": "Click here to upload file. (< __maxSize__)",
+        "recordAudio": "Record audio",
+        "recordVideo": "Record video",
         "resetWarning": "This will remove the __item__. Are you sure you want to do this?",
+        "takePhoto": "Take photo",
         "toolargeerror": "File too large (> __maxSize__)",
         "waitingForPermissions": "Waiting for user permissions."
     },

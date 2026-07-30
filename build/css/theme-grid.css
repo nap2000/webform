@@ -5288,6 +5288,50 @@ fieldset[disabled] .file-picker .fake-file-input {
 .file-picker .btn-download[href=""] {
     display: none; }
 
+.file-picker.with-capture .fake-file-input {
+    display: none; }
+
+.file-picker.with-capture .btn-capture {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    min-height: 56px;
+    margin: 0 0 5px 0;
+    font-size: 17px; }
+.file-picker.with-capture .btn-capture .icon {
+    margin-right: 10px;
+    font-size: 22px;
+    vertical-align: middle; }
+
+.file-picker.with-capture .btn-browse,
+.file-picker.with-capture .btn-reset,
+.file-picker.with-capture .btn-download {
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0 10px 0 0;
+    padding: 8px 12px;
+    font-size: 20px;
+    vertical-align: middle;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    opacity: 1; }
+
+.file-picker.with-capture .btn-browse {
+    display: inline-block; }
+
+.file-picker.with-capture .btn-reset {
+    display: none; }
+
+.file-picker.with-capture.has-file .btn-capture,
+.file-picker.with-capture.has-file .btn-browse {
+    display: none; }
+
+.file-picker.with-capture.has-file .btn-reset {
+    display: inline-block; }
+
+.file-picker.with-capture.has-file .btn-download:not([href=""]) {
+    display: inline-block; }
+
 /*
  * To save headaches with resizing canvases, it is important to maintain fixed aspect
  * ratios at all times:
