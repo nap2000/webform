@@ -136,3 +136,73 @@ describe( 'annotate widget image capture', () => {
     } );
 
 } );
+
+describe( 'draw widget full screen mode', () => {
+    let touch;
+
+    beforeEach( () => {
+        touch = support.touch;
+        support.touch = true;
+    } );
+
+    afterEach( () => {
+        support.touch = touch;
+        if ( history.state && history.state.drawWidgetFullScreen ) {
+            history.back();
+        }
+    } );
+
+    /**
+     * @return {Promise<DrawWidget>} an initialized widget
+     */
+    const initWidget = async() => {
+        const fragment = document.createRange().createContextualFragment( FORM3 );
+        const widget = new DrawWidget( fragment.querySelector( DrawWidget.selector ) );
+
+        await widget.initialize;
+        await new Promise( resolve => setTimeout( resolve, 0 ) );
+
+        return widget;
+    };
+
+    it( 'labels the button that closes the view, it is what saves the drawing', async() => {
+        const widget = await initWidget();
+        const done = widget.question.querySelector( '.hide-canvas-btn' );
+
+        expect( done ).not.toBeNull();
+        expect( done.classList.contains( 'btn-primary' ) ).toBe( true );
+        expect( done.querySelector( '.icon-check' ) ).not.toBeNull();
+    } );
+
+    it( 'adds a history entry when the drawing view is opened', async() => {
+        const widget = await initWidget();
+
+        widget.question.querySelector( '.show-canvas-btn' ).click();
+
+        expect( widget.$widget.hasClass( 'full-screen' ) ).toBe( true );
+        expect( widget.fullScreenHistoryEntry ).toBe( true );
+        expect( history.state.drawWidgetFullScreen ).toBe( true );
+    } );
+
+    it( 'closes the drawing view, and not the form, when the device back button is used', async() => {
+        const widget = await initWidget();
+
+        widget.question.querySelector( '.show-canvas-btn' ).click();
+        // what the browser does for a back button press on the pushed entry
+        window.dispatchEvent( new PopStateEvent( 'popstate' ) );
+
+        expect( widget.$widget.hasClass( 'full-screen' ) ).toBe( false );
+        expect( widget.fullScreenHistoryEntry ).toBe( false );
+    } );
+
+    it( 'does not add a second history entry when the view is reopened', async() => {
+        const widget = await initWidget();
+        const showBtn = widget.question.querySelector( '.show-canvas-btn' );
+
+        showBtn.click();
+        showBtn.click();
+
+        expect( widget.fullScreenHistoryEntry ).toBe( true );
+    } );
+
+} );

@@ -179,20 +179,27 @@ class DrawWidget extends Widget {
                             } );
                     } )
                     .end().find( '.show-canvas-btn' ).on( 'click', () => {
-                        that.$widget.addClass( 'full-screen' );
-                        that._resizeCanvas( canvas );
-                        that.enable();
+                        that._enterFullScreen( canvas );
 
                         return false;
                     } )
                     .end().find( '.hide-canvas-btn' ).on( 'click', () => {
-                        that.$widget.removeClass( 'full-screen' );
-                        that.pad.off();
-                        that._forceUpdate();
-                        that._resizeCanvas( canvas ); // smap - resize does a double update  XXXXXXXXXXXXXXXX
+                        // smap: undo the history entry, its popstate handler leaves full screen
+                        if ( that.fullScreenHistoryEntry ) {
+                            history.back();
+                        } else {
+                            that._exitFullScreen( canvas );
+                        }
 
                         return false;
                     } ).click();
+
+                // smap: the Android back button should leave the drawing, not the whole form
+                window.addEventListener( 'popstate', () => {
+                    if ( that.$widget.hasClass( 'full-screen' ) ) {
+                        that._exitFullScreen( canvas );
+                    }
+                } );
 
                 $( canvas )
                     .on( 'canvasreload', () => {
@@ -220,6 +227,36 @@ class DrawWidget extends Widget {
                 // https://github.com/kobotoolbox/enketo-express/issues/844
                 that._resizeCanvas( canvas );
             } );
+    }
+
+    /**
+     * smap: Opens the full screen drawing view, and adds a history entry so that the device
+     * back button closes it instead of leaving the form.
+     *
+     * @param {Element} canvas - Canvas element
+     */
+    _enterFullScreen( canvas ) {
+        this.$widget.addClass( 'full-screen' );
+        this._resizeCanvas( canvas );
+        this.enable();
+
+        if ( !this.fullScreenHistoryEntry ) {
+            history.pushState( { drawWidgetFullScreen: true }, '' );
+            this.fullScreenHistoryEntry = true;
+        }
+    }
+
+    /**
+     * smap: Closes the full screen drawing view, keeping what was drawn.
+     *
+     * @param {Element} canvas - Canvas element
+     */
+    _exitFullScreen( canvas ) {
+        this.fullScreenHistoryEntry = false;
+        this.$widget.removeClass( 'full-screen' );
+        this.pad.off();
+        this._forceUpdate();
+        this._resizeCanvas( canvas ); // smap - resize does a double update  XXXXXXXXXXXXXXXX
     }
 
     _forceUpdate() {
@@ -379,8 +416,9 @@ class DrawWidget extends Widget {
         const load = this.props.load ? `<input type="file" class="ignore draw-widget__load"${this.props.captureOnly ? ` capture="${this.props.captureFacing}"` : ''} accept="${this.props.accept}"/><div class="widget file-picker"><input class="ignore fake-file-input"/><div class="file-feedback"></div></div>` : '';
         // smap: on mobile the image is captured with buttons above the canvas, not with a file field
         const captureUi = this.props.load && this.props.captureUi;
+        // smap: the hide button is what saves and closes the full screen view, so it says so
         const fullscreenBtns = this.props.touch ? '<button type="button" class="show-canvas-btn btn btn-secondary">Draw/Sign</button>' +
-            '<button type="button" class="hide-canvas-btn btn btn-secondary"><span class="icon icon-arrow-left"> </span></button>' : '';
+            `<button type="button" class="hide-canvas-btn btn btn-primary"><span class="icon icon-check"> </span>${t( 'drawwidget.done' )}</button>` : '';
         const fragment = document.createRange().createContextualFragment(
             `<div class="widget draw-widget">
                 ${captureUi ? load : ''}

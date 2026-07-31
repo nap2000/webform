@@ -5819,7 +5819,8 @@ fieldset[disabled] .draw-widget__body__canvas {
     top: 0;
     width: 100%;
     height: 100%;
-    z-index: 20;
+    /* smap: above the fixed page menu, which would otherwise cover the top of the drawing */
+    z-index: 1040;
     background: white;
     margin: 0;
     padding-left: 15px;
@@ -5827,7 +5828,8 @@ fieldset[disabled] .draw-widget__body__canvas {
 .draw-widget.full-screen .draw-widget__body {
     width: calc(100% - 2 * 15px);
     padding-top: calc(0.75 * (100% - 2 * 15px));
-    margin: 50px auto; }
+    /* smap: room for the done button above the drawing */
+    margin: 66px auto 0 auto; }
 .draw-widget.full-screen .draw-widget__body input[type=file] {
     left: 90px; }
 .draw-widget.full-screen .draw-widget__body .file-picker {
@@ -5837,9 +5839,13 @@ fieldset[disabled] .draw-widget__body__canvas {
     display: block;
     position: absolute;
     z-index: 30;
-    top: -40px;
+    top: -46px;
     left: 0;
-    width: 70px; }
+    width: auto;
+    min-width: 100px;
+    padding: 0 12px; }
+.draw-widget.full-screen .hide-canvas-btn .icon {
+    margin-right: 6px; }
 .draw-widget.full-screen .show-canvas-btn {
     display: none; }
 .draw-widget.full-screen .draw-widget__footer {

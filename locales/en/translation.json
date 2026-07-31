@@ -203,6 +203,7 @@
     },
     "drawwidget": {
         "annotation": "file and drawing",
+        "done": "Done",
         "drawing": "drawing",
         "signature": "signature"
     },
