@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import Widget from '../../js/widget';
 import fileManager from 'enketo/file-manager';
-import support from '../../js/support';
+import { usesCaptureUi, getCaptureFacing, isCaptureOnly, captureButtonHtml, browseButtonHtml } from '../../js/media-capture';
 import { getFilename, resizeImage, isNumber } from '../../js/utils';
 import downloadUtils from '../../js/download-utils';
 import events from '../../js/event';
@@ -12,13 +12,6 @@ import { empty } from '../../js/dom-utils';
 
 // TODO: remove remaining jquery (events, namespaces)
 // TODO: run (some) standard widget tests
-
-// smap: media types the device can capture itself, with the icon and label of each control
-const MEDIA_TYPES = {
-    'image/*': { captureIcon: 'fa-camera', captureLabel: 'takePhoto', browseIcon: 'fa-picture-o' },
-    'video/*': { captureIcon: 'fa-video-camera', captureLabel: 'recordVideo', browseIcon: 'fa-film' },
-    'audio/*': { captureIcon: 'fa-microphone', captureLabel: 'recordAudio', browseIcon: 'fa-music' }
-};
 
 /**
  * FilePicker that works both offline and online. It abstracts the file storage/cache away
@@ -42,13 +35,14 @@ class Filepicker extends Widget {
         this.question.classList.add( 'with-media', 'clearfix' );
 
         /*
-         * smap: the camera facing mode forced by the question appearance (new, new-front,
-         * new-rear), if any. Setting a valid capture value makes mobile browsers open the
-         * camera instead of the photo gallery.
+         * smap: which camera to open (selfie/new-front use the front one), and whether an
+         * existing file may be chosen at all (new, new-front, new-rear require a new one).
+         * Mobile browsers only open the camera when a valid capture value is set.
          */
-        this.captureMode = this._getCaptureMode();
-        if ( this.captureMode ) {
-            this.element.setAttribute( 'capture', this.captureMode );
+        this.captureFacing = getCaptureFacing( this.element, this.props.appearances );
+        this.captureOnly = isCaptureOnly( this.element, this.props.appearances );
+        if ( this.captureOnly ) {
+            this.element.setAttribute( 'capture', this.captureFacing );
         }
 
         /*
@@ -56,8 +50,7 @@ class Filepicker extends Widget {
          * name field is not shown: capturing is the primary action, selecting an existing
          * file (unless the appearance forbids it) and resetting are secondary.
          */
-        this.mediaControls = MEDIA_TYPES[ this.element.getAttribute( 'accept' ) ];
-        this.useCaptureUi = !!this.mediaControls && support.touch && !this.props.readonly;
+        this.useCaptureUi = usesCaptureUi( this.element, this.props.readonly );
 
         const fragment = document.createRange().createContextualFragment(
             `<div class="widget file-picker">
@@ -72,11 +65,10 @@ class Filepicker extends Widget {
         fakeInputEl.after( this.resetButtonHtml );
 
         if ( this.useCaptureUi ) {      // smap
-            if ( !this.captureMode ) {
-                // no existing files when the appearance (new, new-front, new-rear) forces a new one
-                fakeInputEl.after( this.browseButtonHtml );
+            if ( !this.captureOnly ) {
+                fakeInputEl.after( browseButtonHtml( this.element ) );
             }
-            fragment.querySelector( '.file-picker' ).prepend( this.captureButtonHtml );
+            fragment.querySelector( '.file-picker' ).prepend( captureButtonHtml( this.element ) );
             fragment.querySelector( '.file-picker' ).classList.add( 'with-capture' );
         }
 
@@ -145,67 +137,6 @@ class Filepicker extends Widget {
     }
 
     /**
-     * smap: Determines which camera to request, based on the question appearance or a
-     * capture attribute set by the server. Legacy values such as capture="camera" are
-     * mapped to the values current browsers understand.
-     *
-     * @return {string|null} 'user', 'environment', or null if the camera is not forced
-     */
-    _getCaptureMode() {
-        const appearances = this.props.appearances;
-
-        if ( appearances.includes( 'new-front' ) ) {
-            return 'user';
-        }
-        if ( appearances.includes( 'new' ) || appearances.includes( 'new-rear' ) ) {
-            return 'environment';
-        }
-
-        if ( !this.element.hasAttribute( 'capture' ) ) {
-            return null;
-        }
-
-        return this.element.getAttribute( 'capture' ).trim().toLowerCase() === 'user' ? 'user' : 'environment';
-    }
-
-    /**
-     * smap: Returns a HTML document fragment for the primary camera capture button.
-     *
-     * @readonly
-     * @type {DocumentFragment}
-     */
-    get captureButtonHtml() {
-        const fragment = document.createRange().createContextualFragment(
-            `<button type="button" class="btn btn-primary btn-capture" disabled>
-                <i class="icon ${this.mediaControls.captureIcon}"> </i><span class="btn-capture__label"></span>
-            </button>` );
-
-        fragment.querySelector( '.btn-capture__label' ).textContent = t( `filepicker.${this.mediaControls.captureLabel}` );
-
-        return fragment;
-    }
-
-    /**
-     * smap: Returns a HTML document fragment for the secondary button that selects an
-     * existing file.
-     *
-     * @readonly
-     * @type {DocumentFragment}
-     */
-    get browseButtonHtml() {
-        const fragment = document.createRange().createContextualFragment(
-            `<button type="button" class="btn-icon-only btn-browse" disabled>
-                <i class="icon ${this.mediaControls.browseIcon}"> </i>
-            </button>` );
-        const label = t( 'filepicker.chooseExisting' );
-
-        fragment.querySelector( 'button' ).setAttribute( 'aria-label', label );
-        fragment.querySelector( 'button' ).setAttribute( 'title', label );
-
-        return fragment;
-    }
-
-    /**
      * smap: Click action of the camera capture button. Requests the camera for this click
      * only, so that the browse button keeps opening the gallery/file picker.
      *
@@ -219,7 +150,7 @@ class Filepicker extends Widget {
 
                 return;
             }
-            this.element.setAttribute( 'capture', this.captureMode || 'environment' );
+            this.element.setAttribute( 'capture', this.captureFacing );
             $( this.element ).trigger( 'click.propagate' );
         } );
     }

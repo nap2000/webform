@@ -5662,6 +5662,20 @@ fieldset[disabled] .file-picker .fake-file-input {
 .file-picker.with-capture.has-file .btn-download:not([href=""]) {
     display: inline-block; }
 
+.or-annotation-initialized .draw-widget.with-capture {
+    margin-top: 0; }
+
+.draw-widget > input[type=file] {
+    display: none; }
+
+.draw-widget > .file-picker.with-capture {
+    position: static;
+    width: 100%;
+    margin-bottom: 10px; }
+
+.draw-widget.full-screen > .file-picker.with-capture {
+    display: none; }
+
 /*
  * To save headaches with resizing canvases, it is important to maintain fixed aspect
  * ratios at all times:

@@ -52,12 +52,27 @@ describe( 'Filepicker camera capture', () => {
         expect( widget.question.querySelector( '.btn-browse' ) ).toBeNull();
     } );
 
-    it( 'requests the rear camera for appearance "new-rear"', () => {
-        expect( initQuestion( { appearance: 'new-rear' } ).element.getAttribute( 'capture' ) ).toEqual( 'environment' );
+    it( 'opens the front camera for appearance "selfie", but still offers existing files', () => {
+        const widget = initQuestion( { appearance: 'selfie' } );
+
+        expect( widget.captureFacing ).toEqual( 'user' );
+        expect( widget.element.hasAttribute( 'capture' ) ).toBe( false );
+        expect( widget.question.querySelector( '.btn-capture' ) ).not.toBeNull();
+        expect( widget.question.querySelector( '.btn-browse' ) ).not.toBeNull();
     } );
 
-    it( 'requests the front camera for appearance "new-front"', () => {
-        expect( initQuestion( { appearance: 'new-front' } ).element.getAttribute( 'capture' ) ).toEqual( 'user' );
+    it( 'requires a new file for the ODK appearance "new-rear"', () => {
+        const widget = initQuestion( { appearance: 'new-rear' } );
+
+        expect( widget.element.getAttribute( 'capture' ) ).toEqual( 'environment' );
+        expect( widget.question.querySelector( '.btn-browse' ) ).toBeNull();
+    } );
+
+    it( 'opens the front camera and requires a new file for the ODK appearance "new-front"', () => {
+        const widget = initQuestion( { appearance: 'new-front' } );
+
+        expect( widget.element.getAttribute( 'capture' ) ).toEqual( 'user' );
+        expect( widget.question.querySelector( '.btn-browse' ) ).toBeNull();
     } );
 
     it( 'converts a legacy capture="camera" attribute into a value browsers understand', () => {
@@ -115,6 +130,15 @@ describe( 'Filepicker camera capture', () => {
 
         expect( question.querySelector( '.btn-capture' ) ).toBeNull();
         expect( question.querySelector( '.file-picker' ).classList.contains( 'with-capture' ) ).toBe( false );
+    } );
+
+    it( 'opens the front camera on capture button click for a selfie question', async() => {
+        const widget = initQuestion( { appearance: 'selfie' } );
+
+        await new Promise( resolve => setTimeout( resolve, 0 ) );
+        widget.question.querySelector( '.btn-capture' ).click();
+
+        expect( widget.element.getAttribute( 'capture' ) ).toEqual( 'user' );
     } );
 
     it( 'requests the camera on capture button click and releases it for the browse button', async() => {

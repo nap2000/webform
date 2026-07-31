@@ -9,6 +9,7 @@ import fileManager from 'enketo/file-manager';
 import SignaturePad from 'signature_pad';
 import { t } from 'enketo/translator';
 import dialog from 'enketo/dialog';
+import { usesCaptureUi, getCaptureFacing, isCaptureOnly, captureButtonHtml, browseButtonHtml } from '../../js/media-capture';
 import { dataUriToBlobSync, getFilename } from '../../js/utils';
 import downloadUtils from '../../js/download-utils';
 const DELAY = 1500;
@@ -281,6 +282,22 @@ class DrawWidget extends Widget {
                 }
             } );
 
+        // smap: capture a new image, or pick an existing one, with buttons instead of the file field
+        this.$widget.find( '.btn-capture' ).on( 'click', event => {
+            event.preventDefault();
+            if ( that.props.readonly || $input[ 0 ].value || $fakeInput[ 0 ].value ) {
+                return;
+            }
+            $input[ 0 ].setAttribute( 'capture', that.props.captureFacing );
+            $input.trigger( 'click.propagate' );
+        } );
+
+        this.$widget.find( '.btn-browse' ).on( 'click', event => {
+            event.preventDefault();
+            $input[ 0 ].removeAttribute( 'capture' );
+            $fakeInput[ 0 ].click();
+        } );
+
         $fakeInput
             .on( 'click', function( event ) {
                 /*
@@ -343,6 +360,8 @@ class DrawWidget extends Widget {
      */
     _showFileName( fileName ) {
         this.$widget.find( '.fake-file-input' ).val( fileName ).prop( 'readonly', !!fileName );
+        // smap: while there is an image only the reset button is offered, it has to be cleared first
+        this.$widget.find( '.file-picker' ).toggleClass( 'has-file', !!fileName );
     }
 
     /**
@@ -357,14 +376,17 @@ class DrawWidget extends Widget {
      */
     _getMarkup() {
         // HTML syntax copied from filepicker widget
-        const load = this.props.load ? `<input type="file" class="ignore draw-widget__load"${this.props.capture !== null ? ` capture="${this.props.capture}"` : ''} accept="${this.props.accept}"/><div class="widget file-picker"><input class="ignore fake-file-input"/><div class="file-feedback"></div></div>` : '';
+        const load = this.props.load ? `<input type="file" class="ignore draw-widget__load"${this.props.captureOnly ? ` capture="${this.props.captureFacing}"` : ''} accept="${this.props.accept}"/><div class="widget file-picker"><input class="ignore fake-file-input"/><div class="file-feedback"></div></div>` : '';
+        // smap: on mobile the image is captured with buttons above the canvas, not with a file field
+        const captureUi = this.props.load && this.props.captureUi;
         const fullscreenBtns = this.props.touch ? '<button type="button" class="show-canvas-btn btn btn-secondary">Draw/Sign</button>' +
             '<button type="button" class="hide-canvas-btn btn btn-secondary"><span class="icon icon-arrow-left"> </span></button>' : '';
         const fragment = document.createRange().createContextualFragment(
             `<div class="widget draw-widget">
+                ${captureUi ? load : ''}
                 <div class="draw-widget__body">
                     ${fullscreenBtns}
-                    ${load}
+                    ${captureUi ? '' : load}
                     <canvas class="draw-widget__body__canvas noSwipe disabled" tabindex="0"></canvas>
                     <div class="draw-widget__colorpicker"></div>
                     ${this.props.type === 'signature' ? '' : '<button class="btn-icon-only draw-widget__undo" aria-label="undo" type=button><i class="icon icon-undo"> </i></button>'}
@@ -376,6 +398,18 @@ class DrawWidget extends Widget {
         );
         fragment.querySelector( '.draw-widget__footer' ).prepend( this.downloadButtonHtml );
         fragment.querySelector( '.draw-widget__footer' ).prepend( this.resetButtonHtml );
+
+        if ( captureUi ) {      // smap
+            const filePicker = fragment.querySelector( '.file-picker' );
+
+            if ( !this.props.captureOnly ) {
+                filePicker.querySelector( '.fake-file-input' ).after( browseButtonHtml( this.element ) );
+            }
+            filePicker.prepend( captureButtonHtml( this.element ) );
+            filePicker.classList.add( 'with-capture' );
+            // the buttons are in the flow, the space reserved above the canvas is not needed
+            fragment.querySelector( '.draw-widget' ).classList.add( 'with-capture' );
+        }
 
         const colorpicker = fragment.querySelector( '.draw-widget__colorpicker' );
 
@@ -541,7 +575,7 @@ class DrawWidget extends Widget {
                 that.pad.off();
                 canvas.classList.add( 'disabled' );
                 that.$widget
-                    .find( '.btn-reset' )
+                    .find( '.btn-reset, .btn-capture, .btn-browse' )     // smap
                     .prop( 'disabled', true );
             } );
     }
@@ -560,9 +594,11 @@ class DrawWidget extends Widget {
                 if ( !that.props.readonly && !needFile && !touchNotFull ) {
                     that.pad.on();
                     canvas.classList.remove( 'disabled' );
-                    that.$widget
-                        .find( '.btn-reset' )
-                        .prop( 'disabled', false );
+                }
+                if ( !that.props.readonly ) {
+                    // smap: the image can be captured, and cleared again, without drawing on it first
+                    that.$widget.find( '.btn-capture, .btn-browse' ).prop( 'disabled', false );
+                    that.$widget.find( '.btn-reset' ).prop( 'disabled', needFile );
                 }
                 // https://github.com/enketo/enketo-core/issues/450
                 // When loading a question with a relevant, it is invisible
@@ -597,17 +633,11 @@ class DrawWidget extends Widget {
         props.colors = props.type === 'signature' ? [] : [ 'black', 'lightblue', 'blue', 'red', 'orange', 'cyan', 'yellow', 'lightgreen', 'green', 'pink', 'purple', 'lightgray', 'darkgray' ];
         props.touch = support.touch;
         props.accept = this.element.getAttribute( 'accept' );
-
-        // smap: map appearance/legacy capture values to the values current browsers understand
-        if ( props.appearances.includes( 'new-front' ) ) {
-            props.capture = 'user';
-        } else if ( props.appearances.includes( 'new' ) || props.appearances.includes( 'new-rear' ) ) {
-            props.capture = 'environment';
-        } else if ( this.element.hasAttribute( 'capture' ) ) {
-            props.capture = this.element.getAttribute( 'capture' ).trim().toLowerCase() === 'user' ? 'user' : 'environment';
-        } else {
-            props.capture = null;
-        }
+        // smap: which camera to open, and whether an existing image may be chosen at all
+        props.captureFacing = getCaptureFacing( this.element, props.appearances );
+        props.captureOnly = isCaptureOnly( this.element, props.appearances );
+        // smap: an annotated image is captured with buttons on a mobile device, like a plain image
+        props.captureUi = usesCaptureUi( this.element, props.readonly );
 
         return props;
     }
