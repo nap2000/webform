@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import Widget from '../../js/widget';
 import fileManager from 'enketo/file-manager';
-import { usesCaptureUi, getCaptureFacing, isCaptureOnly, captureButtonHtml, browseButtonHtml } from '../../js/media-capture';
+import { usesCaptureUi, getCaptureFacing, isCaptureOnly, captureButtonHtml, browseButtonHtml, usesInPageCamera, captureImage, setInputFile } from '../../js/media-capture';
 import { getFilename, resizeImage, isNumber } from '../../js/utils';
 import downloadUtils from '../../js/download-utils';
 import events from '../../js/event';
@@ -137,8 +137,10 @@ class Filepicker extends Widget {
     }
 
     /**
-     * smap: Click action of the camera capture button. Requests the camera for this click
-     * only, so that the browse button keeps opening the gallery/file picker.
+     * smap: Click action of the camera capture button. A selfie is taken with a camera
+     * preview in the page, because the capture attribute cannot select the front camera on
+     * Android. Otherwise the camera of the device is requested for this click only, so that
+     * the browse button keeps opening the gallery/file picker.
      *
      * @param {Element} captureButton - capture button HTML element
      */
@@ -150,9 +152,27 @@ class Filepicker extends Widget {
 
                 return;
             }
-            this.element.setAttribute( 'capture', this.captureFacing );
-            $( this.element ).trigger( 'click.propagate' );
+            if ( usesInPageCamera( this.element, this.captureFacing ) ) {
+                captureImage( this.captureFacing )
+                    .then( file => {
+                        if ( file ) {
+                            setInputFile( this.element, file );
+                        }
+                    } )
+                    .catch( () => this._openDeviceCamera() );
+
+                return;
+            }
+            this._openDeviceCamera();
         } );
+    }
+
+    /**
+     * smap: Opens the camera app of the device with the file input.
+     */
+    _openDeviceCamera() {
+        this.element.setAttribute( 'capture', this.captureFacing );
+        $( this.element ).trigger( 'click.propagate' );
     }
 
     /**

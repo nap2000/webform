@@ -32,16 +32,38 @@ const initQuestion = ( { appearance, capture, accept = 'image/*' } = {} ) => {
     return new Filepicker( fragment.querySelector( Filepicker.selector ) );
 };
 
+/**
+ * Replaces navigator.mediaDevices, which decides whether the camera can be opened in the page.
+ *
+ * @param {object|undefined} mediaDevices - the stub, or undefined for a browser without camera access
+ */
+const stubMediaDevices = mediaDevices => {
+    Object.defineProperty( navigator, 'mediaDevices', { value: mediaDevices, configurable: true } );
+};
+
+/**
+ * @param {Function} condition - condition to wait for
+ * @return {Promise} resolves once the condition is met
+ */
+const waitFor = condition => new Promise( resolve => {
+    const poll = () => condition() ? resolve() : setTimeout( poll, 10 );
+
+    poll();
+} );
+
 describe( 'Filepicker camera capture', () => {
     let touch;
 
     beforeEach( () => {
         touch = support.touch;
         support.touch = true;
+        // the camera of the device is used unless a test asks for a camera in the page
+        stubMediaDevices( undefined );
     } );
 
     afterEach( () => {
         support.touch = touch;
+        delete navigator.mediaDevices;
     } );
 
     it( 'requests the rear camera for appearance "new", without offering existing files', () => {
@@ -132,7 +154,7 @@ describe( 'Filepicker camera capture', () => {
         expect( question.querySelector( '.file-picker' ).classList.contains( 'with-capture' ) ).toBe( false );
     } );
 
-    it( 'opens the front camera on capture button click for a selfie question', async() => {
+    it( 'asks the camera app of the device for the front camera if the page cannot open a camera', async() => {
         const widget = initQuestion( { appearance: 'selfie' } );
 
         await new Promise( resolve => setTimeout( resolve, 0 ) );
@@ -153,6 +175,125 @@ describe( 'Filepicker camera capture', () => {
 
         question.querySelector( '.btn-browse' ).click();
         expect( widget.element.hasAttribute( 'capture' ) ).toBe( false );
+    } );
+
+} );
+
+describe( 'Filepicker front camera in the page', () => {
+    let touch;
+    let requested;
+
+    /**
+     * A camera that hands out a real stream, so that a frame can be grabbed from it.
+     *
+     * @param {object} [options] - camera options
+     * @param {boolean} [options.available] - whether permission is given
+     */
+    const stubCamera = ( { available = true } = {} ) => {
+        stubMediaDevices( {
+            getUserMedia: constraints => {
+                requested = constraints;
+                if ( !available ) {
+                    return Promise.reject( new Error( 'Permission denied' ) );
+                }
+                const canvas = document.createElement( 'canvas' );
+
+                canvas.width = 40;
+                canvas.height = 30;
+                canvas.getContext( '2d' ).fillRect( 0, 0, 40, 30 );
+
+                return Promise.resolve( canvas.captureStream() );
+            }
+        } );
+    };
+
+    /**
+     * @param {Filepicker} widget - the widget under test
+     * @return {Promise} resolves once the camera preview is ready to take a photo
+     */
+    const openCamera = async widget => {
+        // the widget enables its buttons and adds its click handlers once the filemanager is ready
+        await new Promise( resolve => setTimeout( resolve, 0 ) );
+        widget.question.querySelector( '.btn-capture' ).click();
+
+        return waitFor( () => document.querySelector( '.camera-capture__shutter:not([disabled])' ) );
+    };
+
+    beforeEach( () => {
+        touch = support.touch;
+        support.touch = true;
+        requested = null;
+        stubCamera();
+    } );
+
+    afterEach( () => {
+        support.touch = touch;
+        delete navigator.mediaDevices;
+        const camera = document.querySelector( '.camera-capture' );
+        if ( camera ) {
+            camera.remove();
+        }
+    } );
+
+    it( 'takes a selfie with the front camera in the page, because Android ignores capture="user"', async() => {
+        const widget = initQuestion( { appearance: 'selfie' } );
+
+        await openCamera( widget );
+
+        expect( requested.video.facingMode.ideal ).toEqual( 'user' );
+        expect( widget.element.hasAttribute( 'capture' ) ).toBe( false );
+        expect( document.querySelector( '.camera-capture' ).classList.contains( 'camera-capture--mirrored' ) ).toBe( true );
+
+        document.querySelector( '.camera-capture__shutter' ).click();
+        await waitFor( () => widget.element.files.length === 1 );
+
+        expect( widget.element.files[ 0 ].name ).toEqual( 'selfie.jpg' );
+        expect( widget.element.files[ 0 ].type ).toEqual( 'image/jpeg' );
+        expect( document.querySelector( '.camera-capture' ) ).toBeNull();
+    } );
+
+    it( 'keeps the file empty and closes the camera when the capture is cancelled', async() => {
+        const widget = initQuestion( { appearance: 'selfie' } );
+
+        await openCamera( widget );
+        document.querySelector( '.camera-capture__cancel' ).click();
+
+        expect( document.querySelector( '.camera-capture' ) ).toBeNull();
+        expect( widget.element.files.length ).toEqual( 0 );
+    } );
+
+    it( 'falls back to the camera app of the device if the camera cannot be used', async() => {
+        stubCamera( { available: false } );
+        const widget = initQuestion( { appearance: 'selfie' } );
+
+        await new Promise( resolve => setTimeout( resolve, 0 ) );
+        widget.question.querySelector( '.btn-capture' ).click();
+        await waitFor( () => widget.element.hasAttribute( 'capture' ) );
+
+        expect( widget.element.getAttribute( 'capture' ) ).toEqual( 'user' );
+        expect( document.querySelector( '.camera-capture' ) ).toBeNull();
+    } );
+
+    it( 'uses the camera app of the device for a back camera capture', async() => {
+        const widget = initQuestion( { appearance: 'new' } );
+
+        await new Promise( resolve => setTimeout( resolve, 0 ) );
+        widget.question.querySelector( '.btn-capture' ).click();
+
+        expect( requested ).toBeNull();
+        expect( widget.element.getAttribute( 'capture' ) ).toEqual( 'environment' );
+    } );
+
+    it( 'uses the camera app of the device for a video or audio question', async() => {
+        for ( const accept of [ 'video/*', 'audio/*' ] ) {
+            const widget = initQuestion( { appearance: 'selfie', accept } );
+
+            await new Promise( resolve => setTimeout( resolve, 0 ) );
+            widget.question.querySelector( '.btn-capture' ).click();
+
+            expect( requested ).toBeNull();
+            expect( widget.element.getAttribute( 'capture' ) ).toEqual( 'user' );
+        }
     } );
 
 } );

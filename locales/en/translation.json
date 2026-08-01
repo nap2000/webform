@@ -231,6 +231,7 @@
         "header": "Information"
     },
     "filepicker": {
+        "cancelCapture": "Cancel",
         "chooseExisting": "Choose an existing file",
         "file": "file",
         "notFound": "File __existing__ could not be found (leave unchanged if already submitted and you want to preserve it).",

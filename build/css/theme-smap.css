@@ -5335,6 +5335,48 @@ fieldset[disabled] .file-picker .fake-file-input {
 .draw-widget.full-screen > .file-picker.with-capture {
     display: none; }
 
+.camera-capture {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: #000000; }
+
+.camera-capture__preview {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    object-fit: contain; }
+
+.camera-capture--mirrored .camera-capture__preview {
+    transform: scaleX(-1); }
+
+.camera-capture__controls {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    background: #000000; }
+
+.camera-capture__cancel {
+    position: absolute;
+    left: 15px;
+    min-height: 44px; }
+
+.camera-capture__shutter {
+    width: 70px;
+    height: 70px;
+    padding: 0;
+    font-size: 28px;
+    border-radius: 50%; }
+.camera-capture__shutter .icon {
+    vertical-align: middle; }
+
 /*
  * To save headaches with resizing canvases, it is important to maintain fixed aspect
  * ratios at all times:

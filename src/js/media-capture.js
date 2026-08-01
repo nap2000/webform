@@ -11,6 +11,7 @@
 
 import support from './support';
 import { t } from 'enketo/translator';
+import { dataUriToBlobSync } from './utils';
 
 const range = document.createRange();
 
@@ -78,6 +79,124 @@ export const captureButtonHtml = element => {
     fragment.querySelector( '.btn-capture__label' ).textContent = t( `filepicker.${controls.captureLabel}` );
 
     return fragment;
+};
+
+/**
+ * Whether the front camera has to be opened inside the page. Chromium based browsers only
+ * pass on that a capture was asked for, not which camera, so on Android the capture
+ * attribute always opens the back camera. A selfie can therefore only be taken with a
+ * camera preview in the page itself.
+ *
+ * @param {Element} element - the file input of the question
+ * @param {string} facing - camera to open, 'user' or 'environment'
+ * @return {boolean} whether the camera is opened in the page
+ */
+export const usesInPageCamera = ( element, facing ) => facing === 'user' &&
+    element.getAttribute( 'accept' ) === 'image/*' &&
+    !!( navigator.mediaDevices && navigator.mediaDevices.getUserMedia ) && canSetFiles();
+
+/**
+ * @return {boolean} whether a captured file can be put into a file input
+ */
+const canSetFiles = () => {
+    try {
+        return new DataTransfer().files.length === 0;
+    } catch ( e ) {
+        return false;
+    }
+};
+
+/**
+ * Puts a captured file into a file input, as if it was picked by the user, and lets the
+ * change handler of the widget process it.
+ *
+ * @param {Element} element - the file input of the question
+ * @param {File} file - the captured file
+ */
+export const setInputFile = ( element, file ) => {
+    const transfer = new DataTransfer();
+
+    transfer.items.add( file );
+    element.files = transfer.files;
+    element.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+};
+
+/**
+ * Opens a camera preview in the page and takes a photo with the requested camera. Rejects
+ * if the camera cannot be used, e.g. because permission was refused, so that the caller can
+ * fall back to the camera app of the device.
+ *
+ * @param {string} facing - camera to open, 'user' or 'environment'
+ * @return {Promise<File|null>} the photo, or null if the user cancelled
+ */
+export const captureImage = facing => navigator.mediaDevices
+    .getUserMedia( {
+        // ask for a photo sized image, the default of a camera stream is only 640x480
+        video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
+    } )
+    .then( stream => showCamera( stream, facing ) );
+
+/**
+ * @param {MediaStream} stream - the camera stream
+ * @param {string} facing - camera in use, 'user' or 'environment'
+ * @return {Promise<File|null>} the photo, or null if the user cancelled
+ */
+const showCamera = ( stream, facing ) => new Promise( resolve => {
+    const fragment = range.createContextualFragment(
+        `<div class="camera-capture">
+            <video class="camera-capture__preview" autoplay playsinline muted></video>
+            <div class="camera-capture__controls">
+                <button type="button" class="btn btn-default camera-capture__cancel"></button>
+                <button type="button" class="btn btn-primary camera-capture__shutter" disabled>
+                    <i class="icon fa-camera"> </i>
+                </button>
+            </div>
+        </div>` );
+    const camera = fragment.querySelector( '.camera-capture' );
+    const video = camera.querySelector( 'video' );
+    const shutter = camera.querySelector( '.camera-capture__shutter' );
+    const cancel = camera.querySelector( '.camera-capture__cancel' );
+
+    cancel.textContent = t( 'filepicker.cancelCapture' );
+    shutter.setAttribute( 'aria-label', t( 'filepicker.takePhoto' ) );
+    // the preview of the front camera is mirrored, as users expect, the photo itself is not
+    camera.classList.toggle( 'camera-capture--mirrored', facing === 'user' );
+
+    const close = file => {
+        stream.getTracks().forEach( track => track.stop() );
+        video.srcObject = null;
+        camera.remove();
+        resolve( file );
+    };
+
+    // the video has no dimensions to grab a frame from until it has started playing
+    video.addEventListener( 'loadedmetadata', () => {
+        shutter.disabled = false;
+    } );
+    cancel.addEventListener( 'click', () => close( null ) );
+    shutter.addEventListener( 'click', () => close( grabPhoto( video ) ) );
+
+    document.body.append( camera );
+    video.srcObject = stream;
+    video.play().catch( () => {} );
+    shutter.focus();
+} );
+
+/**
+ * @param {Element} video - the camera preview
+ * @return {File} the current frame of the preview, as a JPEG file
+ */
+const grabPhoto = video => {
+    const canvas = document.createElement( 'canvas' );
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext( '2d' ).drawImage( video, 0, 0, canvas.width, canvas.height );
+
+    const blob = dataUriToBlobSync( canvas.toDataURL( 'image/jpeg', 0.92 ) );
+
+    return new File( [ blob ], 'selfie.jpg', { type: 'image/jpeg' } );
 };
 
 /**

@@ -9,7 +9,7 @@ import fileManager from 'enketo/file-manager';
 import SignaturePad from 'signature_pad';
 import { t } from 'enketo/translator';
 import dialog from 'enketo/dialog';
-import { usesCaptureUi, getCaptureFacing, isCaptureOnly, captureButtonHtml, browseButtonHtml } from '../../js/media-capture';
+import { usesCaptureUi, getCaptureFacing, isCaptureOnly, captureButtonHtml, browseButtonHtml, usesInPageCamera, captureImage, setInputFile } from '../../js/media-capture';
 import { dataUriToBlobSync, getFilename } from '../../js/utils';
 import downloadUtils from '../../js/download-utils';
 const DELAY = 1500;
@@ -320,13 +320,29 @@ class DrawWidget extends Widget {
             } );
 
         // smap: capture a new image, or pick an existing one, with buttons instead of the file field
+        const openDeviceCamera = () => {
+            $input[ 0 ].setAttribute( 'capture', that.props.captureFacing );
+            $input.trigger( 'click.propagate' );
+        };
+
         this.$widget.find( '.btn-capture' ).on( 'click', event => {
             event.preventDefault();
             if ( that.props.readonly || $input[ 0 ].value || $fakeInput[ 0 ].value ) {
                 return;
             }
-            $input[ 0 ].setAttribute( 'capture', that.props.captureFacing );
-            $input.trigger( 'click.propagate' );
+            // a selfie is taken in the page, the capture attribute cannot select the front camera on Android
+            if ( usesInPageCamera( $input[ 0 ], that.props.captureFacing ) ) {
+                captureImage( that.props.captureFacing )
+                    .then( file => {
+                        if ( file ) {
+                            setInputFile( $input[ 0 ], file );
+                        }
+                    } )
+                    .catch( openDeviceCamera );
+
+                return;
+            }
+            openDeviceCamera();
         } );
 
         this.$widget.find( '.btn-browse' ).on( 'click', event => {

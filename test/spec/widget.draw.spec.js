@@ -127,6 +127,54 @@ describe( 'annotate widget image capture', () => {
         expect( filePicker.classList.contains( 'has-file' ) ).toBe( false );
     } );
 
+    it( 'takes a selfie with the front camera in the page', async() => {
+        let requested = null;
+
+        Object.defineProperty( navigator, 'mediaDevices', {
+            configurable: true,
+            value: {
+                getUserMedia: constraints => {
+                    requested = constraints;
+                    const canvas = document.createElement( 'canvas' );
+
+                    canvas.width = 40;
+                    canvas.height = 30;
+                    canvas.getContext( '2d' ).fillRect( 0, 0, 40, 30 );
+
+                    return Promise.resolve( canvas.captureStream() );
+                }
+            }
+        } );
+
+        const widget = initWidget( 'selfie' );
+        const input = widget.question.querySelector( 'input[type=file]' );
+
+        await widget.initialize;
+        await new Promise( resolve => setTimeout( resolve, 0 ) );
+        widget.question.querySelector( '.btn-capture' ).click();
+
+        await new Promise( resolve => {
+            const poll = () => document.querySelector( '.camera-capture__shutter:not([disabled])' ) ? resolve() : setTimeout( poll, 10 );
+
+            poll();
+        } );
+
+        expect( requested.video.facingMode.ideal ).toEqual( 'user' );
+        expect( input.hasAttribute( 'capture' ) ).toBe( false );
+
+        document.querySelector( '.camera-capture__shutter' ).click();
+        await new Promise( resolve => {
+            const poll = () => input.files.length === 1 ? resolve() : setTimeout( poll, 10 );
+
+            poll();
+        } );
+
+        expect( document.querySelector( '.camera-capture' ) ).toBeNull();
+        expect( input.files[ 0 ].name ).toEqual( 'selfie.jpg' );
+
+        delete navigator.mediaDevices;
+    } );
+
     it( 'keeps the file field layout on a desktop browser', () => {
         support.touch = false;
         const drawWidget = initWidget().question.querySelector( '.draw-widget' );
