@@ -156,9 +156,9 @@
                         '<ul class="record-list"></ul>' +
                         '<div class="button-bar">' +
                         '<button class="btn btn-primary upload-records lang pull-left" data-lang="record-list.upload" ' +
-                        'style="' + btnstyle + '">upload</button>' +
-                        '<button class="btn btn-secondary delete-records pull-right lang" data-lang="confirm.deleteall.posButton"' +
-                        'style="' + btnstyle + '">Delete</button>' +
+                        'style="' + btnstyle + '">' + t('record-list.upload') + '</button>' +
+                        '<button class="btn btn-secondary delete-records pull-right lang" data-lang="confirm.deleteall.posButton" ' +
+                        'style="' + btnstyle + '">' + t('confirm.deleteall.posButton') + '</button>' +
                         '</div>');
                     //trigger fake save event to update record list
                     $form.trigger('save', JSON.stringify(store.getRecordList()));
