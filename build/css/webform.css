@@ -172,7 +172,12 @@ summary {
     border: none;
     flex: none;
     padding: 0;
-    margin: 0 auto;
+    /*
+     * The draft checkbox sits inside .main-controls immediately after the submit button, so the
+     * margin on .main-controls separates the pair from what follows and nothing separated them
+     * from each other - the checkbox read as part of the button.
+     */
+    margin: 20px auto 0 auto;
     max-width: 200px;
 }
 .form-footer .draft label {
