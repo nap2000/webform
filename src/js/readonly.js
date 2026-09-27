@@ -28,7 +28,8 @@ export default {
             }
 
             // input[type=text] is single-line and can't expand; replace with a wrapping div
-            if ( node.matches( 'input[type="text"]' ) ) {
+            // Not for a conversation, the conversation widget shows it formatted (smap)
+            if ( node.matches( 'input[type="text"]' ) && !node.closest( '.or-appearance-conversation' ) ) {
                 let display = node.parentElement.querySelector( '.readonly-display-text' );
                 if ( !display ) {
                     display = document.createElement( 'div' );
