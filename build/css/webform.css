@@ -1675,3 +1675,34 @@ body.form-index-replaces-pages .form-footer .last-page {
 
 /* ── End Bootstrap visual polish ──────────────────────────────────── */
 
+
+/* Smap - conversation widget, a read only chat. Colours match smap3.css in the console */
+.conversation-widget .conv {
+    display: flex;
+    flex-direction: column-reverse;     /* Opens scrolled to the bottom, where the newest message is */
+    max-height: 400px;
+    overflow-y: auto;
+}
+.conversation-widget .conv-row {
+    display: flex;
+    margin-bottom: 0.25rem;
+}
+.conversation-widget .conv-row-from { justify-content: flex-start; }
+.conversation-widget .conv-row-to { justify-content: flex-end; }
+.conversation-widget .conv-bubble {
+    max-width: 75%;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+}
+.conversation-widget .conv-meta {
+    font-size: 11px;
+    opacity: 0.9;
+}
+.conversation-widget .conv-from.sms { background-color: #0a6fae; color: white; }
+.conversation-widget .conv-to.sms { background-color: #7993a3; color: black; }
+.conversation-widget .conv-from.whatsapp { background-color: #0b7a3e; color: white; }
+.conversation-widget .conv-to.whatsapp { background-color: #dcf8c6; color: black; }
+.conversation-widget .conv-from.email { background-color: #7a5a3c; color: white; }
+.conversation-widget .conv-to.email { background-color: #e5d3b3; color: black; }

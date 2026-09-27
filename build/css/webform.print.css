@@ -1,2 +1,8 @@
 .side-slider-toggle {
     display: none !important; }
+
+/* Smap - print the whole conversation */
+.conversation-widget .conv {
+    max-height: none;
+    overflow: visible;
+}

@@ -37,6 +37,7 @@ import ae from '../widget/thousands-sep/thousands-sep';
 import za from '../widget/literacywidget/literacywidget';       // smap
 import zb from '../widget/form/form-widget';       // smap
 import zc from '../widget/zxing/zxing';       // smap
+import zd from '../widget/conversation/conversation';       // smap
 //import zz from '../widget/example/my-widget';
 
-export default [ a, b, c, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, aa, ab, ac, ad, ae, za, zb, zc ];
+export default [ a, b, c, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, aa, ab, ac, ad, ae, za, zb, zc, zd ];

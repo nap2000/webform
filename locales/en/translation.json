@@ -422,5 +422,10 @@
     "n_pdfl": "PDF landscape",
     "n_si": "Sender ID",
     "n_their_nbr": "Their number",
-    "n_spec_nbr": "Specify number"
+    "n_spec_nbr": "Specify number",
+    "conversation": {
+        "received": "Received",
+        "sent": "Sent",
+        "email": "Email"
+    }
 }
