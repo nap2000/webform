@@ -22,26 +22,28 @@ const notification = {
 
     _loadTypesFromSurveyData() {
         const types = ( window.surveyData && window.surveyData.notificationTypes ) || [];
-        const ourNumbers = ( window.surveyData && window.surveyData.ourNumbers ) || [];
+
+        // The conversation that established the case, only set if there is one
+        this._conversation = ( window.surveyData && window.surveyData.conversation ) || null;
 
         const $sel = $( '#target' );
         $sel.empty();
         types.forEach( type => {
-            $sel.append( `<option value="${type}">${type}</option>` );
+            if ( type === 'conversation' ) {
+                if ( this._conversation ) {
+                    $sel.append( `<option value="${type}">${t( 'n_conv_type' )}</option>` );
+                }
+            } else {
+                $sel.append( `<option value="${type}">${type}</option>` );
+            }
         } );
-        this._ourNumbers = ourNumbers;
+        this._setConversationNumber();
         this._setTargetDeps( $sel.val() );
-        this._populateOurNumbers( $( '#msg_channel' ).val() );
     },
 
-    _populateOurNumbers( channel ) {
-        const $sel = $( '#msg_our_nbr' );
-        $sel.empty();
-        ( this._ourNumbers || [] )
-            .filter( n => !channel || n.channel === channel )
-            .forEach( n => {
-                $sel.append( `<option value="${n.ourNumber}">${n.ourNumber}</option>` );
-            } );
+    _setConversationNumber() {
+        const conv = this._conversation;
+        $( '#msg_their_nbr' ).val( conv ? `${conv.theirNumber} (${conv.channel})` : '' );
     },
 
     _setTargetDeps( target ) {
@@ -58,23 +60,6 @@ const notification = {
     _setupHandlers() {
         $( '#target' ).on( 'change', () => {
             this._setTargetDeps( $( '#target' ).val() );
-        } );
-
-        $( '#msg_channel' ).on( 'change', () => {
-            this._populateOurNumbers( $( '#msg_channel' ).val() );
-        } );
-
-        $( '#msg_cur_nbr' ).on( 'change', () => {
-            if ( $( '#msg_cur_nbr' ).val() === 'other' ) {
-                $( '.other_msg' ).show();
-                $( '#msg_channel' ).prop( 'disabled', false );
-            } else {
-                $( '.other_msg' ).hide();
-                const channel = $( '#msg_cur_nbr option:selected' ).data( 'channel' );
-                if ( channel ) {
-                    $( '#msg_channel' ).val( channel ).prop( 'disabled', true ).trigger( 'change' );
-                }
-            }
         } );
 
         $( '#wf-send-notification' ).on( 'click', () => {
@@ -165,6 +150,7 @@ const notification = {
         } );
         this._extraFiles = [];
         $( '#email_extra_files_list' ).empty();
+        this._setConversationNumber();
         this._setTargetDeps( $( '#target' ).val() );
     },
 
@@ -233,20 +219,6 @@ const notification = {
                 $( '#notify_sms' ).val( notif.toNumber || '' );
                 $( '#sms_content' ).val( notif.content || '' );
             } else if ( target === 'conversation' ) {
-                const $cur = $( '#msg_cur_nbr' );
-                let matched = false;
-                $cur.find( 'option' ).each( function() {
-                    if ( $( this ).val() === notif.toNumber ) { matched = true; }
-                } );
-                if ( matched ) {
-                    $cur.val( notif.toNumber ).trigger( 'change' );
-                } else {
-                    $cur.val( 'other' ).trigger( 'change' );
-                    $( '#msg_nbr_other' ).val( notif.toNumber || '' );
-                }
-                $( '#msg_channel' ).val( notif.msgChannel || 'sms' );
-                this._populateOurNumbers( notif.msgChannel );
-                $( '#msg_our_nbr' ).val( notif.ourNumber || '' );
                 $( '#conversation_text' ).val( notif.content || '' );
             }
 
@@ -265,8 +237,7 @@ const notification = {
             $( '#email_subject' ).val(),
             $( '#email_content' ).val(),
             $( '#notify_sms' ).val(),
-            $( '#conversation_text' ).val(),
-            $( '#msg_nbr_other' ).val()
+            $( '#conversation_text' ).val()
         ].some( v => ( v || '' ).trim() !== '' );
         return textFilled || this._extraFiles.length > 0;
     },
@@ -323,20 +294,24 @@ const notification = {
         };
     },
 
+    /*
+     * Reply to the conversation that established the case
+     * The server sends to the case's number, the numbers here are only shown in the pending list
+     */
     _buildConversation() {
-        let theirNumber = $( '#msg_cur_nbr' ).val();
-        if ( theirNumber === 'other' ) {
-            theirNumber = $( '#msg_nbr_other' ).val();
+        const conv = this._conversation;
+        if ( !conv ) {
+            return { error: true, errorMsg: 'This case has no conversation to reply to.' };
         }
-        if ( !theirNumber ) {
-            return { error: true, errorMsg: 'Please specify a phone number.' };
+        const content = ( $( '#conversation_text' ).val() || '' ).trim();
+        if ( !content ) {
+            return { error: true, errorMsg: 'Please enter a message.' };
         }
         return {
             target: 'conversation',
-            toNumber: theirNumber,
-            ourNumber: $( '#msg_our_nbr' ).val(),
-            msgChannel: $( '#msg_channel' ).val(),
-            content: $( '#conversation_text' ).val()
+            toNumber: conv.theirNumber,
+            msgChannel: conv.channel,
+            content
         };
     }
 };

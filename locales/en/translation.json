@@ -417,6 +417,7 @@
     "c_none": "None",
     "c_sms": "Phone",
     "c_channel": "Channel",
+    "n_conv_type": "Reply to conversation",
     "n_wf": "Web Form",
     "n_pdfp": "PDF portrait",
     "n_pdfl": "PDF landscape",
