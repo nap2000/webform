@@ -37,8 +37,31 @@ const notification = {
                 $sel.append( `<option value="${type}">${type}</option>` );
             }
         } );
+
+        // Default to the type last used, users tend to keep sending the same kind
+        const lastTarget = this._getLastTarget();
+        if ( lastTarget && $sel.find( `option[value="${lastTarget}"]` ).length ) {
+            $sel.val( lastTarget );
+        }
+
         this._setConversationNumber();
         this._setTargetDeps( $sel.val() );
+    },
+
+    _getLastTarget() {
+        try {
+            return window.localStorage.getItem( 'wf-notification-target' );
+        } catch ( e ) {
+            return null;
+        }
+    },
+
+    _setLastTarget( target ) {
+        try {
+            window.localStorage.setItem( 'wf-notification-target', target );
+        } catch ( e ) {
+            // Storage unavailable, the type is still kept for this form
+        }
     },
 
     _setConversationNumber() {
@@ -134,6 +157,7 @@ const notification = {
         dbStore.saveNotification( instanceId, notif ).then( () => {
             console.log( '[notification] saveNotification success' );
             this._showStatus( 'Notification queued — will be sent on form submission', 'success' );
+            this._setLastTarget( target );
             this._clearForm();
             this._refreshPendingList( instanceId );
         } ).catch( ( err ) => {
@@ -145,7 +169,7 @@ const notification = {
 
     _clearForm() {
         $( '#wf-notification-form input, #wf-notification-form textarea' ).val( '' );
-        $( '#wf-notification-form select' ).each( function() {
+        $( '#wf-notification-form select' ).not( '#target' ).each( function() {     // Keep the type for the next one
             $( this ).prop( 'selectedIndex', 0 );
         } );
         this._extraFiles = [];
