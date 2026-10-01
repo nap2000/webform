@@ -3,6 +3,16 @@
  */
 
 import $ from 'jquery';
+import DOMPurify from 'dompurify';
+
+/**
+ * Outputs can hold markup (smap), but their values can come from answers in a loaded record,
+ * so strip anything that can run script, and form controls that could fake an input
+ */
+const OUTPUT_PURIFY = {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: [ 'style', 'form', 'input', 'button', 'textarea', 'select' ]
+};
 
 export default {
     /**
@@ -70,8 +80,9 @@ export default {
                     outputCache[ expr ] = val;
                 }
             }
-            if ( $output.html() !== val ) {     // smap XXXX text to html
-                $output.html( val );            // smap text to html
+            const safeVal = DOMPurify.sanitize( val, OUTPUT_PURIFY );
+            if ( $output.html() !== safeVal ) {     // smap text to html
+                $output.html( safeVal );
             }
         } );
     }
