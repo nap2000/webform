@@ -6,6 +6,8 @@
 
 import { isNumber } from './utils';
 import { time } from './format';
+// Adds Date.prototype.toISOLocalString and getTimezoneOffsetAsTime, used below
+import './xpath/date-extensions';
 
 /**
  * @namespace types

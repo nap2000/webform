@@ -7,6 +7,8 @@
 import types from './types';
 import events from './event';
 import { closestAncestorUntil } from './dom-utils';
+// Adds Date.prototype.toISOLocalString and getTimezoneOffsetAsTime, used below
+import './xpath/date-extensions';
 
 export default {
     /**

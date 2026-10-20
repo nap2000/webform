@@ -6,6 +6,8 @@ import { time as timeFormat } from '../../js/format';
 import types from '../../js/types';
 import events from '../../js/event';
 import '../../js/extend';
+// Adds Date.prototype.toISOLocalString and getTimezoneOffsetAsTime, used below
+import '../../js/xpath/date-extensions';
 import 'bootstrap-datepicker';
 import '../time/timepicker';
 import '../../js/dropdown.jquery';

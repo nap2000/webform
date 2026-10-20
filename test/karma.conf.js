@@ -69,10 +69,10 @@ module.exports = config => {
             plugins: [
                 resolve.default ? resolve.default( { browser: true } ) : resolve( { browser: true } ),
                 commonjs.default ? commonjs.default( {
-                    include: 'node_modules/**',
+                    include: [ 'node_modules/**', 'src/js/xpath/**' ],
                     sourceMap: false,
                 } ) : commonjs( {
-                    include: 'node_modules/**',
+                    include: [ 'node_modules/**', 'src/js/xpath/**' ],
                     sourceMap: false,
                 } ),
                 ( json.default || json )(),

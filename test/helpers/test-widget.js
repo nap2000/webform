@@ -7,14 +7,18 @@ const FORM_CONTROL_TEMPLATE = `
         <input type="text" name="/data/node">
     </label>`;
 
-function runAllCommonWidgetTests( Widget, template = FORM_CONTROL_TEMPLATE, value = '2', options ) {
+/*
+ * widgetValue is what the widget reports for value, when that is written differently from
+ * what the original input reads back (the datetime widget adds milliseconds, for one).
+ */
+function runAllCommonWidgetTests( Widget, template = FORM_CONTROL_TEMPLATE, value = '2', options, widgetValue = value ) {
     testStaticProperties( Widget );
     testRequiredMethods( Widget );
     testBasicInstantiation( Widget, template, options );
-    testComplexInstantiation( Widget, template, value, options );
+    testComplexInstantiation( Widget, template, value, options, widgetValue );
     testReset( Widget, template, value );
-    testUpdate( Widget, template, value );
-    testExcessiveChangeEventAvoidance( Widget, template, value );
+    testUpdate( Widget, template, value, widgetValue );
+    testExcessiveChangeEventAvoidance( Widget, template, value, widgetValue );
 }
 
 function testStaticProperties( Widget ) {
@@ -91,7 +95,7 @@ function testBasicInstantiation( Widget, template, options = { a: 'b' } ) {
     } );
 }
 
-function testComplexInstantiation( Widget, template, value, options ) {
+function testComplexInstantiation( Widget, template, value, options, widgetValue = value ) {
     describe( `complex instantiation of ${Widget.name}:`, () => {
 
         it( 'loads default value', done => {
@@ -104,7 +108,7 @@ function testComplexInstantiation( Widget, template, value, options ) {
                 .then( () => new Widget( control, options ) )
                 .then( widget => {
                     expect( widget.originalInputValue ).toEqual( value );
-                    expect( widget.value ).toEqual( value );
+                    expect( widget.value ).toEqual( widgetValue );
                 } )
                 .then( done, fail );
         } );
@@ -141,7 +145,7 @@ function testReset( Widget, template, value ) {
     } );
 }
 
-function testUpdate( Widget, template, value ) {
+function testUpdate( Widget, template, value, widgetValue = value ) {
     describe( `updating of ${Widget.name}:`, () => {
 
         it( 'works', done => {
@@ -158,7 +162,7 @@ function testUpdate( Widget, template, value ) {
                     // Here we call widget.update() explicitly because we provided a null event parameter in input.setVal
                     widget.update();
 
-                    expect( widget.value ).toEqual( value );
+                    expect( widget.value ).toEqual( widgetValue );
                     expect( widget.originalInputValue ).toEqual( value );
                 } )
                 .then( done, fail );
@@ -169,7 +173,7 @@ function testUpdate( Widget, template, value ) {
 
 // This test checks for excessive firing of change events on the original input by the widget.
 // i.e. firing a change event when the value hasn't actually changed.
-function testExcessiveChangeEventAvoidance( Widget, template, value ) {
+function testExcessiveChangeEventAvoidance( Widget, template, value, widgetValue = value ) {
     describe( `programmatically updating ${Widget.name} to the same value it already has`, () => {
 
         it( 'does not lead to a change event firing', done => {
@@ -185,7 +189,7 @@ function testExcessiveChangeEventAvoidance( Widget, template, value ) {
                     widget.update();
 
                     // Check setup
-                    expect( widget.value ).toEqual( value );
+                    expect( widget.value ).toEqual( widgetValue );
                     expect( widget.originalInputValue ).toEqual( value );
 
                     // Actual test
