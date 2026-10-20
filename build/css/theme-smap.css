@@ -4669,6 +4669,23 @@ input[type=text].autocomplete.notfound {
 .question.or-appearance-list-nolabel .option-label.active,
 .question.or-appearance-label .option-label.active {
     text-align: center; }
+/* Bootstrap 5 reboot clears anything after a legend, which drops the choices below the floated label */
+.question.or-appearance-list-nolabel legend + .option-wrapper,
+.question.or-appearance-label legend + .option-wrapper {
+    clear: none; }
+/* Flex row so the label and the choices are vertically centred, even when the label wraps */
+.question.or-appearance-list-nolabel > fieldset,
+.question.or-appearance-label > fieldset {
+    display: flex;
+    align-items: center; }
+.question.or-appearance-list-nolabel > fieldset > legend,
+.question.or-appearance-label > fieldset > legend {
+    flex: 0 0 35%;
+    margin-bottom: 0; }
+.question.or-appearance-list-nolabel > fieldset > .option-wrapper,
+.question.or-appearance-label > fieldset > .option-wrapper {
+    flex: 1;
+    align-items: center; }
 
 .or[dir="rtl"] .question.or-appearance-list-nolabel,
 .or[dir="rtl"] .question.or-appearance-label {
