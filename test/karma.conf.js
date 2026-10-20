@@ -40,6 +40,12 @@ module.exports = config => {
             }, {
                 pattern: 'config.js',
                 included: false
+            }, {
+                pattern: 'build/css/*.css',
+                included: false
+            }, {
+                pattern: 'build/fonts/*',
+                included: false
             }
         ],
 

@@ -4701,6 +4701,77 @@ input[type=text].autocomplete.notfound {
 .question.or-appearance-label > fieldset > .option-wrapper {
     flex: 1;
     align-items: center; }
+/* Let the column headings and choices shrink to share the row, wrapping headings between words rather than a letter at a time */
+.question.or-appearance-list-nolabel > fieldset > .option-wrapper > label,
+.question.or-appearance-label > fieldset > .option-wrapper > label {
+    min-width: 0;
+    word-break: normal;
+    overflow-wrap: break-word; }
+.question.or-appearance-label > fieldset > .option-wrapper .option-label {
+    word-break: normal;
+    overflow-wrap: break-word; }
+.question.or-appearance-list-nolabel > fieldset > .option-wrapper,
+.question.or-appearance-label > fieldset > .option-wrapper {
+    min-width: 0; }
+/* Touch styles turn options into padded buttons, too wide for table columns.  Keep them plain and give the label less of the row */
+.touch .question.or-appearance-list-nolabel > fieldset > .option-wrapper > label,
+.touch .question.or-appearance-label > fieldset > .option-wrapper > label {
+    border: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 4px 0; }
+.touch .question.or-appearance-list-nolabel > fieldset > .option-wrapper > label input[type="radio"],
+.touch .question.or-appearance-list-nolabel > fieldset > .option-wrapper > label input[type="checkbox"] {
+    margin: 0; }
+.touch .question.or-appearance-list-nolabel > fieldset > legend,
+.touch .question.or-appearance-label > fieldset > legend {
+    flex-basis: 30%; }
+/* Narrow: put the label above its choices so the choices get the full width, with the heading row lined up over them */
+.question.or-appearance-list-nolabel,
+.question.or-appearance-label {
+    container: tablelist / inline-size; }
+@container tablelist (max-width: 600px) {
+    .question.or-appearance-list-nolabel > fieldset,
+    .question.or-appearance-label > fieldset {
+        flex-wrap: wrap;
+        padding-bottom: 4px; }
+    .question.or-appearance-list-nolabel > fieldset > legend,
+    .touch .question.or-appearance-list-nolabel > fieldset > legend {
+        flex: 0 0 100%;
+        padding-top: 8px; }
+    .question.or-appearance-label > fieldset > legend {
+        display: none; }
+    .question.or-appearance-list-nolabel > fieldset > .option-wrapper,
+    .question.or-appearance-label > fieldset > .option-wrapper {
+        flex: 1 1 100%; }
+    .question.or-appearance-list-nolabel > fieldset > .option-wrapper > label,
+    .question.or-appearance-label > fieldset > .option-wrapper > label {
+        margin-left: 0;
+        margin-right: 0; }
+    .question.or-appearance-label > fieldset > .option-wrapper > label {
+        font-size: 0.85em; } }
+/* The same for browsers without container queries, by screen width */
+@supports not (container-type: inline-size) {
+    @media screen and (max-width: 600px) {
+        .question.or-appearance-list-nolabel > fieldset,
+        .question.or-appearance-label > fieldset {
+            flex-wrap: wrap;
+            padding-bottom: 4px; }
+        .question.or-appearance-list-nolabel > fieldset > legend,
+        .touch .question.or-appearance-list-nolabel > fieldset > legend {
+            flex: 0 0 100%;
+            padding-top: 8px; }
+        .question.or-appearance-label > fieldset > legend {
+            display: none; }
+        .question.or-appearance-list-nolabel > fieldset > .option-wrapper,
+        .question.or-appearance-label > fieldset > .option-wrapper {
+            flex: 1 1 100%; }
+        .question.or-appearance-list-nolabel > fieldset > .option-wrapper > label,
+        .question.or-appearance-label > fieldset > .option-wrapper > label {
+            margin-left: 0;
+            margin-right: 0; }
+        .question.or-appearance-label > fieldset > .option-wrapper > label {
+            font-size: 0.85em; } } }
 
 .or[dir="rtl"] .question.or-appearance-list-nolabel,
 .or[dir="rtl"] .question.or-appearance-label {
