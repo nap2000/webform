@@ -1,5 +1,6 @@
 import Datetimepicker from '../../src/widget/datetime/datetimepicker-extended';
 import { runAllCommonWidgetTests } from '../helpers/test-widget';
+import { os, browser } from '../../src/js/sniffer';
 
 const FORM =
     `<form class="or">
@@ -20,6 +21,23 @@ describe( 'datetimepicker widget', () => {
         const control = fragment.querySelector( 'input' );
         return new Datetimepicker( control );
     }
+
+    describe( 'update on Safari for macOS', () => {
+
+        it( 'shows the value in the date and time boxes', () => {
+            spyOnProperty( os, 'macos' ).and.returnValue( true );
+            spyOnProperty( browser, 'safari' ).and.returnValue( true );
+            const datepicker = initForm( FORM );
+            const question = datepicker.element.closest( '.question' );
+
+            datepicker.element.value = '2012-01-01T13:05';
+            datepicker.update();
+
+            expect( question.querySelector( '.widget .date input' ).value ).toEqual( '2012-01-01' );
+            expect( question.querySelector( '.widget .timepicker input' ).value ).toContain( '05' );
+        } );
+
+    } );
 
     describe( 'manual input without Enter', () => {
 
