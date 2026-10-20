@@ -6,7 +6,8 @@ describe( 'Format', () => {
         let i;
         const t = [
             [ 'en-US', true, 'AM', 'PM' ],
-            [ 'zh', true, '上午', '下午' ],
+            // zh and zh-CN switched to a 24 hour clock in recent CLDR; zh-TW keeps 上午/下午
+            [ 'zh-TW', true, '上午', '下午' ],
             [ 'ar-EG', true, 'ص', 'م' ],
             [ 'ko-KR', true, '오전', '오후' ],
             [ 'nl', false, null, null ],

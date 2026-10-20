@@ -1,4 +1,5 @@
 import types from '../../src/js/types';
+import { format } from '../../src/js/format';
 
 /*
  * Most of types.js is tested indirectly by formmodel.spec.js.
@@ -9,6 +10,16 @@ describe( 'Types', () => {
     describe( 'time', () => {
 
         describe( 'meridian convertor', () => {
+
+            // AM/PM notation comes from the locale, so do not depend on the machine running the tests
+            let locale;
+            beforeAll( () => {
+                locale = format.locale;
+                format.locale = 'en-US';
+            } );
+            afterAll( () => {
+                format.locale = locale;
+            } );
 
             [
                 [ '12:03 PM', '12:03' ],
