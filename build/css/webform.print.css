@@ -6,3 +6,18 @@
     max-height: none;
     overflow: visible;
 }
+
+/* Smap - navbar: keep banner logo only, don't overlay form title */
+header.navbar {
+    position: static !important;
+    box-shadow: none !important;
+    border-bottom: none !important; }
+header.navbar .navbar-collapse,
+header.navbar .navbar-toggler,
+#hour_glass,
+.form-progress {
+    display: none !important; }
+
+.or #form-title {
+    font-size: 28px;
+    margin: 10px 0 15px 0; }
