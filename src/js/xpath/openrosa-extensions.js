@@ -1065,6 +1065,18 @@ var updateChoiceList = function(responseText, selectPath, lang, question, select
   }
 };
 
+/*
+ * The choices come from data, such as a csv file or other records, so they are text and are encoded
+ */
+var encodeHtml = function(text) {
+  return String(text === undefined || text === null ? '' : text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+};
+
 var genOptionsHtml = function(options, path, lang, selectMultiple) {
   var h = [],
       idx = -1,
@@ -1078,11 +1090,11 @@ var genOptionsHtml = function(options, path, lang, selectMultiple) {
       h[++idx] = '<input type="';
       h[++idx] = selectMultiple ? 'checkbox' : 'radio';
       h[++idx] = '" data-type-xml="string" name="';
-      h[++idx] = path;
+      h[++idx] = encodeHtml(path);
       h[++idx] = '" data-name="';
-      h[++idx] = path;
+      h[++idx] = encodeHtml(path);
       h[++idx] = '" value="';
-      h[++idx] = o.value.trim();
+      h[++idx] = encodeHtml(String(o.value).trim());
       h[++idx] = '">';
 
 
@@ -1092,9 +1104,9 @@ var genOptionsHtml = function(options, path, lang, selectMultiple) {
           h[++idx] = ' active';
         }
         h[++idx] = '" lang="';
-        h[++idx] = key;
+        h[++idx] = encodeHtml(key);
         h[++idx] = '">';
-        h[++idx] = o.mlChoices[key];
+        h[++idx] = encodeHtml(o.mlChoices[key]);
         h[++idx] = '</span>';
       }
       h[++idx] = '</label>';

@@ -1,5 +1,6 @@
 import Widget from '../../js/widget';
 import events from '../../js/event';
+import { encodeHtmlEntities } from '../../js/utils';
 
 /**
  * Clone text input fields value into new print-only element.
@@ -31,7 +32,8 @@ class TextPrintWidget extends Widget {
             this.element.classList.add( 'print-hide' );
 
             this.widget = this.element.parentElement.querySelector( `.${className}` );
-            this.widget.innerHTML = this.element.value.replace( /\n/g, '<br>' );
+            // The value is text, a loaded record can hold markup, so encode it and only add the line breaks
+            this.widget.innerHTML = encodeHtmlEntities( this.element.value ).replace( /\n/g, '<br>' );
         }
     }
 
