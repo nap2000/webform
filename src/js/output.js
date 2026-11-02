@@ -14,6 +14,36 @@ const OUTPUT_PURIFY = {
     FORBID_TAGS: [ 'style', 'form', 'input', 'button', 'textarea', 'select' ]
 };
 
+/**
+ * Every output is updated whenever a value it may depend on changes, so the same values come back
+ * again and again.  Sanitised values are kept, and the value each output shows, so that it is only
+ * written when it changes.
+ */
+const purified = new Map();
+const PURIFIED_MAX = 1000;
+const shown = new WeakMap();
+
+/**
+ * @param {string} val - The output's value
+ * @return {string} The value with anything that can run script removed
+ */
+function safeHtml( val ) {
+    // Without a < there are no elements, entities such as &lt; only become text
+    if ( val.indexOf( '<' ) === -1 ) {
+        return val;
+    }
+    let safe = purified.get( val );
+    if ( safe === undefined ) {
+        safe = DOMPurify.sanitize( val, OUTPUT_PURIFY );
+        if ( purified.size >= PURIFIED_MAX ) {
+            purified.clear();
+        }
+        purified.set( val, safe );
+    }
+
+    return safe;
+}
+
 export default {
     /**
      * Updates output values, optionally filtered by those values that contain a changed node name
@@ -80,9 +110,10 @@ export default {
                     outputCache[ expr ] = val;
                 }
             }
-            const safeVal = DOMPurify.sanitize( val, OUTPUT_PURIFY );
-            if ( $output.html() !== safeVal ) {     // smap text to html
-                $output.html( safeVal );
+            val = String( val );
+            if ( shown.get( output ) !== val ) {
+                shown.set( output, val );
+                $output.html( safeHtml( val ) );     // smap text to html
             }
         } );
     }
