@@ -359,3 +359,33 @@ describe( 'geoshape on a map', () => {
         expect( widget.value ).toEqual( SHAPE );
     } );
 } );
+
+describe( 'maps on a phone or tablet', () => {
+    let touch;
+
+    beforeEach( () => {
+        touch = support.touch;
+        support.touch = true;
+    } );
+
+    afterEach( () => {
+        support.touch = touch;
+    } );
+
+    const mapButtons = type => {
+        const fragment = document.createRange().createContextualFragment( FORM.replace( 'geoshape', type ) );
+        const widget = new Geopicker( fragment.querySelector( 'input' ) );
+
+        return widget.$widget.find( '.show-map-btn' ).length;
+    };
+
+    it( 'always offers a map for a line or shape, as FieldTask does', () => {
+        expect( mapButtons( 'geoshape' ) ).toEqual( 1 );
+        expect( mapButtons( 'geotrace' ) ).toEqual( 1 );
+        expect( mapButtons( 'geocompound' ) ).toEqual( 1 );
+    } );
+
+    it( 'offers a map for a geopoint only with the maps or placement-map appearance', () => {
+        expect( mapButtons( 'geopoint' ) ).toEqual( 0 );
+    } );
+} );

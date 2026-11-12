@@ -2072,7 +2072,9 @@ class Geopicker extends Widget {
         const props = this._props;
 
         props.detect = !!navigator.geolocation;
-        props.map = !support.touch || props.appearances.includes( 'maps' ) || props.appearances.includes( 'placement-map' );
+        // smap: a line or shape is drawn on a map, so it always has one, as in FieldTask.  On a phone or tablet
+        // a geopoint only has a map with the maps or placement-map appearance
+        props.map = !support.touch || props.type !== 'geopoint' || props.appearances.includes( 'maps' ) || props.appearances.includes( 'placement-map' );
         props.search = props.map;
         props.touch = support.touch;
         props.wide = this.question.clientWidth / this.element.closest( 'form.or' ).clientWidth > 0.8;
