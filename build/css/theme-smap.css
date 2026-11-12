@@ -3615,6 +3615,56 @@ input[type=text].autocomplete.notfound {
     border: 1px solid #508ecd;
     background: #9fc1e4; }
 
+.enketo-geopoint-first-marker {
+    border-width: 3px;
+    border-color: #2e7d32; }
+
+.enketo-geopoint-midpoint-marker {
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 5px;
+    border: 1px solid #4e4e4e;
+    background: rgba(255, 255, 255, 0.85);
+    cursor: copy; }
+
+.leaflet-interactive.enketo-geo-movable {
+    cursor: move; }
+
+.enketo-area-tooltip {
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: black;
+    font-weight: bold; }
+.enketo-area-tooltip:before {
+    display: none; }
+
+.geopicker .geo-inputs .geo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-top: 15px; }
+.geopicker .geo-inputs .geo-actions .btn-icon-only {
+    margin: 0; }
+.geopicker .geo-inputs .geo-actions .btn.btn {
+    height: auto;
+    font-family: 'OpenSans', Arial, sans-serif;
+    font-weight: normal;
+    padding: 0 5px;
+    margin: 0; }
+.geopicker .geo-actions .geo-undo[disabled] {
+    opacity: 0.25; }
+.geopicker.readonly .geo-actions .geo-undo,
+.geopicker.readonly .geo-actions .geo-clear {
+    display: none; }
+
+.geopicker .geo-message {
+    margin: 4px 0;
+    color: #a94442; }
+
+
 .geopicker {
     margin-top: 25px; }
 .geopicker img {

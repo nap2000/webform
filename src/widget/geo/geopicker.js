@@ -21,6 +21,20 @@ const maps = ( config && config.maps && config.maps.length > 0 ) ? config.maps :
 let searchSource = 'https://maps.googleapis.com/maps/api/geocode/json?address={address}&sensor=true&key={api_key}';
 let searchReverse = 'https://maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}&key={api_key}';
 var googleApiKey = config.googleApiKey || config.google_api_key;        // smap make googleApiKey not a constant
+// smap: the first point of a line or shape, and the handles in the middle of each side used to add a point
+const iconFirst = L.divIcon( {
+    iconSize: 16,
+    className: 'enketo-geopoint-circle-marker enketo-geopoint-first-marker'
+} );
+const iconFirstActive = L.divIcon( {
+    iconSize: 16,
+    className: 'enketo-geopoint-circle-marker-active enketo-geopoint-first-marker'
+} );
+const iconMidpoint = L.divIcon( {
+    iconSize: 10,
+    className: 'enketo-geopoint-midpoint-marker'
+} );
+const MAX_UNDO = 50;
 const iconSingle = L.divIcon( {
     iconSize: 24,
     className: 'enketo-geopoint-marker'
@@ -136,6 +150,8 @@ class Geopicker extends Widget {
         this.markerTypes = [];       // Markers added to map - same length as points
         this.addressCache = {};      // Cache of requests to geocoding service
         this.markerAddress = {};     // Addresses for each marker
+        this.closed = false;         // smap: a geoshape whose last side joins the last point to the first
+        this.history = [];           // smap: earlier states, for undo
         if ( this.props.type === 'geocompound' ) {
             this.markers = this._getMarkers(this.props.appearances);
         }
@@ -144,6 +160,7 @@ class Geopicker extends Widget {
         if ( loadedVal ) {
             this.value = loadedVal;
         }
+        this._state = this._snapshot();
 
         // handle point input changes
         this.$widget.find( '[name="lat"], [name="long"], [name="alt"], [name="acc"]' ).on( 'change change.bymap change.bysearch', event => {
@@ -236,19 +253,23 @@ class Geopicker extends Widget {
             return false;
         } );
 
-        // handle point remove click
+        // handle point remove click, undo restores a point removed by mistake
         this.$widget.find( '.btn-remove' ).on( 'click', () => {
-            if ( that.points.length < 2 ) {
-                that._updateInputs(  [], undefined, -1 );
-            } else {
-                dialog.confirm( t( 'geopicker.removePoint' ) )
-                    .then( confirmed => {
-                        if ( confirmed ) {
-                            that._removePoint();
-                        }
-                    } )
-                    .catch( () => {} );
-            }
+            that._removeCurrentPoint();
+        } );
+
+        // smap: undo the last change
+        this.$widget.find( '.geo-undo' ).on( 'click', () => {
+            that._undo();
+
+            return false;
+        } );
+
+        // smap: remove all points
+        this.$widget.find( '.geo-clear' ).on( 'click', () => {
+            that._clearPoints();
+
+            return false;
         } );
 
         // handle fullscreen map button click
@@ -512,8 +533,13 @@ class Geopicker extends Widget {
                         <span data-i18n="geopicker.accuracy">${t( 'geopicker.accuracy' )}</span>
                         <input class="ignore" name="acc" type="number" step="0.1" />
                     </label>
-                    <button type="button" class="btn-icon-only btn-remove" aria-label="remove"><span class="icon icon-trash"> </span></button>
+                    <div class="geo-actions">
+                        <button type="button" class="btn-icon-only btn-remove" aria-label="remove"><span class="icon icon-trash"> </span></button>
+                        <button type="button" class="btn-icon-only geo-undo" aria-label="undo" title="${t( 'geopicker.undo' )}" disabled><span class="icon icon-undo"> </span></button>
+                        <button type="button" class="btn btn-secondary btn-sm geo-clear" data-i18n="geopicker.removeall">${t( 'geopicker.removeall' )}</button>
+                    </div>
                 </div>
+                <div class="geo-message" style="display: none;"></div>
             </div>`
         );
 
@@ -554,7 +580,7 @@ class Geopicker extends Widget {
             this.$widget.prepend( this.$points );
             // add polygon 'close' button
             if ( this.props.type === 'geoshape' ) {
-                this.$inputGroup.append( close );
+                this.$inputGroup.find( '.geo-actions' ).append( close );     // smap: on the same row as the other point actions
             }
             // add KML paste textarea;
             const $kml = $( kml );
@@ -563,6 +589,11 @@ class Geopicker extends Widget {
         } else {
             this.$points = $();
             this.$kmlInput = $();
+        }
+
+        this.$message = this.$widget.find( '.geo-message' );
+        if ( this.props.type === 'geopoint' ) {
+            this.$widget.find( '.geo-clear' ).remove();     // the remove button does this for a single point
         }
 
         this.$lat = this.$widget.find( '[name="lat"]' );
@@ -588,6 +619,18 @@ class Geopicker extends Widget {
 
         if ( oldValue !== newValue ) {
             this.originalInputValue = newValue;
+
+            // smap: keep the state before the change, for undo
+            if ( !this._restoring ) {
+                if ( this._state ) {
+                    this.history.push( this._state );
+                    if ( this.history.length > MAX_UNDO ) {
+                        this.history.shift();
+                    }
+                }
+                this._state = this._snapshot();
+                this._updateUndoButton();
+            }
 
             return true;
         } else {
@@ -914,53 +957,19 @@ class Geopicker extends Widget {
 
                 that.map = L.map( `map${that.mapId}`, options )
                     .on( 'click', e => {
-                        let latLng;
-                        let path = [];
-                        let indexToPlacePoint;
-
-                        if ( that.props.readonly ) {
+                        if ( that.props.readonly || that._justMoved ) {
                             return false;
                         }
-
-                        latLng = e.latlng;
-                        if(that.points.length > 1) {
-                            path = that.points.map(point => that._convertLatLng(point));
-                        }
-                        indexToPlacePoint = ( that.$lat.val() && that.$lng.val() ) ? that.points.length : that.currentIndex;
-
-                        // reduce precision to 6 decimals
-                        latLng.lat = Math.round( latLng.lat * 1000000 ) / 1000000;
-                        latLng.lng = Math.round( latLng.lng * 1000000 ) / 1000000;
-
-                        // Skip intersection check if points contain empties. It will be done later, before the polygon is closed.
-                        if ( that.props.type === 'geoshape' && !that.containsEmptyPoints( that.points, indexToPlacePoint ) && that.updatedPolylineWouldIntersect( latLng, indexToPlacePoint ) ) {
-                            that._showIntersectError();
-                        } else {
-                            if ( !that.$lat.val() || !that.$lng.val() || that.props.type === 'geopoint' ) {
-                                that._updateInputs( latLng, 'change.bymap', -1 );
-                            } else if ( that.$lat.val() && that.$lng.val() ) {
-
-                                let inserted = false;
-                                if(path.length > 1) {
-                                    for(let i = 0; i < path.length - 1; i++) {
-                                        if(that.belongsSegment(latLng, path[i], path[i + 1], 0.05)) {
-                                            that._insertPoint(i + 1);
-                                            that._updateInputs( latLng, 'change.bymap', i + 1 )
-                                            inserted = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if(!inserted) {
-                                    that._addPoint();
-                                    that._updateInputs(latLng, 'change.bymap', -1);
-                                }
-                            } else {
-                                // do nothing if the field has a current marker
-                                // instead the user will have to drag to change it by map
-                            }
-                        }
+                        that._mapClicked( e.latlng );
                     } );
+
+                // smap: the delete key removes the current point while the map has the focus
+                that.map.getContainer().addEventListener( 'keydown', ev => {
+                    if ( ( ev.key === 'Delete' || ev.key === 'Backspace' ) && !that.props.readonly ) {
+                        ev.preventDefault();
+                        that._removeCurrentPoint();
+                    }
+                } );
 
                 // watch out, default "Leaflet" link clicks away from page, loosing all data
                 that.map.attributionControl.setPrefix( '' );
@@ -1075,7 +1084,8 @@ class Geopicker extends Widget {
      * Displays intersect error
      */
     _showIntersectError() {
-        dialog.alert( t( 'geopicker.bordersintersectwarning' ) );
+        // smap: a message beside the map rather than a dialog that has to be closed
+        this._showMessage( t( 'geopicker.bordersintersectwarning' ) );
     }
 
     /**
@@ -1246,8 +1256,13 @@ class Geopicker extends Widget {
                 } else {
                     icon = index === that.currentIndex ? iconMultiActive : iconMulti;
                 }
+            } else if ( that.props.type === 'geopoint' ) {
+                icon = iconSingle;
+            } else if ( index === 0 ) {
+                // smap: the first point looks different, it is where a shape is closed
+                icon = index === that.currentIndex ? iconFirstActive : iconFirst;
             } else {
-                icon = that.props.type === 'geopoint' ? iconSingle : (index === that.currentIndex ? iconMultiActive : iconMulti);
+                icon = index === that.currentIndex ? iconMultiActive : iconMulti;
             }
 
             if ( that._isValidLatLng( latLng ) ) {
@@ -1259,7 +1274,8 @@ class Geopicker extends Widget {
                     alt: index,
                     opacity: 0.9
                 } ).on( 'click', e => {
-                    if ( e.target.options.alt === 0 && that.props.type === 'geoshape' ) {
+                    // smap: clicking the first point closes a shape that is still open, otherwise it selects the point
+                    if ( e.target.options.alt === 0 && that.props.type === 'geoshape' && !that.closed && that._validPointCount() >= 3 ) {
                         that._closePolygon();
                     } else {
                         that._setCurrent( e.target.options.alt );
@@ -1275,6 +1291,13 @@ class Geopicker extends Widget {
                             that._markerTypePopupChanged($(this).val(), e.target.getLatLng());
                             that.map.closePopup();
                         });
+                    }
+                } ).on( 'contextmenu', e => {
+                    // smap: right click, or a long press on a touch screen, removes the point
+                    L.DomEvent.preventDefault( e.originalEvent || e );
+                    if ( !that.props.readonly ) {
+                        that._setCurrent( e.target.options.alt );
+                        that._removeCurrentPoint();
                     }
                 } ).on( 'dragend', e => {
                     const latLng = e.target.getLatLng(),
@@ -1300,6 +1323,29 @@ class Geopicker extends Widget {
         } );
 
         // console.log( 'markers to update', markers );
+
+        // smap: a handle in the middle of each side, dragged or clicked to add a point there
+        if ( this.props.type !== 'geopoint' && !this.props.readonly && !this.containsEmptyPoints( this.points, this.points.length - 1 ) ) {
+            const valid = this.points.filter( p => that._isValidLatLng( p ) );
+            const sides = this.closed ? valid.length : valid.length - 1;
+            for ( let i = 0; i < sides && valid.length > 1; i++ ) {
+                const a = valid[ i ];
+                const b = valid[ ( i + 1 ) % valid.length ];
+                const mid = [ ( a[ 0 ] + b[ 0 ] ) / 2, ( a[ 1 ] + b[ 1 ] ) / 2 ];
+                const insertAt = i + 1;
+                markers.push( L.marker( mid, {
+                    icon: iconMidpoint,
+                    draggable: true,
+                    opacity: 0.7,
+                    zIndexOffset: -1000
+                } ).on( 'dragend', e => {
+                    that._insertWithCheck( insertAt, e.target.getLatLng() );
+                } ).on( 'click', e => {
+                    L.DomEvent.stopPropagation( e );
+                    that._insertWithCheck( insertAt, e.target.getLatLng() );
+                } ) );
+            }
+        }
 
         if ( markers.length > 0 ) {
             this.markerLayer = L.layerGroup( markers ).addTo( this.map );
@@ -1379,23 +1425,31 @@ class Geopicker extends Widget {
 
         polylinePoints = polylinePoints.map( point => that._cleanLatLng( point ) );
 
+        // smap: draw the side that closes a shape
+        if ( this.closed && polylinePoints.length > 2 ) {
+            polylinePoints.push( polylinePoints[ 0 ] );
+        }
+
         if ( !this.polyline ) {
             this.polyline = L.polyline( polylinePoints, {
                 color: 'red'
             } ).on('click', function (e) {
                 L.DomEvent.stopPropagation(e);
+                if ( that.props.readonly || that._justMoved ) {
+                    return;
+                }
                 let path = e.sourceTarget.getLatLngs();
                 if(path.length > 1) {
                     for(let i = 0; i < path.length - 1; i++) {
                         if(that.belongsSegment(e.latlng, path[i], path[i + 1])) {
-                            that._insertPoint(i + 1);
-                            that._updateInputs( e.latlng, 'change.bymap', i + 1 )
+                            that._insertWithCheck( i + 1, e.latlng );
                             break;
                         }
                     }
                 }
             });
             this.map.addLayer( this.polyline );
+            this._makeMovable( this.polyline );
         } else {
             this.polyline.setLatLngs( polylinePoints );
         }
@@ -1441,8 +1495,12 @@ class Geopicker extends Widget {
             this.polygon = L.polygon( polygonPoints, {
                 color: 'red',
                 stroke: false
+            } ).on( 'click', e => {
+                // smap: the inside of a shape is for moving it, a click there does not add a point
+                L.DomEvent.stopPropagation( e );
             } );
             this.map.addLayer( this.polygon );
+            this._makeMovable( this.polygon );
         } else {
             // console.log( 'updating existing polygon', this.points );
             this.polygon.setLatLngs( polygonPoints );
@@ -1468,15 +1526,19 @@ class Geopicker extends Widget {
             area = L.GeometryUtil.geodesicArea( latLngs );
             readableArea = L.GeometryUtil.readableArea( area, true );
 
-            L
-                .popup( {
-                    className: 'enketo-area-popup'
-                } )
-                .setLatLng( this.polygon.getBounds().getCenter() )
-                .setContent( readableArea )
-                .openOn( this.map );
-        } else {
-            this.map.closePopup();
+            // smap: a label that clicks pass through, rather than a popup over the points
+            if ( this.polygon.getTooltip() ) {
+                this.polygon.setTooltipContent( readableArea );
+            } else {
+                this.polygon.bindTooltip( readableArea, {
+                    permanent: true,
+                    direction: 'center',
+                    interactive: false,
+                    className: 'enketo-area-tooltip'
+                } );
+            }
+        } else if ( this.polygon && this.polygon.getTooltip() ) {
+            this.polygon.unbindTooltip();
         }
     }
 
@@ -1535,6 +1597,9 @@ class Geopicker extends Widget {
         if(this.props.type === 'geocompound') {
             this.markerTypes.splice(this.currentIndex, 1);     // properties
         }
+        if ( this.closed && this._validPointCount() < 3 ) {
+            this.closed = false;
+        }
         this._updateValue();
         this.$points.find( '.point-list' ).eq( this.currentIndex ).remove();
         if ( typeof this.points[ this.currentIndex ] === 'undefined' ) {
@@ -1549,31 +1614,306 @@ class Geopicker extends Widget {
      * Closes polygon
      */
     _closePolygon() {
-        const lastPoint = this.points[ this.points.length - 1 ];
-        // console.debug( 'closing polygon' );
-
-        // check if chain can be closed
-        if ( this.points.length < 3 || ( this.points.length === 3 && !this._isValidLatLng( this.points[ 2 ] ) ) || ( JSON.stringify( this.points[ 0 ] ) === JSON.stringify( lastPoint ) ) ) {
+        // smap: a closed shape keeps each point once.  The side back to the first point is added when the
+        // value is written, so the first point is a single marker that can be selected and dragged
+        if ( this.props.type !== 'geoshape' || this.closed ) {
             return;
         }
 
-        // determine which point the make the closing point
-        // if the last point is not a valid point, assume the user wants to use this to close
-        // otherwise create a new point.
-        if ( !this._isValidLatLng( lastPoint ) ) {
-            //console.log( 'current last point is not a valid point, so will use this as closing point' );
-            this.currentIndex = this.points.length - 1;
-        } else {
-            //console.log( 'current last point is valid, so will create a new one to use to close' );
-            this._addPoint();
+        // an empty last point, waiting for a location, is not part of the shape
+        const last = this.points.length - 1;
+        if ( last > 0 && !this._isValidLatLng( this.points[ last ] ) ) {
+            this.points.splice( last, 1 );
+            this.$points.find( '.point-list' ).eq( last ).remove();
+            if ( this.currentIndex > this.points.length - 1 ) {
+                this.currentIndex = this.points.length - 1;
+            }
         }
 
-        // final check to see if there are intersections
-        if ( this.polyline && !this.containsEmptyPoints( this.points, this.points.length ) && this.updatedPolylineWouldIntersect( this.points[ 0 ], this.currentIndex ) ) {
+        if ( this._validPointCount() < 3 || this.containsEmptyPoints( this.points ) ) {
+            return;
+        }
+
+        if ( this._pointsWouldIntersect( this.points, true ) ) {
             return this._showIntersectError();
         }
 
-        this._updateInputs( this.points[ 0 ],  undefined,-1 );
+        this.closed = true;
+        this._updateValue();
+        this._setCurrent( this.currentIndex );
+        this._updateMap();
+    }
+
+    /**
+     * smap: The number of points that have a location
+     */
+    _validPointCount() {
+        return this.points.filter( p => this._isValidLatLng( p ) ).length;
+    }
+
+    /**
+     * smap: Respond to a click on the map, away from a point or the shape
+     *
+     * @param {LatLngObj} clicked - Where the map was clicked
+     */
+    _mapClicked( clicked ) {
+        const latLng = L.latLng( Math.round( clicked.lat * 1000000 ) / 1000000, Math.round( clicked.lng * 1000000 ) / 1000000 );
+        const hasCurrent = this.$lat.val() && this.$lng.val();
+
+        // Place the current point, if it does not have a location yet
+        if ( this.props.type === 'geopoint' || !hasCurrent ) {
+            const index = this.currentIndex;
+            if ( this.props.type === 'geoshape' && !this.containsEmptyPoints( this.points, index ) && this.updatedPolylineWouldIntersect( latLng, index ) ) {
+                return this._showIntersectError();
+            }
+            this._updateInputs( latLng, 'change.bymap', -1 );
+
+            return;
+        }
+
+        // A click on a side adds a point there
+        const side = this._sideAt( latLng );
+        if ( side >= 0 ) {
+            this._insertWithCheck( side + 1, latLng );
+
+            return;
+        }
+
+        // A click away from a closed shape does nothing, so the shape is not broken.  Points are added to it from its sides
+        if ( this.closed ) {
+            return;
+        }
+
+        const index = this.points.length;
+        if ( this.props.type === 'geoshape' && !this.containsEmptyPoints( this.points, index ) && this.updatedPolylineWouldIntersect( latLng, index ) ) {
+            return this._showIntersectError();
+        }
+        this._addPoint();
+        this._updateInputs( latLng, 'change.bymap', -1 );
+    }
+
+    /**
+     * smap: The side of the line or shape that a location is on
+     *
+     * @param {LatLngObj} latLng - The location
+     * @return {number} The index of the point the side starts at, or -1
+     */
+    _sideAt( latLng ) {
+        const path = this.points.filter( p => this._isValidLatLng( p ) ).map( p => L.latLng( p[ 0 ], p[ 1 ] ) );
+        if ( this.closed && path.length > 2 ) {
+            path.push( path[ 0 ] );
+        }
+        for ( let i = 0; i < path.length - 1; i++ ) {
+            if ( this.belongsSegment( latLng, path[ i ], path[ i + 1 ], 0.05 ) ) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * smap: Add a point at a position in the line or shape, unless the shape would then cross itself
+     *
+     * @param {number} index - Where to add it
+     * @param {LatLngObj} at - The location
+     */
+    _insertWithCheck( index, at ) {
+        if ( this.props.readonly ) {
+            return;
+        }
+        const point = [ Math.round( at.lat * 1000000 ) / 1000000, Math.round( at.lng * 1000000 ) / 1000000 ];
+        const pointsToTest = [];
+        $.extend( true, pointsToTest, this.points );
+        pointsToTest.splice( index, 0, point );
+        if ( this.props.type === 'geoshape' && this._pointsWouldIntersect( pointsToTest, this.closed ) ) {
+            this._showIntersectError();
+            this._updateMarkers();      // put a dragged handle back
+
+            return;
+        }
+        this.points.splice( index, 0, point );
+        if ( this.props.type === 'geocompound' ) {
+            this.markerTypes.splice( index, 0, '' );
+        }
+        this._rebuildPointBtns();
+        this._updateValue();
+        this._setCurrent( index );
+        this._updateMap();
+    }
+
+    /**
+     * smap: Remove the current point, or empty it if it is the only one
+     */
+    _removeCurrentPoint() {
+        if ( this.props.readonly ) {
+            return;
+        }
+        if ( this.points.length < 2 ) {
+            this._updateInputs( [], undefined, -1 );
+        } else {
+            this._removePoint();
+        }
+    }
+
+    /**
+     * smap: Remove all the points
+     */
+    _clearPoints() {
+        if ( this.props.readonly || this.points.length === 0 ) {
+            return;
+        }
+        this.points = [];
+        this.markerTypes = [];
+        this.closed = false;
+        this.currentIndex = 0;
+        this._rebuildPointBtns();
+        this._updateValue();
+        this._updateInputs( [], 'nochange', -1 );
+        this._updateMap();
+    }
+
+    /**
+     * smap: One button for each point in the point navigation bar
+     */
+    _rebuildPointBtns() {
+        this.$points.find( '.point-list' ).remove();
+        this.points.forEach( () => this._addPointBtn() );
+    }
+
+    /**
+     * smap: The points as they are now, for undo
+     */
+    _snapshot() {
+        return {
+            points: JSON.parse( JSON.stringify( this.points ) ),
+            markerTypes: this.markerTypes.slice(),
+            closed: this.closed,
+            currentIndex: this.currentIndex
+        };
+    }
+
+    /**
+     * smap: Go back to the points as they were before the last change
+     */
+    _undo() {
+        if ( this.props.readonly || this.history.length === 0 ) {
+            return;
+        }
+        const state = this.history.pop();
+
+        this._restoring = true;
+        this.points = state.points;
+        this.markerTypes = state.markerTypes;
+        this.closed = state.closed;
+        this._rebuildPointBtns();
+        this._updateValue();
+
+        const index = Math.min( state.currentIndex, this.points.length - 1 );
+        if ( index >= 0 ) {
+            this._setCurrent( index );
+        } else {
+            this.currentIndex = 0;
+            this._updateInputs( [], 'nochange', -1 );
+        }
+        this._restoring = false;
+
+        this._state = this._snapshot();
+        this._updateUndoButton();
+        this._updateMap();
+    }
+
+    _updateUndoButton() {
+        this.$widget.find( '.geo-undo' ).prop( 'disabled', !this.history || this.history.length === 0 || this.props.readonly );
+    }
+
+    /**
+     * smap: Show a message beside the map for a few seconds
+     *
+     * @param {string} msg - The message
+     */
+    _showMessage( msg ) {
+        this.$message.text( msg ).show();
+        clearTimeout( this._messageTimer );
+        this._messageTimer = setTimeout( () => this.$message.hide(), 4000 );
+    }
+
+    /**
+     * smap: Let the whole line or shape be dragged to a new place
+     *
+     * @param {object} layer - The Leaflet polyline or polygon, already on the map
+     */
+    _makeMovable( layer ) {
+        if ( this.props.readonly ) {
+            return;
+        }
+        const el = layer.getElement && layer.getElement();
+        if ( !el ) {
+            // Leaflet draws a layer added before the map has a view later, when the view is set
+            layer.once( 'add', () => this._makeMovable( layer ) );
+
+            return;
+        }
+        el.style.touchAction = 'none';
+        el.classList.add( 'enketo-geo-movable' );
+        el.addEventListener( 'pointerdown', e => this._startMove( e, el ) );
+    }
+
+    _startMove( e, el ) {
+        if ( this.props.readonly || ( e.button !== undefined && e.button !== 0 ) || !this._isValidLatLngList( this.points ) ) {
+            return;
+        }
+        const map = this.map;
+        const start = map.mouseEventToLatLng( e );
+        const startPoint = map.mouseEventToContainerPoint( e );
+        const original = JSON.parse( JSON.stringify( this.points ) );
+        const round = v => Math.round( v * 1000000 ) / 1000000;
+        let moved = false;
+
+        map.dragging.disable();
+        try {
+            el.setPointerCapture( e.pointerId );
+        } catch ( err ) {
+            // continue without capture
+        }
+
+        const onMove = ev => {
+            if ( !moved && map.mouseEventToContainerPoint( ev ).distanceTo( startPoint ) < 5 ) {
+                return;     // not yet a drag, it may be a click
+            }
+            moved = true;
+            const now = map.mouseEventToLatLng( ev );
+            const dLat = now.lat - start.lat;
+            const dLng = now.lng - start.lng;
+            this.points = original.map( p => this._isValidLatLng( p ) ? [ round( p[ 0 ] + dLat ), round( p[ 1 ] + dLng ), p[ 2 ], p[ 3 ] ] : p );
+            this._updatePolyline( false );
+            this._updateMarkers();
+        };
+        const onEnd = () => {
+            el.removeEventListener( 'pointermove', onMove );
+            el.removeEventListener( 'pointerup', onEnd );
+            el.removeEventListener( 'pointercancel', onEnd );
+            try {
+                el.releasePointerCapture( e.pointerId );
+            } catch ( err ) {
+                // already released
+            }
+            map.dragging.enable();
+            if ( moved ) {
+                // the click that follows the drag must not add a point
+                this._justMoved = true;
+                setTimeout( () => {
+                    this._justMoved = false;
+                }, 100 );
+                this._updateValue();
+                this._setCurrent( this.currentIndex );
+            }
+        };
+        el.addEventListener( 'pointermove', onMove );
+        el.addEventListener( 'pointerup', onEnd );
+        el.addEventListener( 'pointercancel', onEnd );
+        e.stopPropagation();
+        e.preventDefault();     // no mouse down for the map to start dragging from, and no text selected
     }
 
     /**
@@ -1664,47 +2004,50 @@ class Geopicker extends Widget {
      */
     updatedPolylineWouldIntersect( latLng, index ) {
         const pointsToTest = [];
-        let polylinePoints;
-        let polylineToTest;
-        let intersects;
-        const that = this;
 
-        if ( this.points < 3 ) {
+        if ( this.points.length < 3 ) {
             return false;
         }
 
-        // create a deep copy of the current points
+        // create a deep copy of the current points, with one point added or edited
         $.extend( true, pointsToTest, this.points );
-
-        // edit/add one point
         pointsToTest[ index ] = [ latLng[ 0 ] || latLng.lat, latLng[ 1 ] || latLng.lng ];
 
-        // check whether last point is empty and remove it if so
-        polylinePoints = ( pointsToTest[ pointsToTest.length - 1 ].join( '' ) !== '' ) ? pointsToTest : pointsToTest.slice( 0, pointsToTest.length - 1 );
+        return this._pointsWouldIntersect( pointsToTest, this.closed );
+    }
 
-        // remove last one if closed
-        // This introduces a bug as it enables creating a spiral that is closed
-        // with an intersection.
-        if ( polylinePoints[ 0 ][ 0 ] === polylinePoints[ polylinePoints.length - 1 ][ 0 ] &&
+    /**
+     * smap: Check whether a line through the points, closed or not, crosses itself
+     *
+     * @param {Array<LatLngArray>} points - The points, the last may be empty
+     * @param {boolean} closed - Whether the last point joins the first
+     * @return {boolean} Whether the line crosses itself
+     */
+    _pointsWouldIntersect( points, closed ) {
+        if ( !this.map ) {
+            return false;       // the check needs the map, it is made again when the map is shown
+        }
+        let polylinePoints = points.filter( ( point, index ) => !( index === points.length - 1 && point.join( '' ) === '' ) );
+
+        // A value loaded in an older form may still repeat the first point at the end
+        if ( polylinePoints.length > 1 &&
+            polylinePoints[ 0 ][ 0 ] === polylinePoints[ polylinePoints.length - 1 ][ 0 ] &&
             polylinePoints[ 0 ][ 1 ] === polylinePoints[ polylinePoints.length - 1 ][ 1 ] ) {
             polylinePoints = polylinePoints.slice( 0, polylinePoints.length - 1 );
         }
+        if ( polylinePoints.length < 3 ) {
+            return false;
+        }
 
-        polylinePoints = polylinePoints.map( point => that._cleanLatLng( point ) );
+        polylinePoints = polylinePoints.map( point => this._cleanLatLng( point ) );
 
-        // create polyline
-        polylineToTest = L.polyline( polylinePoints, {
-            color: 'white'
-        } );
+        // a polygon also checks the side that joins the last point to the first
+        const lineToTest = closed ? L.polygon( polylinePoints ) : L.polyline( polylinePoints );
 
         // add to map because the Polyline draw extension expects this
-        this.map.addLayer( polylineToTest );
-
-        // check for intersection
-        intersects = polylineToTest.intersects();
-
-        // clean up
-        this.map.removeLayer( polylineToTest );
+        this.map.addLayer( lineToTest );
+        const intersects = lineToTest.intersects();
+        this.map.removeLayer( lineToTest );
 
         return intersects;
     }
@@ -1750,25 +2093,25 @@ class Geopicker extends Widget {
             newValue = 'line:';      // Open features
         }
         // all points should be valid geopoints and only the last item may be empty
+        const coords = [];
         this.points.forEach( ( point, index, array ) => {
-            let geopoint = this._getGeopoint(point);
-
-            // only last item may be empty
+            const empty = !point || point.join( '' ) === '';
+            if ( empty && index === array.length - 1 ) {
+                return;     // a point still waiting for a location
+            }
+            const geopoint = this._getGeopoint( point );
             // TODO: it is not great to have markAsInvalid functionality in the value getter.
-            if ( !this._isValidGeopoint( geopoint ) && !( geopoint === '' && index === array.length - 1 ) ) {
+            if ( !this._isValidGeopoint( geopoint ) ) {
                 this._markAsInvalid( index );
             }
-            // newGeoTraceValue += geopoint;
-            if ( !( geopoint === '' && index === array.length - 1 ) ) {
-                newValue += geopoint;
-                if ( index !== array.length - 1 ) {
-                    newValue += ';';
-                }
-            } else {
-                // remove trailing semi-colon
-                newValue = newValue.substring( 0, newValue.lastIndexOf( ';' ) );
-            }
+            coords.push( geopoint );
         } );
+
+        // smap: a closed shape ends where it starts
+        if ( this.props.type === 'geoshape' && this.closed && coords.length >= 3 ) {
+            coords.push( coords[ 0 ] );
+        }
+        newValue += coords.join( ';' );
 
         // Add markers
         if(this.props.type === 'geocompound') {
@@ -1833,6 +2176,14 @@ class Geopicker extends Widget {
                     arr[ i ] = Number( str );
                 } );
             } );
+
+            // smap: keep a closed shape without its repeated last point
+            const n = this.points.length;
+            if ( this.props.type === 'geoshape' && n >= 4 &&
+                this.points[ 0 ][ 0 ] === this.points[ n - 1 ][ 0 ] && this.points[ 0 ][ 1 ] === this.points[ n - 1 ][ 1 ] ) {
+                this.points.pop();
+                this.closed = true;
+            }
         }
     }
 
@@ -1846,6 +2197,7 @@ class Geopicker extends Widget {
             .find( 'input, select, textarea' ).prop( 'disabled', false )
             .end()
             .find( '.btn:not(.show-map-btn):not(.hide-map-btn), .btn-icon-only, .addpoint' ).prop( 'disabled', false );
+        this._updateUndoButton();
 
         // ensure all tiles are displayed, https://github.com/kobotoolbox/enketo-express/issues/188
         if ( this.map ) {

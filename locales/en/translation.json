@@ -287,7 +287,10 @@
         "longitude": "longitude (x.y °)",
         "points": "points",
         "removePoint": "This will completely remove the current geopoint from the list of geopoints and cannot be undone. Are you sure you want to do this?",
-        "searchPlaceholder": "search for place or address"
+        "searchPlaceholder": "search for place or address",
+        "bordersintersectwarning": "Borders cannot cross each other. The point has been put back.",
+        "removeall": "remove all points",
+        "undo": "undo"
     },
     "here": "here",
     "home": {

@@ -218,3 +218,144 @@ describe( 'geopoint widget location detection', () => {
     } );
 
 } );
+
+describe( 'geoshape and geotrace editing', () => {
+    const TRACE_FORM = FORM.replace( 'geoshape', 'geotrace' );
+    const TRACE = '7.9377 -11.5845 0 0;7.9324 -11.5902 0 0;7.927 -11.5857 0 0';
+    let touch;
+
+    beforeEach( () => {
+        touch = support.touch;
+        support.touch = true;   // no map, so the points are edited without one
+    } );
+
+    afterEach( () => {
+        support.touch = touch;
+    } );
+
+    const initWidget = ( form, value ) => {
+        const fragment = document.createRange().createContextualFragment( form );
+        const control = fragment.querySelector( 'input' );
+        control.value = value;
+
+        return new Geopicker( control );
+    };
+
+    it( 'keeps a closed shape as a ring, with each point once, and writes it back closed', () => {
+        const widget = initWidget( FORM, SHAPE );
+        expect( widget.points.length ).toEqual( 3 );
+        expect( widget.closed ).toEqual( true );
+        expect( widget.value ).toEqual( SHAPE );
+    } );
+
+    it( 'does not close a trace', () => {
+        const widget = initWidget( TRACE_FORM, TRACE );
+        expect( widget.closed ).toEqual( false );
+        expect( widget.value ).toEqual( TRACE );
+    } );
+
+    it( 'removes a point without asking, and the shape opens when fewer than three points are left', () => {
+        const widget = initWidget( FORM, SHAPE );
+        widget._setCurrent( 1 );
+        widget.$widget.find( '.btn-remove' ).trigger( 'click' );
+        expect( widget.points.length ).toEqual( 2 );
+        expect( widget.closed ).toEqual( false );
+        expect( widget.value ).toEqual( '7.9377 -11.5845 0 0;7.927 -11.5857 0 0' );
+    } );
+
+    it( 'undoes the removal of a point', () => {
+        const widget = initWidget( FORM, SHAPE );
+        widget._setCurrent( 1 );
+        widget.$widget.find( '.btn-remove' ).trigger( 'click' );
+        widget.$widget.find( '.geo-undo' ).trigger( 'click' );
+        expect( widget.value ).toEqual( SHAPE );
+        expect( widget.closed ).toEqual( true );
+        expect( widget.$widget.find( '.geo-undo' ).prop( 'disabled' ) ).toEqual( true );
+    } );
+
+    it( 'removes all points in one step, which can be undone', () => {
+        const widget = initWidget( TRACE_FORM, TRACE );
+        widget.$widget.find( '.geo-clear' ).trigger( 'click' );
+        expect( widget.value ).toEqual( '' );
+        expect( widget.$points.find( '.point-list' ).length ).toEqual( 0 );
+        widget.$widget.find( '.geo-undo' ).trigger( 'click' );
+        expect( widget.value ).toEqual( TRACE );
+        expect( widget.$points.find( '.point-list' ).length ).toEqual( 3 );
+    } );
+
+    it( 'adds a point in the middle of a side', () => {
+        const widget = initWidget( TRACE_FORM, TRACE );
+        widget._insertWithCheck( 1, { lat: 7.935, lng: -11.587 } );
+        expect( widget.points.length ).toEqual( 4 );
+        expect( widget.value ).toEqual( '7.9377 -11.5845 0 0;7.935 -11.587 0 0;7.9324 -11.5902 0 0;7.927 -11.5857 0 0' );
+    } );
+} );
+
+describe( 'geoshape on a map', () => {
+    let touch;
+    let container;
+
+    beforeEach( () => {
+        touch = support.touch;
+        support.touch = false;  // a desktop, where the map is shown
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+    } );
+
+    afterEach( () => {
+        support.touch = touch;
+        container.remove();
+    } );
+
+    const wait = ms => new Promise( resolve => setTimeout( resolve, ms ) );
+
+    it( 'moves the whole shape when its inside is dragged with a mouse', async() => {
+        container.innerHTML = FORM;
+        const control = container.querySelector( 'input' );
+        control.value = SHAPE;
+        const widget = new Geopicker( control );
+        const canvas = container.querySelector( '.map-canvas' );
+        canvas.style.width = '400px';
+        canvas.style.height = '300px';
+
+        await widget.loadMap;
+        widget.map.invalidateSize();
+        await wait( 100 );      // the map is fitted to the shape after a timeout
+
+        const el = widget.polygon.getElement();
+        expect( el ).toBeTruthy();
+        expect( el.classList.contains( 'enketo-geo-movable' ) ).toEqual( true );
+
+        const box = el.getBoundingClientRect();
+        const x = box.left + box.width / 2;
+        const y = box.top + box.height / 2;
+        const before = widget.points.map( p => p.slice( 0, 2 ) );
+        const centre = widget.map.getCenter();
+
+        const fire = ( type, dx, dy ) => el.dispatchEvent( new PointerEvent( type, {
+            bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', button: 0,
+            clientX: x + dx, clientY: y + dy
+        } ) );
+        fire( 'pointerdown', 0, 0 );
+        fire( 'pointermove', 20, 10 );
+        fire( 'pointermove', 40, 20 );
+        fire( 'pointerup', 40, 20 );
+
+        // every point moved by the same amount, the shape is still closed and the map did not pan
+        const dLat = widget.points[ 0 ][ 0 ] - before[ 0 ][ 0 ];
+        const dLng = widget.points[ 0 ][ 1 ] - before[ 0 ][ 1 ];
+        expect( dLat ).toBeLessThan( 0 );
+        expect( dLng ).toBeGreaterThan( 0 );
+        widget.points.forEach( ( p, i ) => {
+            expect( p[ 0 ] - before[ i ][ 0 ] ).toBeCloseTo( dLat, 5 );
+            expect( p[ 1 ] - before[ i ][ 1 ] ).toBeCloseTo( dLng, 5 );
+        } );
+        expect( widget.closed ).toEqual( true );
+        expect( widget.map.getCenter().equals( centre ) ).toEqual( true );
+        expect( widget.value.split( ';' ).length ).toEqual( 4 );
+
+        // and it can be undone
+        widget.$widget.find( '.geo-undo' ).trigger( 'click' );
+        expect( widget.value ).toEqual( SHAPE );
+    } );
+} );

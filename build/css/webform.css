@@ -1032,7 +1032,7 @@ label.itemset-template {
     color: #fff;
 }
 
-.search-bar button.btn.btn-secondary, .geo-inputs button.close-chain-btn {
+.search-bar button.btn.btn-secondary, .geo-inputs button.close-chain-btn, .geo-inputs button.geo-clear {
     background-color: transparent;
     border-color: #aaa;
     color: #666;
